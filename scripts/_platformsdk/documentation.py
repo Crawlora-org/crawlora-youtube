@@ -178,6 +178,39 @@ def _render_examples(platform: str, config: dict[str, Any], operations: list[dic
     return "\n".join(js_lines), "\n".join(py_lines)
 
 
+def _render_readme_calls(
+    calls: list[tuple[dict[str, Any], dict[str, Any]]],
+    language: str,
+    *,
+    indent: str,
+    asynchronous: bool = False,
+) -> str:
+    """Render concise package-install examples from contract-selected calls."""
+    lines: list[str] = []
+    for index, (operation, values) in enumerate(calls, start=1):
+        method = operation["js"] if language == "javascript" else operation["py"]
+        if language == "javascript":
+            args = ", ".join(f"{key}: {json.dumps(value)}" for key, value in values.items())
+            argument_object = "{ " + args + " }" if args else "{}"
+            await_prefix = "await " if asynchronous else ""
+            lines.extend(
+                [
+                    f"{indent}const result{index} = {await_prefix}client.{method}({argument_object});",
+                    f"{indent}console.log(result{index});",
+                ]
+            )
+        else:
+            args = ", ".join(f"{key}={value!r}" for key, value in values.items())
+            await_prefix = "await " if asynchronous else ""
+            lines.extend(
+                [
+                    f"{indent}result_{index} = {await_prefix}client.{method}({args})",
+                    f"{indent}print(result_{index})",
+                ]
+            )
+    return "\n".join(lines)
+
+
 def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[str, str]:
     platform = str(config["platform"])
     display = str(config["display_name"])
@@ -190,14 +223,9 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
     version = str(config["version"])
     js_example, py_example = _render_examples(platform, config, operations)
     calls = _example_values(platform, operations)
-    first_call = calls[0] if calls else None
-    if not first_call:
-        raise ValueError(f"no contract-backed quickstart call is configured for {platform}")
-    example_op, example_args = first_call
-    js_args = ", ".join(f"{key}: {json.dumps(value)}" for key, value in example_args.items())
-    py_args = ", ".join(f"{key}={value!r}" for key, value in example_args.items())
-    quickstart_js = f"client.{example_op['js']}({{ {js_args} }})"
-    quickstart_py = f"client.{example_op['py']}({py_args})"
+    async_calls = calls[:1]
+    if platform == "youtube":
+        async_calls = [next((call for call in calls if call[0]["id"].lower() == "youtube-transcript"), calls[0])]
     transcript_formats = []
     transcript_op = next((op for op in operations if op["id"].lower() == "youtube-transcript"), None)
     if transcript_op:
@@ -243,8 +271,14 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "OPERATION_CATALOG": catalog,
         "JS_EXAMPLE": js_example.rstrip(),
         "PYTHON_EXAMPLE": py_example.rstrip(),
-        "QUICKSTART_JS_CALL": quickstart_js,
-        "QUICKSTART_PY_CALL": quickstart_py,
+        "JS_README_CALLS": _render_readme_calls(calls, "javascript", indent="", asynchronous=True),
+        "PYTHON_README_CALLS": _render_readme_calls(calls, "python", indent="    "),
+        "PYTHON_ASYNC_README_CALLS": _render_readme_calls(
+            async_calls,
+            "python",
+            indent="        ",
+            asynchronous=True,
+        ),
         "PLATFORM_SPECIAL_NOTES": special_notes,
         "SYNC_CRON": sync_cron,
         "SYNC_UTC_TIME": sync_cron.split()[1].zfill(2) + ":" + sync_cron.split()[0].zfill(2),

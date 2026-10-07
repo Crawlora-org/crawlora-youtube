@@ -11,6 +11,14 @@
   "releases": [
     {
       "changes": [
+        "Add Crawlora website, signup and console links to npm and PyPI package READMEs.",
+        "Show platform workflows, API-key setup and asynchronous Python usage directly on package pages."
+      ],
+      "date": "2026-10-07",
+      "version": "0.1.3"
+    },
+    {
+      "changes": [
         "Add daily live-contract synchronization with validation before committing new endpoint methods and types.",
         "Retry incomplete npm and PyPI publication at the same immutable release tag."
       ],
@@ -35,5 +43,5 @@
   ],
   "repository": "https://github.com/Crawlora-org/crawlora-youtube",
   "source_contract_sha256": "f8ff81231fc46cd7d6ef5f5bb99707dfa301c595ce731a533a67b49d055aa44b",
-  "version": "0.1.2"
+  "version": "0.1.3"
 }
