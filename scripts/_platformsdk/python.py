@@ -158,28 +158,54 @@ def _platform_stub(config: dict[str, Any], model: Any, assets: Path) -> str:
             ]
         target += [
             "    @overload",
-            f"    {prefix}def {method}(self, **params: Unpack[{base}Params]) -> {base}Response: ...",
+            f"    {prefix}def {method}(self, **params: Unpack[{base}DefaultParams]) -> {base}Response: ...",
         ]
 
     def append_response_options(target: list[str], operation_id: str) -> None:
         base = model.meta[operation_id]["type_base"]
         params = model.meta[operation_id]["params"]
-        for mode, literal, response in (("TextResponseParams", "text", "str"), ("StreamParams", "stream", "BinaryIO")):
-            fields = {
-                "_response_type": f"Required[Literal[{literal!r}]]",
-                "_timeout": "NotRequired[float]",
-                "_headers": "NotRequired[Mapping[str, str]]",
-            }
+        mode_specs = [
+            ("DefaultParams", None, 'Literal["auto", "json"]'),
+            ("TextResponseParams", "text", 'Literal["text"]'),
+            ("StreamParams", "stream", 'Literal["stream"]'),
+        ]
+        if operation_id in text_responses:
+            mode_specs.append(("TextParams", "format-text", 'Literal["auto", "text"]'))
+        for mode, literal, response_type in mode_specs:
+            fields = {"_timeout": "NotRequired[float]", "_headers": "NotRequired[Mapping[str, str]]"}
+            if literal is None:
+                fields["_response_type"] = f"NotRequired[{response_type}]"
+            else:
+                fields["_response_type"] = f"NotRequired[{response_type}]" if literal == "format-text" else f"Required[{response_type}]"
             for param in params:
                 if param.get("in") == "body":
                     typ = f"{base}Body"
                 else:
                     typ = generator.py_type(param)
                 wrapper = "Required" if param.get("required") else "NotRequired"
+                if operation_id in text_responses and param["name"] == "format":
+                    formats = text_responses[operation_id][1]
+                    if mode == "DefaultParams":
+                        typ = generator.py_enum_type(["json"])
+                        wrapper = "NotRequired"
+                    elif mode in {"TextResponseParams", "TextParams"}:
+                        typ = generator.py_enum_type(formats)
+                        wrapper = "Required" if mode == "TextParams" else "NotRequired"
                 fields[param["name"]] = f"{wrapper}[{typ}]"
             target += ["", f"{base}{mode} = TypedDict({(base + mode)!r}, {{"]
             target.extend(f"    {key!r}: {typ}," for key, typ in fields.items())
             target.append("}, total=False)")
+
+    # Replace the generic sync grouped signatures in the shared declaration
+    # block so the inherited group attributes use the same disjoint response
+    # modes as the top-level facade methods.
+    for group_name, entries in model.groups.items():
+        for method, operation_id in entries.items():
+            base = model.meta[operation_id]["type_base"]
+            original = f"    def {method}(self, **params: Unpack[{base}Params]) -> {base}Response: ..."
+            replacement: list[str] = []
+            append_facade_signatures(replacement, method, operation_id)
+            declarations = declarations.replace(original, "\n".join(replacement), 1)
 
     lines = [
         declarations,
@@ -195,8 +221,6 @@ def _platform_stub(config: dict[str, Any], model: Any, assets: Path) -> str:
         f"class {config['class_name']}(CrawloraClient):",
     ]
     lines.append(f"    def __enter__(self) -> {config['class_name']}: ...")
-    for group_name in model.groups:
-        lines.append(f"    {group_name}: {core.type_name(group_name, 'group')}")
     methods = [(method, operation_id) for entries in model.groups.values() for method, operation_id in entries.items()]
     if not methods:
         lines.append("    pass")
@@ -212,36 +236,24 @@ def _platform_stub(config: dict[str, Any], model: Any, assets: Path) -> str:
         lines += ["", f"class _Async{core.type_name(group_name, 'group')}:"]
         for method, operation_id in entries.items():
             append_facade_signatures(lines, method, operation_id, asynchronous=True)
-    for operation_id, (base, formats) in text_responses.items():
-        fields = {
-            "_response_type": "NotRequired[ResponseType]",
-            "_timeout": "NotRequired[float]",
-            "_headers": "NotRequired[Mapping[str, str]]",
-        }
-        for param in model.meta[operation_id]["params"]:
-            if param["name"] == "format":
-                fields[param["name"]] = f"Required[{generator.py_enum_type(formats)}]"
-            else:
-                typ = generator.py_type(param)
-                wrapper = "Required" if param.get("required") else "NotRequired"
-                fields[param["name"]] = f"{wrapper}[{typ}]"
-        lines += ["", f"{base}TextParams = TypedDict({(base + 'TextParams')!r}, {{"]
-        lines.extend(f"    {key!r}: {typ}," for key, typ in fields.items())
-        lines.append("}, total=False)")
     for operation_id in model.meta:
         append_response_options(lines, operation_id)
     return "\n".join(lines) + "\n"
 
 
-def _test_fixture(model: Any) -> dict[str, Any]:
+def _test_fixture(model: Any, generator: Any) -> dict[str, Any]:
     """Choose a mocked GET operation that exercises routing and query encoding."""
     candidates = []
     for operation_id, operation in model.operations.items():
         if operation["method"] != "GET" or not operation.get("queryParams"):
             continue
+        if generator.py_schema_type(model.meta[operation_id]["response_schema"]) == "Any":
+            continue
         security = operation.get("security", [])
-        score = 4 + 2 * bool(operation.get("pathParams")) + 3 * ("ApiKeyAuth" in security)
-        candidates.append((score, operation_id, operation, model.meta[operation_id]["params"]))
+        params = model.meta[operation_id]["params"]
+        scalar_query = any(param.get("in") == "query" and param.get("type") == "string" and not param.get("enum") for param in params)
+        score = 4 + 2 * bool(operation.get("pathParams")) + 3 * ("ApiKeyAuth" in security) + 2 * scalar_query
+        candidates.append((score, operation_id, operation, params))
     if not candidates:
         raise ValueError("platform spec must include a GET operation with query parameters for generated tests")
     _score, operation_id, operation, params = max(candidates, key=lambda item: (item[0], item[1]))
@@ -285,13 +297,58 @@ def _test_fixture(model: Any) -> dict[str, Any]:
     expected_url = "https://api.example.test" + path
     if query:
         expected_url += "?" + urlencode(query)
+    def kwargs(values: dict[str, Any]) -> str:
+        return ", ".join(f"{key}={value!r}" for key, value in sorted(values.items()))
+
+    response_formats = next((param.get("enum", []) for param in params if param["name"] == "format"), [])
+    text_formats = [str(value) for value in response_formats if str(value).lower() not in {"json", "application/json"}]
+    default_values = dict(values)
+    if "format" in default_values and "json" in response_formats:
+        default_values["format"] = "json"
+    text_values = dict(default_values)
+    if text_formats:
+        text_values["format"] = text_formats[0]
+    text_mode_values = {**text_values, "_response_type": "text"}
+    stream_values = {**text_values, "_response_type": "stream"}
+    if not text_formats:
+        text_mode_values = {**default_values, "_response_type": "text"}
+
+    bad_param = next((param for param in params if param.get("type") == "string" and not param.get("enum")), None)
+    if bad_param is None:
+        bad_param = next((param for param in params if param.get("enum")), None)
+    if bad_param is None:
+        bad_param = params[0] if params else None
+    bad_values = dict(default_values)
+    bad_field = bad_param["name"] if bad_param else "__unknown_parameter__"
+    bad_values[bad_field] = "__invalid_enum__" if bad_param and bad_param.get("enum") else 123
+
+    method_name = next(method for method, oid in model.groups[model.meta[operation_id]["group"]].items() if oid == operation_id)
+    response_type = model.meta[operation_id]["type_base"] + "Response"
+    format_text_sync = f"        assert_type(client.{method_name}({kwargs(text_values)}), str)" if text_formats else ""
+    format_text_async = f"        assert_type(await client.{method_name}({kwargs(text_values)}), str)" if text_formats else ""
+    group_name = model.meta[operation_id]["group"]
+    format_text_group_sync = f"        assert_type(client.{group_name}.{method_name}({kwargs(text_values)}), str)" if text_formats else ""
+    format_text_group_async = f"        assert_type(await client.{group_name}.{method_name}({kwargs(text_values)}), str)" if text_formats else ""
     return {
         "test_operation_id": repr(operation_id),
-        "test_method_name": repr(next(method for method, oid in model.groups[model.meta[operation_id]["group"]].items() if oid == operation_id)),
+        "test_method_name": repr(method_name),
+        "test_method_ident": method_name,
         "test_group_name": repr(model.meta[operation_id]["group"]),
+        "test_group_ident": group_name,
         "test_params": pprint.pformat(values, sort_dicts=True),
         "test_url": repr(expected_url),
         "test_has_api_key": "ApiKeyAuth" in operation.get("security", []),
+        "test_response_type": response_type,
+        "test_default_args": kwargs(default_values),
+        "test_text_args": kwargs(text_mode_values),
+        "test_stream_args": kwargs(stream_values),
+        "test_format_text_args": kwargs(text_values) if text_formats else "",
+        "test_bad_args": kwargs(bad_values),
+        "test_bad_field": bad_field,
+        "test_format_text_assertion": format_text_sync,
+        "test_format_text_async_assertion": format_text_async,
+        "test_format_text_group_assertion": format_text_group_sync,
+        "test_format_text_group_async_assertion": format_text_group_async,
     }
 
 
@@ -345,14 +402,15 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     tests_root.mkdir(parents=True, exist_ok=True)
     (tests_root / "__init__.py").write_text("", encoding="utf-8")
     package_test = (template_root / "tests" / "test_package.py.tpl").read_text(encoding="utf-8")
-    for key, value in {**config, **_test_fixture(model)}.items():
+    fixture = _test_fixture(model, generator)
+    for key, value in {**config, **fixture}.items():
         package_test = package_test.replace("{{" + key.upper() + "}}", str(value))
     (tests_root / "test_package.py").write_text(package_test, encoding="utf-8")
+    type_test = (template_root / "tests" / "test_types.py.tpl").read_text(encoding="utf-8")
+    for key, value in {**config, **fixture}.items():
+        type_test = type_test.replace("{{" + key.upper() + "}}", str(value))
+    (tests_root / "test_types.py").write_text(type_test, encoding="utf-8")
     if config["platform"] == "youtube" and "youtube-transcript" in model.meta:
-        type_test = (template_root / "tests" / "test_types.py.tpl").read_text(encoding="utf-8")
-        for key, value in config.items():
-            type_test = type_test.replace("{{" + key.upper() + "}}", str(value))
-        (tests_root / "test_types.py").write_text(type_test, encoding="utf-8")
         transcript_test = (template_root / "tests" / "test_transcript.py.tpl").read_text(encoding="utf-8")
         for key, value in config.items():
             transcript_test = transcript_test.replace("{{" + key.upper() + "}}", str(value))

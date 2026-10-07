@@ -437,20 +437,92 @@ YoutubeVideoParams = TypedDict('YoutubeVideoParams', {
 }, total=False)
 
 class YoutubeGroup:
-    def captions(self, **params: Unpack[YoutubeCaptionsParams]) -> YoutubeCaptionsResponse: ...
-    def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsParams]) -> YoutubeChannelPlaylistsResponse: ...
-    def channel_search(self, **params: Unpack[YoutubeChannelSearchParams]) -> YoutubeChannelSearchResponse: ...
-    def channel_shorts(self, **params: Unpack[YoutubeChannelShortsParams]) -> YoutubeChannelShortsResponse: ...
-    def channel_videos(self, **params: Unpack[YoutubeChannelVideosParams]) -> YoutubeChannelVideosResponse: ...
-    def comments(self, **params: Unpack[YoutubeCommentsParams]) -> YoutubeCommentsResponse: ...
-    def playlist(self, **params: Unpack[YoutubePlaylistParams]) -> YoutubePlaylistResponse: ...
-    def profile(self, **params: Unpack[YoutubeProfileParams]) -> YoutubeProfileResponse: ...
-    def search(self, **params: Unpack[YoutubeSearchParams]) -> YoutubeSearchResponse: ...
-    def suggest(self, **params: Unpack[YoutubeSuggestParams]) -> YoutubeSuggestResponse: ...
-    def tag(self, **params: Unpack[YoutubeTagParams]) -> YoutubeTagResponse: ...
-    def transcript(self, **params: Unpack[YoutubeTranscriptParams]) -> YoutubeTranscriptResponse: ...
-    def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesParams]) -> YoutubeTranscriptLanguagesResponse: ...
-    def video(self, **params: Unpack[YoutubeVideoParams]) -> YoutubeVideoResponse: ...
+    @overload
+    def captions(self, **params: Unpack[YoutubeCaptionsStreamParams]) -> BinaryIO: ...
+    @overload
+    def captions(self, **params: Unpack[YoutubeCaptionsTextResponseParams]) -> str: ...
+    @overload
+    def captions(self, **params: Unpack[YoutubeCaptionsDefaultParams]) -> YoutubeCaptionsResponse: ...
+    @overload
+    def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsStreamParams]) -> BinaryIO: ...
+    @overload
+    def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsTextResponseParams]) -> str: ...
+    @overload
+    def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsDefaultParams]) -> YoutubeChannelPlaylistsResponse: ...
+    @overload
+    def channel_search(self, **params: Unpack[YoutubeChannelSearchStreamParams]) -> BinaryIO: ...
+    @overload
+    def channel_search(self, **params: Unpack[YoutubeChannelSearchTextResponseParams]) -> str: ...
+    @overload
+    def channel_search(self, **params: Unpack[YoutubeChannelSearchDefaultParams]) -> YoutubeChannelSearchResponse: ...
+    @overload
+    def channel_shorts(self, **params: Unpack[YoutubeChannelShortsStreamParams]) -> BinaryIO: ...
+    @overload
+    def channel_shorts(self, **params: Unpack[YoutubeChannelShortsTextResponseParams]) -> str: ...
+    @overload
+    def channel_shorts(self, **params: Unpack[YoutubeChannelShortsDefaultParams]) -> YoutubeChannelShortsResponse: ...
+    @overload
+    def channel_videos(self, **params: Unpack[YoutubeChannelVideosStreamParams]) -> BinaryIO: ...
+    @overload
+    def channel_videos(self, **params: Unpack[YoutubeChannelVideosTextResponseParams]) -> str: ...
+    @overload
+    def channel_videos(self, **params: Unpack[YoutubeChannelVideosDefaultParams]) -> YoutubeChannelVideosResponse: ...
+    @overload
+    def comments(self, **params: Unpack[YoutubeCommentsStreamParams]) -> BinaryIO: ...
+    @overload
+    def comments(self, **params: Unpack[YoutubeCommentsTextResponseParams]) -> str: ...
+    @overload
+    def comments(self, **params: Unpack[YoutubeCommentsDefaultParams]) -> YoutubeCommentsResponse: ...
+    @overload
+    def playlist(self, **params: Unpack[YoutubePlaylistStreamParams]) -> BinaryIO: ...
+    @overload
+    def playlist(self, **params: Unpack[YoutubePlaylistTextResponseParams]) -> str: ...
+    @overload
+    def playlist(self, **params: Unpack[YoutubePlaylistDefaultParams]) -> YoutubePlaylistResponse: ...
+    @overload
+    def profile(self, **params: Unpack[YoutubeProfileStreamParams]) -> BinaryIO: ...
+    @overload
+    def profile(self, **params: Unpack[YoutubeProfileTextResponseParams]) -> str: ...
+    @overload
+    def profile(self, **params: Unpack[YoutubeProfileDefaultParams]) -> YoutubeProfileResponse: ...
+    @overload
+    def search(self, **params: Unpack[YoutubeSearchStreamParams]) -> BinaryIO: ...
+    @overload
+    def search(self, **params: Unpack[YoutubeSearchTextResponseParams]) -> str: ...
+    @overload
+    def search(self, **params: Unpack[YoutubeSearchDefaultParams]) -> YoutubeSearchResponse: ...
+    @overload
+    def suggest(self, **params: Unpack[YoutubeSuggestStreamParams]) -> BinaryIO: ...
+    @overload
+    def suggest(self, **params: Unpack[YoutubeSuggestTextResponseParams]) -> str: ...
+    @overload
+    def suggest(self, **params: Unpack[YoutubeSuggestDefaultParams]) -> YoutubeSuggestResponse: ...
+    @overload
+    def tag(self, **params: Unpack[YoutubeTagStreamParams]) -> BinaryIO: ...
+    @overload
+    def tag(self, **params: Unpack[YoutubeTagTextResponseParams]) -> str: ...
+    @overload
+    def tag(self, **params: Unpack[YoutubeTagDefaultParams]) -> YoutubeTagResponse: ...
+    @overload
+    def transcript(self, **params: Unpack[YoutubeTranscriptStreamParams]) -> BinaryIO: ...
+    @overload
+    def transcript(self, **params: Unpack[YoutubeTranscriptTextResponseParams]) -> str: ...
+    @overload
+    def transcript(self, **params: Unpack[YoutubeTranscriptTextParams]) -> str: ...
+    @overload
+    def transcript(self, **params: Unpack[YoutubeTranscriptDefaultParams]) -> YoutubeTranscriptResponse: ...
+    @overload
+    def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesStreamParams]) -> BinaryIO: ...
+    @overload
+    def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesTextResponseParams]) -> str: ...
+    @overload
+    def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesDefaultParams]) -> YoutubeTranscriptLanguagesResponse: ...
+    @overload
+    def video(self, **params: Unpack[YoutubeVideoStreamParams]) -> BinaryIO: ...
+    @overload
+    def video(self, **params: Unpack[YoutubeVideoTextResponseParams]) -> str: ...
+    @overload
+    def video(self, **params: Unpack[YoutubeVideoDefaultParams]) -> YoutubeVideoResponse: ...
 
 OperationId = Literal[
     'youtube-captions',
@@ -938,73 +1010,72 @@ class AsyncCrawloraClient:
 
 class YouTubeClient(CrawloraClient):
     def __enter__(self) -> YouTubeClient: ...
-    youtube: YoutubeGroup
     @overload
     def captions(self, **params: Unpack[YoutubeCaptionsStreamParams]) -> BinaryIO: ...
     @overload
     def captions(self, **params: Unpack[YoutubeCaptionsTextResponseParams]) -> str: ...
     @overload
-    def captions(self, **params: Unpack[YoutubeCaptionsParams]) -> YoutubeCaptionsResponse: ...
+    def captions(self, **params: Unpack[YoutubeCaptionsDefaultParams]) -> YoutubeCaptionsResponse: ...
     @overload
     def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsStreamParams]) -> BinaryIO: ...
     @overload
     def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsTextResponseParams]) -> str: ...
     @overload
-    def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsParams]) -> YoutubeChannelPlaylistsResponse: ...
+    def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsDefaultParams]) -> YoutubeChannelPlaylistsResponse: ...
     @overload
     def channel_search(self, **params: Unpack[YoutubeChannelSearchStreamParams]) -> BinaryIO: ...
     @overload
     def channel_search(self, **params: Unpack[YoutubeChannelSearchTextResponseParams]) -> str: ...
     @overload
-    def channel_search(self, **params: Unpack[YoutubeChannelSearchParams]) -> YoutubeChannelSearchResponse: ...
+    def channel_search(self, **params: Unpack[YoutubeChannelSearchDefaultParams]) -> YoutubeChannelSearchResponse: ...
     @overload
     def channel_shorts(self, **params: Unpack[YoutubeChannelShortsStreamParams]) -> BinaryIO: ...
     @overload
     def channel_shorts(self, **params: Unpack[YoutubeChannelShortsTextResponseParams]) -> str: ...
     @overload
-    def channel_shorts(self, **params: Unpack[YoutubeChannelShortsParams]) -> YoutubeChannelShortsResponse: ...
+    def channel_shorts(self, **params: Unpack[YoutubeChannelShortsDefaultParams]) -> YoutubeChannelShortsResponse: ...
     @overload
     def channel_videos(self, **params: Unpack[YoutubeChannelVideosStreamParams]) -> BinaryIO: ...
     @overload
     def channel_videos(self, **params: Unpack[YoutubeChannelVideosTextResponseParams]) -> str: ...
     @overload
-    def channel_videos(self, **params: Unpack[YoutubeChannelVideosParams]) -> YoutubeChannelVideosResponse: ...
+    def channel_videos(self, **params: Unpack[YoutubeChannelVideosDefaultParams]) -> YoutubeChannelVideosResponse: ...
     @overload
     def comments(self, **params: Unpack[YoutubeCommentsStreamParams]) -> BinaryIO: ...
     @overload
     def comments(self, **params: Unpack[YoutubeCommentsTextResponseParams]) -> str: ...
     @overload
-    def comments(self, **params: Unpack[YoutubeCommentsParams]) -> YoutubeCommentsResponse: ...
+    def comments(self, **params: Unpack[YoutubeCommentsDefaultParams]) -> YoutubeCommentsResponse: ...
     @overload
     def playlist(self, **params: Unpack[YoutubePlaylistStreamParams]) -> BinaryIO: ...
     @overload
     def playlist(self, **params: Unpack[YoutubePlaylistTextResponseParams]) -> str: ...
     @overload
-    def playlist(self, **params: Unpack[YoutubePlaylistParams]) -> YoutubePlaylistResponse: ...
+    def playlist(self, **params: Unpack[YoutubePlaylistDefaultParams]) -> YoutubePlaylistResponse: ...
     @overload
     def profile(self, **params: Unpack[YoutubeProfileStreamParams]) -> BinaryIO: ...
     @overload
     def profile(self, **params: Unpack[YoutubeProfileTextResponseParams]) -> str: ...
     @overload
-    def profile(self, **params: Unpack[YoutubeProfileParams]) -> YoutubeProfileResponse: ...
+    def profile(self, **params: Unpack[YoutubeProfileDefaultParams]) -> YoutubeProfileResponse: ...
     @overload
     def search(self, **params: Unpack[YoutubeSearchStreamParams]) -> BinaryIO: ...
     @overload
     def search(self, **params: Unpack[YoutubeSearchTextResponseParams]) -> str: ...
     @overload
-    def search(self, **params: Unpack[YoutubeSearchParams]) -> YoutubeSearchResponse: ...
+    def search(self, **params: Unpack[YoutubeSearchDefaultParams]) -> YoutubeSearchResponse: ...
     @overload
     def suggest(self, **params: Unpack[YoutubeSuggestStreamParams]) -> BinaryIO: ...
     @overload
     def suggest(self, **params: Unpack[YoutubeSuggestTextResponseParams]) -> str: ...
     @overload
-    def suggest(self, **params: Unpack[YoutubeSuggestParams]) -> YoutubeSuggestResponse: ...
+    def suggest(self, **params: Unpack[YoutubeSuggestDefaultParams]) -> YoutubeSuggestResponse: ...
     @overload
     def tag(self, **params: Unpack[YoutubeTagStreamParams]) -> BinaryIO: ...
     @overload
     def tag(self, **params: Unpack[YoutubeTagTextResponseParams]) -> str: ...
     @overload
-    def tag(self, **params: Unpack[YoutubeTagParams]) -> YoutubeTagResponse: ...
+    def tag(self, **params: Unpack[YoutubeTagDefaultParams]) -> YoutubeTagResponse: ...
     @overload
     def transcript(self, **params: Unpack[YoutubeTranscriptStreamParams]) -> BinaryIO: ...
     @overload
@@ -1012,19 +1083,19 @@ class YouTubeClient(CrawloraClient):
     @overload
     def transcript(self, **params: Unpack[YoutubeTranscriptTextParams]) -> str: ...
     @overload
-    def transcript(self, **params: Unpack[YoutubeTranscriptParams]) -> YoutubeTranscriptResponse: ...
+    def transcript(self, **params: Unpack[YoutubeTranscriptDefaultParams]) -> YoutubeTranscriptResponse: ...
     @overload
     def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesStreamParams]) -> BinaryIO: ...
     @overload
     def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesTextResponseParams]) -> str: ...
     @overload
-    def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesParams]) -> YoutubeTranscriptLanguagesResponse: ...
+    def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesDefaultParams]) -> YoutubeTranscriptLanguagesResponse: ...
     @overload
     def video(self, **params: Unpack[YoutubeVideoStreamParams]) -> BinaryIO: ...
     @overload
     def video(self, **params: Unpack[YoutubeVideoTextResponseParams]) -> str: ...
     @overload
-    def video(self, **params: Unpack[YoutubeVideoParams]) -> YoutubeVideoResponse: ...
+    def video(self, **params: Unpack[YoutubeVideoDefaultParams]) -> YoutubeVideoResponse: ...
 
 class AsyncYouTubeClient(AsyncCrawloraClient):
     async def __aenter__(self) -> AsyncYouTubeClient: ...
@@ -1034,67 +1105,67 @@ class AsyncYouTubeClient(AsyncCrawloraClient):
     @overload
     async def captions(self, **params: Unpack[YoutubeCaptionsTextResponseParams]) -> str: ...
     @overload
-    async def captions(self, **params: Unpack[YoutubeCaptionsParams]) -> YoutubeCaptionsResponse: ...
+    async def captions(self, **params: Unpack[YoutubeCaptionsDefaultParams]) -> YoutubeCaptionsResponse: ...
     @overload
     async def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsStreamParams]) -> BinaryIO: ...
     @overload
     async def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsTextResponseParams]) -> str: ...
     @overload
-    async def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsParams]) -> YoutubeChannelPlaylistsResponse: ...
+    async def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsDefaultParams]) -> YoutubeChannelPlaylistsResponse: ...
     @overload
     async def channel_search(self, **params: Unpack[YoutubeChannelSearchStreamParams]) -> BinaryIO: ...
     @overload
     async def channel_search(self, **params: Unpack[YoutubeChannelSearchTextResponseParams]) -> str: ...
     @overload
-    async def channel_search(self, **params: Unpack[YoutubeChannelSearchParams]) -> YoutubeChannelSearchResponse: ...
+    async def channel_search(self, **params: Unpack[YoutubeChannelSearchDefaultParams]) -> YoutubeChannelSearchResponse: ...
     @overload
     async def channel_shorts(self, **params: Unpack[YoutubeChannelShortsStreamParams]) -> BinaryIO: ...
     @overload
     async def channel_shorts(self, **params: Unpack[YoutubeChannelShortsTextResponseParams]) -> str: ...
     @overload
-    async def channel_shorts(self, **params: Unpack[YoutubeChannelShortsParams]) -> YoutubeChannelShortsResponse: ...
+    async def channel_shorts(self, **params: Unpack[YoutubeChannelShortsDefaultParams]) -> YoutubeChannelShortsResponse: ...
     @overload
     async def channel_videos(self, **params: Unpack[YoutubeChannelVideosStreamParams]) -> BinaryIO: ...
     @overload
     async def channel_videos(self, **params: Unpack[YoutubeChannelVideosTextResponseParams]) -> str: ...
     @overload
-    async def channel_videos(self, **params: Unpack[YoutubeChannelVideosParams]) -> YoutubeChannelVideosResponse: ...
+    async def channel_videos(self, **params: Unpack[YoutubeChannelVideosDefaultParams]) -> YoutubeChannelVideosResponse: ...
     @overload
     async def comments(self, **params: Unpack[YoutubeCommentsStreamParams]) -> BinaryIO: ...
     @overload
     async def comments(self, **params: Unpack[YoutubeCommentsTextResponseParams]) -> str: ...
     @overload
-    async def comments(self, **params: Unpack[YoutubeCommentsParams]) -> YoutubeCommentsResponse: ...
+    async def comments(self, **params: Unpack[YoutubeCommentsDefaultParams]) -> YoutubeCommentsResponse: ...
     @overload
     async def playlist(self, **params: Unpack[YoutubePlaylistStreamParams]) -> BinaryIO: ...
     @overload
     async def playlist(self, **params: Unpack[YoutubePlaylistTextResponseParams]) -> str: ...
     @overload
-    async def playlist(self, **params: Unpack[YoutubePlaylistParams]) -> YoutubePlaylistResponse: ...
+    async def playlist(self, **params: Unpack[YoutubePlaylistDefaultParams]) -> YoutubePlaylistResponse: ...
     @overload
     async def profile(self, **params: Unpack[YoutubeProfileStreamParams]) -> BinaryIO: ...
     @overload
     async def profile(self, **params: Unpack[YoutubeProfileTextResponseParams]) -> str: ...
     @overload
-    async def profile(self, **params: Unpack[YoutubeProfileParams]) -> YoutubeProfileResponse: ...
+    async def profile(self, **params: Unpack[YoutubeProfileDefaultParams]) -> YoutubeProfileResponse: ...
     @overload
     async def search(self, **params: Unpack[YoutubeSearchStreamParams]) -> BinaryIO: ...
     @overload
     async def search(self, **params: Unpack[YoutubeSearchTextResponseParams]) -> str: ...
     @overload
-    async def search(self, **params: Unpack[YoutubeSearchParams]) -> YoutubeSearchResponse: ...
+    async def search(self, **params: Unpack[YoutubeSearchDefaultParams]) -> YoutubeSearchResponse: ...
     @overload
     async def suggest(self, **params: Unpack[YoutubeSuggestStreamParams]) -> BinaryIO: ...
     @overload
     async def suggest(self, **params: Unpack[YoutubeSuggestTextResponseParams]) -> str: ...
     @overload
-    async def suggest(self, **params: Unpack[YoutubeSuggestParams]) -> YoutubeSuggestResponse: ...
+    async def suggest(self, **params: Unpack[YoutubeSuggestDefaultParams]) -> YoutubeSuggestResponse: ...
     @overload
     async def tag(self, **params: Unpack[YoutubeTagStreamParams]) -> BinaryIO: ...
     @overload
     async def tag(self, **params: Unpack[YoutubeTagTextResponseParams]) -> str: ...
     @overload
-    async def tag(self, **params: Unpack[YoutubeTagParams]) -> YoutubeTagResponse: ...
+    async def tag(self, **params: Unpack[YoutubeTagDefaultParams]) -> YoutubeTagResponse: ...
     @overload
     async def transcript(self, **params: Unpack[YoutubeTranscriptStreamParams]) -> BinaryIO: ...
     @overload
@@ -1102,19 +1173,19 @@ class AsyncYouTubeClient(AsyncCrawloraClient):
     @overload
     async def transcript(self, **params: Unpack[YoutubeTranscriptTextParams]) -> str: ...
     @overload
-    async def transcript(self, **params: Unpack[YoutubeTranscriptParams]) -> YoutubeTranscriptResponse: ...
+    async def transcript(self, **params: Unpack[YoutubeTranscriptDefaultParams]) -> YoutubeTranscriptResponse: ...
     @overload
     async def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesStreamParams]) -> BinaryIO: ...
     @overload
     async def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesTextResponseParams]) -> str: ...
     @overload
-    async def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesParams]) -> YoutubeTranscriptLanguagesResponse: ...
+    async def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesDefaultParams]) -> YoutubeTranscriptLanguagesResponse: ...
     @overload
     async def video(self, **params: Unpack[YoutubeVideoStreamParams]) -> BinaryIO: ...
     @overload
     async def video(self, **params: Unpack[YoutubeVideoTextResponseParams]) -> str: ...
     @overload
-    async def video(self, **params: Unpack[YoutubeVideoParams]) -> YoutubeVideoResponse: ...
+    async def video(self, **params: Unpack[YoutubeVideoDefaultParams]) -> YoutubeVideoResponse: ...
 
 class _AsyncYoutubeGroup:
     @overload
@@ -1122,67 +1193,67 @@ class _AsyncYoutubeGroup:
     @overload
     async def captions(self, **params: Unpack[YoutubeCaptionsTextResponseParams]) -> str: ...
     @overload
-    async def captions(self, **params: Unpack[YoutubeCaptionsParams]) -> YoutubeCaptionsResponse: ...
+    async def captions(self, **params: Unpack[YoutubeCaptionsDefaultParams]) -> YoutubeCaptionsResponse: ...
     @overload
     async def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsStreamParams]) -> BinaryIO: ...
     @overload
     async def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsTextResponseParams]) -> str: ...
     @overload
-    async def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsParams]) -> YoutubeChannelPlaylistsResponse: ...
+    async def channel_playlists(self, **params: Unpack[YoutubeChannelPlaylistsDefaultParams]) -> YoutubeChannelPlaylistsResponse: ...
     @overload
     async def channel_search(self, **params: Unpack[YoutubeChannelSearchStreamParams]) -> BinaryIO: ...
     @overload
     async def channel_search(self, **params: Unpack[YoutubeChannelSearchTextResponseParams]) -> str: ...
     @overload
-    async def channel_search(self, **params: Unpack[YoutubeChannelSearchParams]) -> YoutubeChannelSearchResponse: ...
+    async def channel_search(self, **params: Unpack[YoutubeChannelSearchDefaultParams]) -> YoutubeChannelSearchResponse: ...
     @overload
     async def channel_shorts(self, **params: Unpack[YoutubeChannelShortsStreamParams]) -> BinaryIO: ...
     @overload
     async def channel_shorts(self, **params: Unpack[YoutubeChannelShortsTextResponseParams]) -> str: ...
     @overload
-    async def channel_shorts(self, **params: Unpack[YoutubeChannelShortsParams]) -> YoutubeChannelShortsResponse: ...
+    async def channel_shorts(self, **params: Unpack[YoutubeChannelShortsDefaultParams]) -> YoutubeChannelShortsResponse: ...
     @overload
     async def channel_videos(self, **params: Unpack[YoutubeChannelVideosStreamParams]) -> BinaryIO: ...
     @overload
     async def channel_videos(self, **params: Unpack[YoutubeChannelVideosTextResponseParams]) -> str: ...
     @overload
-    async def channel_videos(self, **params: Unpack[YoutubeChannelVideosParams]) -> YoutubeChannelVideosResponse: ...
+    async def channel_videos(self, **params: Unpack[YoutubeChannelVideosDefaultParams]) -> YoutubeChannelVideosResponse: ...
     @overload
     async def comments(self, **params: Unpack[YoutubeCommentsStreamParams]) -> BinaryIO: ...
     @overload
     async def comments(self, **params: Unpack[YoutubeCommentsTextResponseParams]) -> str: ...
     @overload
-    async def comments(self, **params: Unpack[YoutubeCommentsParams]) -> YoutubeCommentsResponse: ...
+    async def comments(self, **params: Unpack[YoutubeCommentsDefaultParams]) -> YoutubeCommentsResponse: ...
     @overload
     async def playlist(self, **params: Unpack[YoutubePlaylistStreamParams]) -> BinaryIO: ...
     @overload
     async def playlist(self, **params: Unpack[YoutubePlaylistTextResponseParams]) -> str: ...
     @overload
-    async def playlist(self, **params: Unpack[YoutubePlaylistParams]) -> YoutubePlaylistResponse: ...
+    async def playlist(self, **params: Unpack[YoutubePlaylistDefaultParams]) -> YoutubePlaylistResponse: ...
     @overload
     async def profile(self, **params: Unpack[YoutubeProfileStreamParams]) -> BinaryIO: ...
     @overload
     async def profile(self, **params: Unpack[YoutubeProfileTextResponseParams]) -> str: ...
     @overload
-    async def profile(self, **params: Unpack[YoutubeProfileParams]) -> YoutubeProfileResponse: ...
+    async def profile(self, **params: Unpack[YoutubeProfileDefaultParams]) -> YoutubeProfileResponse: ...
     @overload
     async def search(self, **params: Unpack[YoutubeSearchStreamParams]) -> BinaryIO: ...
     @overload
     async def search(self, **params: Unpack[YoutubeSearchTextResponseParams]) -> str: ...
     @overload
-    async def search(self, **params: Unpack[YoutubeSearchParams]) -> YoutubeSearchResponse: ...
+    async def search(self, **params: Unpack[YoutubeSearchDefaultParams]) -> YoutubeSearchResponse: ...
     @overload
     async def suggest(self, **params: Unpack[YoutubeSuggestStreamParams]) -> BinaryIO: ...
     @overload
     async def suggest(self, **params: Unpack[YoutubeSuggestTextResponseParams]) -> str: ...
     @overload
-    async def suggest(self, **params: Unpack[YoutubeSuggestParams]) -> YoutubeSuggestResponse: ...
+    async def suggest(self, **params: Unpack[YoutubeSuggestDefaultParams]) -> YoutubeSuggestResponse: ...
     @overload
     async def tag(self, **params: Unpack[YoutubeTagStreamParams]) -> BinaryIO: ...
     @overload
     async def tag(self, **params: Unpack[YoutubeTagTextResponseParams]) -> str: ...
     @overload
-    async def tag(self, **params: Unpack[YoutubeTagParams]) -> YoutubeTagResponse: ...
+    async def tag(self, **params: Unpack[YoutubeTagDefaultParams]) -> YoutubeTagResponse: ...
     @overload
     async def transcript(self, **params: Unpack[YoutubeTranscriptStreamParams]) -> BinaryIO: ...
     @overload
@@ -1190,161 +1261,230 @@ class _AsyncYoutubeGroup:
     @overload
     async def transcript(self, **params: Unpack[YoutubeTranscriptTextParams]) -> str: ...
     @overload
-    async def transcript(self, **params: Unpack[YoutubeTranscriptParams]) -> YoutubeTranscriptResponse: ...
+    async def transcript(self, **params: Unpack[YoutubeTranscriptDefaultParams]) -> YoutubeTranscriptResponse: ...
     @overload
     async def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesStreamParams]) -> BinaryIO: ...
     @overload
     async def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesTextResponseParams]) -> str: ...
     @overload
-    async def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesParams]) -> YoutubeTranscriptLanguagesResponse: ...
+    async def transcript_languages(self, **params: Unpack[YoutubeTranscriptLanguagesDefaultParams]) -> YoutubeTranscriptLanguagesResponse: ...
     @overload
     async def video(self, **params: Unpack[YoutubeVideoStreamParams]) -> BinaryIO: ...
     @overload
     async def video(self, **params: Unpack[YoutubeVideoTextResponseParams]) -> str: ...
     @overload
-    async def video(self, **params: Unpack[YoutubeVideoParams]) -> YoutubeVideoResponse: ...
+    async def video(self, **params: Unpack[YoutubeVideoDefaultParams]) -> YoutubeVideoResponse: ...
 
-YoutubeTranscriptTextParams = TypedDict('YoutubeTranscriptTextParams', {
-    '_response_type': NotRequired[ResponseType],
+YoutubeCaptionsDefaultParams = TypedDict('YoutubeCaptionsDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
     'id': Required[str],
     'lang': NotRequired[str],
-    'translate_to': NotRequired[str],
-    'format': Required[Literal['text', 'srt', 'vtt']],
-    'timestamps': NotRequired[bool],
 }, total=False)
 
 YoutubeCaptionsTextResponseParams = TypedDict('YoutubeCaptionsTextResponseParams', {
-    '_response_type': Required[Literal['text']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
     'lang': NotRequired[str],
 }, total=False)
 
 YoutubeCaptionsStreamParams = TypedDict('YoutubeCaptionsStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'id': Required[str],
     'lang': NotRequired[str],
 }, total=False)
 
-YoutubeChannelPlaylistsTextResponseParams = TypedDict('YoutubeChannelPlaylistsTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeChannelPlaylistsDefaultParams = TypedDict('YoutubeChannelPlaylistsDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'id': Required[str],
+    'continuation_token': NotRequired[str],
+}, total=False)
+
+YoutubeChannelPlaylistsTextResponseParams = TypedDict('YoutubeChannelPlaylistsTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeChannelPlaylistsStreamParams = TypedDict('YoutubeChannelPlaylistsStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
-YoutubeChannelSearchTextResponseParams = TypedDict('YoutubeChannelSearchTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeChannelSearchDefaultParams = TypedDict('YoutubeChannelSearchDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'id': Required[str],
+    'q': Required[str],
+    'continuation_token': NotRequired[str],
+}, total=False)
+
+YoutubeChannelSearchTextResponseParams = TypedDict('YoutubeChannelSearchTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
     'q': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeChannelSearchStreamParams = TypedDict('YoutubeChannelSearchStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'id': Required[str],
     'q': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
-YoutubeChannelShortsTextResponseParams = TypedDict('YoutubeChannelShortsTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeChannelShortsDefaultParams = TypedDict('YoutubeChannelShortsDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'id': Required[str],
+}, total=False)
+
+YoutubeChannelShortsTextResponseParams = TypedDict('YoutubeChannelShortsTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
 }, total=False)
 
 YoutubeChannelShortsStreamParams = TypedDict('YoutubeChannelShortsStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'id': Required[str],
 }, total=False)
 
-YoutubeChannelVideosTextResponseParams = TypedDict('YoutubeChannelVideosTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeChannelVideosDefaultParams = TypedDict('YoutubeChannelVideosDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'id': Required[str],
+    'continuation_token': NotRequired[str],
+}, total=False)
+
+YoutubeChannelVideosTextResponseParams = TypedDict('YoutubeChannelVideosTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeChannelVideosStreamParams = TypedDict('YoutubeChannelVideosStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
+    'id': Required[str],
+    'continuation_token': NotRequired[str],
+}, total=False)
+
+YoutubeCommentsDefaultParams = TypedDict('YoutubeCommentsDefaultParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeCommentsTextResponseParams = TypedDict('YoutubeCommentsTextResponseParams', {
-    '_response_type': Required[Literal['text']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeCommentsStreamParams = TypedDict('YoutubeCommentsStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
+    'id': Required[str],
+    'continuation_token': NotRequired[str],
+}, total=False)
+
+YoutubePlaylistDefaultParams = TypedDict('YoutubePlaylistDefaultParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubePlaylistTextResponseParams = TypedDict('YoutubePlaylistTextResponseParams', {
-    '_response_type': Required[Literal['text']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubePlaylistStreamParams = TypedDict('YoutubePlaylistStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
 }, total=False)
 
-YoutubeProfileTextResponseParams = TypedDict('YoutubeProfileTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeProfileDefaultParams = TypedDict('YoutubeProfileDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'id': Required[str],
+}, total=False)
+
+YoutubeProfileTextResponseParams = TypedDict('YoutubeProfileTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
 }, total=False)
 
 YoutubeProfileStreamParams = TypedDict('YoutubeProfileStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'id': Required[str],
 }, total=False)
 
-YoutubeSearchTextResponseParams = TypedDict('YoutubeSearchTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeSearchDefaultParams = TypedDict('YoutubeSearchDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'q': NotRequired[str],
+    'search_query': NotRequired[str],
+    'continuation_token': NotRequired[str],
+    'type': NotRequired[Literal['video', 'shorts', 'channel', 'playlist', 'movie']],
+    'sort_by': NotRequired[Literal['relevance', 'upload_date', 'view_count', 'popularity', 'rating']],
+    'upload_date': NotRequired[Literal['last_hour', 'today', 'this_week', 'this_month', 'this_year']],
+    'duration': NotRequired[Literal['under_3_minutes', 'three_to_20_minutes', 'over_20_minutes', 'under_3', 'three_to_20', 'over_20', 'short', 'medium', 'long']],
+    'features': NotRequired[str],
+    'hl': NotRequired[str],
+    'gl': NotRequired[str],
+    'params': NotRequired[str],
+}, total=False)
+
+YoutubeSearchTextResponseParams = TypedDict('YoutubeSearchTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'q': NotRequired[str],
     'search_query': NotRequired[str],
     'continuation_token': NotRequired[str],
@@ -1359,9 +1499,9 @@ YoutubeSearchTextResponseParams = TypedDict('YoutubeSearchTextResponseParams', {
 }, total=False)
 
 YoutubeSearchStreamParams = TypedDict('YoutubeSearchStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'q': NotRequired[str],
     'search_query': NotRequired[str],
     'continuation_token': NotRequired[str],
@@ -1375,10 +1515,20 @@ YoutubeSearchStreamParams = TypedDict('YoutubeSearchStreamParams', {
     'params': NotRequired[str],
 }, total=False)
 
-YoutubeSuggestTextResponseParams = TypedDict('YoutubeSuggestTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeSuggestDefaultParams = TypedDict('YoutubeSuggestDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'q': Required[str],
+    'count': NotRequired[int],
+    'hl': NotRequired[str],
+    'gl': NotRequired[str],
+}, total=False)
+
+YoutubeSuggestTextResponseParams = TypedDict('YoutubeSuggestTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'q': Required[str],
     'count': NotRequired[int],
     'hl': NotRequired[str],
@@ -1386,48 +1536,68 @@ YoutubeSuggestTextResponseParams = TypedDict('YoutubeSuggestTextResponseParams',
 }, total=False)
 
 YoutubeSuggestStreamParams = TypedDict('YoutubeSuggestStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'q': Required[str],
     'count': NotRequired[int],
     'hl': NotRequired[str],
     'gl': NotRequired[str],
 }, total=False)
 
-YoutubeTagTextResponseParams = TypedDict('YoutubeTagTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeTagDefaultParams = TypedDict('YoutubeTagDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'tag': Required[str],
+    'type': NotRequired[Literal['all', 'shorts']],
+    'continuation_token': NotRequired[str],
+}, total=False)
+
+YoutubeTagTextResponseParams = TypedDict('YoutubeTagTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'tag': Required[str],
     'type': NotRequired[Literal['all', 'shorts']],
     'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeTagStreamParams = TypedDict('YoutubeTagStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'tag': Required[str],
     'type': NotRequired[Literal['all', 'shorts']],
     'continuation_token': NotRequired[str],
 }, total=False)
 
-YoutubeTranscriptTextResponseParams = TypedDict('YoutubeTranscriptTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeTranscriptDefaultParams = TypedDict('YoutubeTranscriptDefaultParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
     'id': Required[str],
     'lang': NotRequired[str],
     'translate_to': NotRequired[str],
-    'format': NotRequired[Literal['json', 'text', 'srt', 'vtt']],
+    'format': NotRequired[Literal['json']],
+    'timestamps': NotRequired[bool],
+}, total=False)
+
+YoutubeTranscriptTextResponseParams = TypedDict('YoutubeTranscriptTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
+    'id': Required[str],
+    'lang': NotRequired[str],
+    'translate_to': NotRequired[str],
+    'format': NotRequired[Literal['text', 'srt', 'vtt']],
     'timestamps': NotRequired[bool],
 }, total=False)
 
 YoutubeTranscriptStreamParams = TypedDict('YoutubeTranscriptStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'id': Required[str],
     'lang': NotRequired[str],
     'translate_to': NotRequired[str],
@@ -1435,30 +1605,55 @@ YoutubeTranscriptStreamParams = TypedDict('YoutubeTranscriptStreamParams', {
     'timestamps': NotRequired[bool],
 }, total=False)
 
-YoutubeTranscriptLanguagesTextResponseParams = TypedDict('YoutubeTranscriptLanguagesTextResponseParams', {
-    '_response_type': Required[Literal['text']],
+YoutubeTranscriptTextParams = TypedDict('YoutubeTranscriptTextParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "text"]],
+    'id': Required[str],
+    'lang': NotRequired[str],
+    'translate_to': NotRequired[str],
+    'format': Required[Literal['text', 'srt', 'vtt']],
+    'timestamps': NotRequired[bool],
+}, total=False)
+
+YoutubeTranscriptLanguagesDefaultParams = TypedDict('YoutubeTranscriptLanguagesDefaultParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'id': Required[str],
+}, total=False)
+
+YoutubeTranscriptLanguagesTextResponseParams = TypedDict('YoutubeTranscriptLanguagesTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
 }, total=False)
 
 YoutubeTranscriptLanguagesStreamParams = TypedDict('YoutubeTranscriptLanguagesStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
+    'id': Required[str],
+}, total=False)
+
+YoutubeVideoDefaultParams = TypedDict('YoutubeVideoDefaultParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
     'id': Required[str],
 }, total=False)
 
 YoutubeVideoTextResponseParams = TypedDict('YoutubeVideoTextResponseParams', {
-    '_response_type': Required[Literal['text']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
     'id': Required[str],
 }, total=False)
 
 YoutubeVideoStreamParams = TypedDict('YoutubeVideoStreamParams', {
-    '_response_type': Required[Literal['stream']],
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
     'id': Required[str],
 }, total=False)

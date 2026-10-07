@@ -82,12 +82,12 @@ def _operations(spec: dict[str, Any], platform: str, method_names: dict[str, dic
             ]
             operations.append(
                 {
-                    "id": operation_id or fallback,
+                    "id": operation_id,
                     "js": js_name,
                     "py": py_name,
                     "verb": verb.upper(),
                     "path": str(path),
-                    "summary": str(operation.get("summary") or operation.get("description") or operation_id or fallback).split("\n", 1)[0],
+                    "summary": str(operation.get("summary") or operation.get("description") or operation_id).split("\n", 1)[0],
                     "params": params,
                     "produces": [str(x).lower() for x in operation.get("produces", [])],
                 }
@@ -147,9 +147,8 @@ def _render_examples(platform: str, config: dict[str, Any], operations: list[dic
     calls = _example_values(platform, operations)
     cls = str(config["class_name"])
     module = str(config["module_name"])
-    npm = str(config["npm_name"])
     js_lines = [
-        f"import {{ {cls} }} from {json.dumps(npm)};",
+        f"import {{ {cls} }} from \"../javascript/src/index.js\";",
         "",
         "const apiKey = process.env.CRAWLORA_API_KEY;",
         "if (!apiKey) throw new Error(\"Set CRAWLORA_API_KEY before running this example.\");",

@@ -25,6 +25,18 @@ export CRAWLORA_API_KEY="your-crawlora-api-key"
 
 Do not commit API keys. See the language-specific READMEs for sync and async use.
 
+## Run examples from a source checkout
+
+From the repository root, set `CRAWLORA_API_KEY` as shown above and run:
+
+```sh
+node examples/javascript.mjs
+python -m pip install ./python
+python examples/python.py
+```
+
+The checked-in JavaScript example imports the generated local source at `javascript/src/index.js`. The Python command installs this checkout's package before running its example. The import snippets in the language-specific READMEs are for separate projects using installed npm and PyPI packages; copy those snippets into your own project after installing the package.
+
 ## Contract
 
 This package release is `0.1.0`. The generated client methods follow the bundled `openapi/public.json` contract at revision `sha256:677d4bc412f42cf0083135b32bf36b478ab37efbea5f35fc5e8b6e86caaf6a68`. `scripts/generate.py` regenerates both language clients and the documentation from the shared source.

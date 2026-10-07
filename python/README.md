@@ -29,6 +29,8 @@ methods are available directly in snake_case and through the `youtube`
 group. The async package client is `AsyncYouTubeClient`; see the [online
 endpoint and parameter reference](https://github.com/Crawlora-org/crawlora-youtube/blob/main/docs/usage.md) and [runnable example](https://github.com/Crawlora-org/crawlora-youtube/blob/main/examples/python.py).
 
+The import snippet above is for a project where this PyPI package is installed. To run the checked-in example from a source checkout, install `./python` from the repository root and run `python examples/python.py`; see the [source-checkout instructions](https://github.com/Crawlora-org/crawlora-youtube#run-examples-from-a-source-checkout).
+
 ## Configuration
 
 Pass your key through `api_key` or read `CRAWLORA_API_KEY` from the environment.
