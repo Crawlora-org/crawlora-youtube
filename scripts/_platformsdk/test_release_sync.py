@@ -19,7 +19,7 @@ from .release_sync import (
     NPM_REGISTRY,
     PYPI_JSON,
     RUBYGEMS_API,
-    MAVEN_SEARCH,
+    MAVEN_CENTRAL,
     PACKAGIST_P2,
     GO_PROXY,
     GITHUB_PACKAGES_API,
@@ -190,12 +190,15 @@ def http_fixture(platform: str = "sofascore", *, npm: int = 404, pypi: int = 404
         "pypi": {"info": {"version": VERSION}},
         "go": {"Version": "v" + VERSION},
         "ruby": {"number": VERSION},
-        "maven": {"response": {"numFound": 1, "docs": [{"g": names["maven_group"], "a": names["maven_artifact"], "v": VERSION}]}},
+        "maven": (
+            f'<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>{names["maven_group"]}</groupId>'
+            f'<artifactId>{names["maven_artifact"]}</artifactId><version>{VERSION}</version></project>'
+        ),
         "packagist": {"packages": {names["packagist"]: [{"version": "v" + VERSION}]}},
     }
     answers = {
         _registry_url(registry, names[name_key] if name_key in names else names["maven_artifact"], VERSION): (
-            statuses[registry], json.dumps(payloads[registry]).encode() if statuses[registry] == 200 else b"{}"
+            statuses[registry], (payloads[registry].encode() if registry == "maven" else json.dumps(payloads[registry]).encode()) if statuses[registry] == 200 else b"{}"
         )
         for registry, name_key in (("npm", "npm"), ("pypi", "pypi"), ("go", "go"), ("ruby", "ruby"),
                                    ("maven", "maven_artifact"), ("packagist", "packagist"))
@@ -329,14 +332,21 @@ class ReleaseSyncTests(unittest.TestCase):
             pypi_request = next(request for url, request, _ in http.requests if url.startswith(PYPI_JSON))
             self.assertEqual(pypi_request.get_header("Accept"), "application/json")
             self.assertIsNone(pypi_request.get_header("Authorization"))
-            for prefix in (RUBYGEMS_API, MAVEN_SEARCH, PACKAGIST_P2, GO_PROXY):
+            for prefix in (RUBYGEMS_API, PACKAGIST_P2, GO_PROXY):
                 request = next(request for url, request, _ in http.requests if url.startswith(prefix))
                 self.assertEqual(request.get_header("Accept"), "application/json")
                 self.assertIsNone(request.get_header("Authorization"))
+            maven_request = next(request for url, request, _ in http.requests if url.startswith(MAVEN_CENTRAL))
+            self.assertEqual(maven_request.get_header("Accept"), "application/xml")
             packages_request = next(request for url, request, _ in http.requests if url.startswith(GITHUB_PACKAGES_API))
             self.assertEqual(packages_request.get_header("Authorization"), "Bearer mock-token")
             self.assertEqual(runner.commands, [])
         self.with_repo(run)
+
+    def test_go_module_proxy_path_uses_the_case_escape_marker(self):
+        url = _registry_url("go", "github.com/Crawlora-org/crawlora-sofascore", VERSION)
+        self.assertIn("github.com/!crawlora-org/crawlora-sofascore/@v/v0.1.0.info", url)
+        self.assertNotIn("%21", url)
 
     def test_wrong_version_malformed_json_and_forbidden_registry_fail_before_git_or_release_writes(self):
         def run(root, config):
@@ -349,7 +359,7 @@ class ReleaseSyncTests(unittest.TestCase):
                 (_registry_url("ruby", config["ruby_gem_name"], VERSION), 200,
                  json.dumps({"number": "0.2.0"}).encode()),
                 (_registry_url("maven", config["maven_artifact_id"], VERSION), 200,
-                 json.dumps({"response": {"numFound": 1, "docs": [{"g": "net.crawlora", "a": config["maven_artifact_id"], "v": "0.2.0"}]}}).encode()),
+                 f'<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>net.crawlora</groupId><artifactId>{config["maven_artifact_id"]}</artifactId><version>0.2.0</version></project>'.encode()),
                 (_registry_url("go", config["golang_module_name"], VERSION), 200,
                  json.dumps({"Version": "v0.2.0"}).encode()),
             ]
