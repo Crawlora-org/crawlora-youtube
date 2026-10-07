@@ -26,7 +26,7 @@ test("serializes required query/path values, adds API key and platform User-Agen
   await client.request("youtube-captions", {"id": "sample"});
   assert.match(seen.url, /\/youtube\/captions\/[^/]+/);
   assert.equal(seen.headers["x-api-key"], "secret");
-  assert.equal(seen.headers["user-agent"], "crawlora-youtube-js/0.1.1");
+  assert.equal(seen.headers["user-agent"], "crawlora-youtube-js/0.1.2");
 });
 
 test("allows caller User-Agent override and response text mode", async () => {
