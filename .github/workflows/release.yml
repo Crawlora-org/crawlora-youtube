@@ -1,0 +1,185 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
+
+  verify-release-version:
+    needs: validate
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: version
+        name: Match release tag and both package versions
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, re, tomllib
+          event = os.environ["EVENT_NAME"]
+          tag = os.environ["REF_NAME"]
+          if event == "push" and not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", tag):
+              raise SystemExit("release tag must be vMAJOR.MINOR.PATCH")
+          version = tag[1:] if tag.startswith("v") else "0.1.0"
+          npm = json.loads(pathlib.Path("javascript/package.json").read_text())["version"]
+          pyproject = tomllib.loads(pathlib.Path("python/pyproject.toml").read_text())
+          python_version = pyproject["project"]["version"]
+          if npm != version or python_version != version:
+              raise SystemExit(f"tag/package version mismatch: tag={version}, npm={npm}, python={python_version}")
+          print(f"value={version}", file=open(os.environ["GITHUB_OUTPUT"], "a"))
+          PY
+
+  publish-npm:
+    needs: [validate, verify-release-version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          scope: '@crawlora-org'
+      - name: Check exact version in npm registry
+        id: registry
+        env:
+          PACKAGE: "@crawlora-org/youtube"
+          VERSION: ${{ needs.verify-release-version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import json, os, urllib.error, urllib.request
+          url = "https://registry.npmjs.org/" + os.environ["PACKAGE"].replace("/", "%2f") + "/" + os.environ["VERSION"]
+          request = urllib.request.Request(url, headers={"Accept": "application/vnd.npm.install-v1+json"})
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  if response.status != 200:
+                      raise SystemExit(f"unexpected npm registry status {response.status}")
+                  payload = json.load(response)
+                  if payload.get("version") != os.environ["VERSION"]:
+                      raise SystemExit("npm registry returned a different version")
+                  exists = "true"
+          except urllib.error.HTTPError as error:
+              if error.code == 404:
+                  exists = "false"
+              else:
+                  raise SystemExit(f"npm registry check failed with HTTP {error.code}")
+          except urllib.error.URLError as error:
+              raise SystemExit(f"npm registry check failed: {error.reason}")
+          print(f"exists={exists}", file=open(os.environ["GITHUB_OUTPUT"], "a"))
+          PY
+      - name: Publish exact npm package version
+        if: steps.registry.outputs.exists == 'false'
+        working-directory: javascript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+      - name: Confirm npm version is available
+        env:
+          PACKAGE: "@crawlora-org/youtube"
+          VERSION: ${{ needs.verify-release-version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import json, os, time, urllib.error, urllib.request
+          url = "https://registry.npmjs.org/" + os.environ["PACKAGE"].replace("/", "%2f") + "/" + os.environ["VERSION"]
+          for attempt in range(6):
+              try:
+                  with urllib.request.urlopen(url, timeout=20) as response:
+                      payload = json.load(response)
+                      if response.status == 200 and payload.get("version") == os.environ["VERSION"]:
+                          print("npm version is available")
+                          break
+                      raise SystemExit("npm registry returned an unexpected version")
+              except urllib.error.HTTPError as error:
+                  if error.code != 404:
+                      raise SystemExit(f"npm verification failed with HTTP {error.code}")
+                  if attempt == 5:
+                      raise SystemExit("published npm version is not visible after retry window")
+                  time.sleep(10)
+              except urllib.error.URLError as error:
+                  raise SystemExit(f"npm verification failed: {error.reason}")
+          PY
+
+  publish-pypi:
+    needs: [validate, verify-release-version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install build twine
+      - run: python -m build --outdir dist
+        working-directory: python
+      - name: Check exact version on PyPI
+        id: registry
+        env:
+          PACKAGE: "crawlora-youtube"
+          VERSION: ${{ needs.verify-release-version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import json, os, urllib.error, urllib.request
+          url = f"https://pypi.org/pypi/{os.environ['PACKAGE']}/{os.environ['VERSION']}/json"
+          try:
+              with urllib.request.urlopen(url, timeout=20) as response:
+                  payload = json.load(response)
+                  if response.status != 200 or payload.get("info", {}).get("version") != os.environ["VERSION"]:
+                      raise SystemExit("PyPI returned an unexpected version")
+                  exists = "true"
+          except urllib.error.HTTPError as error:
+              if error.code == 404:
+                  exists = "false"
+              else:
+                  raise SystemExit(f"PyPI check failed with HTTP {error.code}")
+          except urllib.error.URLError as error:
+              raise SystemExit(f"PyPI check failed: {error.reason}")
+          print(f"exists={exists}", file=open(os.environ["GITHUB_OUTPUT"], "a"))
+          PY
+      - name: Publish exact PyPI package version
+        if: steps.registry.outputs.exists == 'false'
+        working-directory: python
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: python -m twine upload dist/*
+      - name: Confirm PyPI version is available
+        env:
+          PACKAGE: "crawlora-youtube"
+          VERSION: ${{ needs.verify-release-version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import json, os, time, urllib.error, urllib.request
+          url = f"https://pypi.org/pypi/{os.environ['PACKAGE']}/{os.environ['VERSION']}/json"
+          for attempt in range(6):
+              try:
+                  with urllib.request.urlopen(url, timeout=20) as response:
+                      payload = json.load(response)
+                      if response.status == 200 and payload.get("info", {}).get("version") == os.environ["VERSION"]:
+                          print("PyPI version is available")
+                          break
+                      raise SystemExit("PyPI returned an unexpected version")
+              except urllib.error.HTTPError as error:
+                  if error.code != 404:
+                      raise SystemExit(f"PyPI verification failed with HTTP {error.code}")
+                  if attempt == 5:
+                      raise SystemExit("published PyPI version is not visible after retry window")
+                  time.sleep(10)
+              except urllib.error.URLError as error:
+                  raise SystemExit(f"PyPI verification failed: {error.reason}")
+          PY

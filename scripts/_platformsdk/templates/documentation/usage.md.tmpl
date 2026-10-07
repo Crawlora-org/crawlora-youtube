@@ -1,0 +1,28 @@
+# {{DISPLAY_NAME}} client usage
+
+The `{{NPM_NAME}}` and `{{PYTHON_NAME}}` packages call Crawlora's hosted API. Set `CRAWLORA_API_KEY` to a key for your Crawlora account before making requests. Service usage is billed under that account. These clients do not run a browser or scrape {{DISPLAY_NAME}} locally; Crawlora is independent from and not endorsed by {{DISPLAY_NAME}} or its owners.
+
+Both packages expose all {{OPERATION_COUNT}} operations in the bundled API contract. JavaScript uses camelCase methods and Python uses snake_case methods. Methods also remain available through the `{{PLATFORM}}` group and the generated `Client` alias.
+
+## Examples
+
+The checked-in examples discover current entities or feeds before making the related requests, using parameter names and values supported by the API contract:
+
+- [JavaScript](../examples/javascript.mjs)
+- [Python](../examples/python.py)
+
+{{PLATFORM_SPECIAL_NOTES}}
+
+## Complete operation reference
+
+Required and optional parameter names below come from this package's generated OpenAPI contract. Path parameters are passed alongside query and body values in the same method argument object/keywords.
+
+{{OPERATION_CATALOG}}
+
+## Client forms
+
+- JavaScript: import `{{CLASS_NAME}}` (also exported as `Client`) from `{{NPM_NAME}}`; use `new {{CLASS_NAME}}({ apiKey })` and `await client.method({ ... })`.
+- Python: import `{{CLASS_NAME}}` (also exported as `Client`) from `{{MODULE_NAME}}`; use `with {{CLASS_NAME}}(api_key=...) as client` and `client.method(...)`.
+- Python async class: `{{ASYNC_CLASS_NAME}}`, used with `async with` and `await`.
+
+See the package READMEs for installation details. Keep API keys in environment variables or a secret store; do not commit them.

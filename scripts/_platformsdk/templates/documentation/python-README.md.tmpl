@@ -1,0 +1,36 @@
+# {{PYTHON_NAME}}
+
+Python client for Crawlora's hosted {{DISPLAY_NAME}} API. It calls Crawlora's
+service; it does not run a browser or scrape {{DISPLAY_NAME}} locally. A Crawlora
+account and `CRAWLORA_API_KEY` are required, and API use is billed under your
+Crawlora account. Crawlora is independent from and not endorsed by
+{{DISPLAY_NAME}} or its owners.
+
+## Install
+
+```sh
+python -m pip install {{PYTHON_NAME}}
+```
+
+## Use
+
+```python
+import os
+
+from {{MODULE_NAME}} import {{CLASS_NAME}}
+
+with {{CLASS_NAME}}(api_key=os.environ["CRAWLORA_API_KEY"]) as client:
+    result = {{QUICKSTART_PY_CALL}}
+    print(result)
+```
+
+The package also exports `Client` as an alias for `{{CLASS_NAME}}`. Operation
+methods are available directly in snake_case and through the `{{PLATFORM}}`
+group. The async package client is `{{ASYNC_CLASS_NAME}}`; see the [online
+endpoint and parameter reference]({{DOCS_URL}}) and [runnable example]({{PYTHON_EXAMPLE_URL}}).
+
+## Configuration
+
+Pass your key through `api_key` or read `CRAWLORA_API_KEY` from the environment.
+Keep credentials out of source control and logs. Requests go to Crawlora's
+hosted API, and response data and availability follow its current contract.
