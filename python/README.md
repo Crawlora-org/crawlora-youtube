@@ -22,6 +22,8 @@ export CRAWLORA_API_KEY="your-crawlora-api-key"
 
 ## Use
 
+Save this example as `example.py`, then run `python example.py` after installing the package and setting your API key.
+
 ```python
 import os
 
