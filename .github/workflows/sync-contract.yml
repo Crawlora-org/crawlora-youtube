@@ -139,7 +139,7 @@ jobs:
   recover-release:
     needs: [prepare, validate, commit]
     if: >-
-      always() && needs.prepare.result == 'success' && needs.prepare.outputs.dry_run != 'true' &&
+      always() && !cancelled() && needs.prepare.result == 'success' && needs.prepare.outputs.dry_run != 'true' &&
       (needs.prepare.outputs.changed == 'false' || needs.commit.outputs.landed == 'true')
     runs-on: ubuntu-latest
     permissions:
