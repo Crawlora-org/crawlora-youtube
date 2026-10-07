@@ -542,7 +542,7 @@ jobs:
               raise SystemExit("Packagist credentials are not configured")
           request = urllib.request.Request(
               "https://packagist.org/api/update-package",
-              data=json.dumps({"repository": {"url": os.environ["PACKAGE_URL"]}}).encode(),
+              data=json.dumps({"repository": os.environ["PACKAGE_URL"]}).encode(),
               headers={"Content-Type": "application/json", "Accept": "application/json", "Authorization": "Bearer " + os.environ["USERNAME"] + ":" + os.environ["API_TOKEN"]},
               method="POST",
           )
