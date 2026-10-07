@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3 — 2026-10-07
+
+- Add Crawlora website, signup and console links to npm and PyPI package READMEs.
+- Show platform workflows, API-key setup and asynchronous Python usage directly on package pages.
+
 ## 0.1.2 — 2026-10-07
 
 - Add daily live-contract synchronization with validation before committing new endpoint methods and types.
