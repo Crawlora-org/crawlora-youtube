@@ -8,7 +8,24 @@
   "npm_name": "@crawlora-org/youtube",
   "platform": "youtube",
   "python_name": "crawlora-youtube",
+  "releases": [
+    {
+      "changes": [
+        "Publish and verify npm releases through package-specific GitHub trusted publishing.",
+        "Retain the complete platform contract and Python/JavaScript client behavior."
+      ],
+      "date": "2026-10-07",
+      "version": "0.1.1"
+    },
+    {
+      "changes": [
+        "Initial focused hosted-API clients for JavaScript/TypeScript and Python."
+      ],
+      "date": "2026-10-07",
+      "version": "0.1.0"
+    }
+  ],
   "repository": "https://github.com/Crawlora-org/crawlora-youtube",
   "source_contract_sha256": "f8ff81231fc46cd7d6ef5f5bb99707dfa301c595ce731a533a67b49d055aa44b",
-  "version": "0.1.0"
+  "version": "0.1.1"
 }
