@@ -48,13 +48,18 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
           scope: '@crawlora-org'
+      - name: Install npm trusted-publishing-capable CLI
+        run: |
+          npm install --global npm@11.21.0
+          test "$(npm --version)" = "11.21.0"
       - name: Check exact version in npm registry
         id: registry
         env:
@@ -85,8 +90,6 @@ jobs:
       - name: Publish exact npm package version
         if: steps.registry.outputs.exists == 'false'
         working-directory: javascript
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
       - name: Confirm npm version is available
         env:

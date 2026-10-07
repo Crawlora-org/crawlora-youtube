@@ -188,9 +188,9 @@ def _platform_stub(config: dict[str, Any], model: Any, assets: Path) -> str:
                     if mode == "DefaultParams":
                         typ = generator.py_enum_type(["json"])
                         wrapper = "NotRequired"
-                    elif mode in {"TextResponseParams", "TextParams"}:
+                    elif mode == "TextParams":
                         typ = generator.py_enum_type(formats)
-                        wrapper = "Required" if mode == "TextParams" else "NotRequired"
+                        wrapper = "Required"
                 fields[param["name"]] = f"{wrapper}[{typ}]"
             target += ["", f"{base}{mode} = TypedDict({(base + mode)!r}, {{"]
             target.extend(f"    {key!r}: {typ}," for key, typ in fields.items())
@@ -308,7 +308,9 @@ def _test_fixture(model: Any, generator: Any) -> dict[str, Any]:
     text_values = dict(default_values)
     if text_formats:
         text_values["format"] = text_formats[0]
-    text_mode_values = {**text_values, "_response_type": "text"}
+    text_mode_values = {**default_values, "_response_type": "text"}
+    if "json" in response_formats:
+        text_mode_values["format"] = "json"
     stream_values = {**text_values, "_response_type": "stream"}
     if not text_formats:
         text_mode_values = {**default_values, "_response_type": "text"}

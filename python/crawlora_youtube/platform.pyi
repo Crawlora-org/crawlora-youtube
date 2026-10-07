@@ -1590,7 +1590,7 @@ YoutubeTranscriptTextResponseParams = TypedDict('YoutubeTranscriptTextResponsePa
     'id': Required[str],
     'lang': NotRequired[str],
     'translate_to': NotRequired[str],
-    'format': NotRequired[Literal['text', 'srt', 'vtt']],
+    'format': NotRequired[Literal['json', 'text', 'srt', 'vtt']],
     'timestamps': NotRequired[bool],
 }, total=False)
 
