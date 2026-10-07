@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from types import SimpleNamespace
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 
 from .release_sync import (
     GITHUB_API,
@@ -21,6 +22,7 @@ from .release_sync import (
     MAVEN_SEARCH,
     PACKAGIST_P2,
     GO_PROXY,
+    GITHUB_PACKAGES_API,
     SUPPORTED,
     ReleaseSyncError,
     _registry_url,
@@ -179,6 +181,7 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
 
 def http_fixture(platform: str = "sofascore", *, npm: int = 404, pypi: int = 404,
                  go: int = 404, ruby: int = 404, maven: int = 404, packagist: int = 404,
+                 github_packages: bool = False,
                  release_status: int = 200, release_payload: dict | None = None) -> FakeHTTP:
     names = SUPPORTED[platform]
     statuses = {"npm": npm, "pypi": pypi, "go": go, "ruby": ruby, "maven": maven, "packagist": packagist}
@@ -198,12 +201,26 @@ def http_fixture(platform: str = "sofascore", *, npm: int = 404, pypi: int = 404
                                    ("maven", "maven_artifact"), ("packagist", "packagist"))
     }
     answers.update({
+        f"{GITHUB_PACKAGES_API}?package_type=maven&per_page=100": (
+            200,
+            json.dumps([
+                {
+                    "name": f"{names['maven_group']}:{names['maven_artifact']}",
+                    "url": f"{GITHUB_PACKAGES_API}/maven/{quote(names['maven_group'] + ':' + names['maven_artifact'], safe='')}",
+                    "repository": {"full_name": names["repository"]},
+                }
+            ] if github_packages else []).encode(),
+        ),
         f"{GITHUB_API}/repos/{names['repository']}/releases/tags/v{VERSION}": (
             release_status,
             json.dumps(release_payload or {"tag_name": "v" + VERSION, "draft": False}).encode()
             if release_status == 200 else b"{}",
         ),
     })
+    if github_packages:
+        package_name = f"{names['maven_group']}:{names['maven_artifact']}"
+        versions_url = f"{GITHUB_PACKAGES_API}/maven/{quote(package_name, safe='')}/versions?per_page=100"
+        answers[versions_url] = (200, json.dumps([{"name": VERSION}]).encode())
     return FakeHTTP(answers)
 
 
@@ -251,15 +268,16 @@ class ReleaseSyncTests(unittest.TestCase):
 
     def test_all_registries_published_is_a_noop(self):
         def run(root, config):
-            http = http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200)
+            http = http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200, github_packages=True)
             runner = FakeRunner(config)
             report = self.sync(root, config, http, runner)
             self.assertEqual(report["published"], {
                 "npm": True, "pypi": True, "go": True, "ruby": True, "maven": True, "packagist": True,
+                "github_packages": True,
             })
             self.assertFalse(report["needs_release"])
             self.assertEqual(runner.commands, [])
-            self.assertEqual(len(http.requests), 6)
+            self.assertEqual(len(http.requests), 8)
         self.with_repo(run)
 
     def test_npm_git_plus_https_repository_url_is_accepted(self):
@@ -268,7 +286,7 @@ class ReleaseSyncTests(unittest.TestCase):
             package = json.loads(package_path.read_text())
             package["repository"]["url"] = "git+https://github.com/" + SUPPORTED[config["platform"]]["repository"] + ".git"
             package_path.write_text(json.dumps(package))
-            report = self.sync(root, config, http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200), FakeRunner(config))
+            report = self.sync(root, config, http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200, github_packages=True), FakeRunner(config))
             self.assertFalse(report["needs_release"])
         self.with_repo(run)
 
@@ -302,6 +320,7 @@ class ReleaseSyncTests(unittest.TestCase):
             report = self.sync(root, config, http, runner, check_only=True)
             self.assertEqual(report["published"], {
                 "npm": False, "pypi": False, "go": False, "ruby": False, "maven": False, "packagist": False,
+                "github_packages": False,
             })
             npm_request = next(request for url, request, _ in http.requests if url.startswith(NPM_REGISTRY))
             self.assertEqual(npm_request.get_header("Accept"), "application/json")
@@ -314,6 +333,8 @@ class ReleaseSyncTests(unittest.TestCase):
                 request = next(request for url, request, _ in http.requests if url.startswith(prefix))
                 self.assertEqual(request.get_header("Accept"), "application/json")
                 self.assertIsNone(request.get_header("Authorization"))
+            packages_request = next(request for url, request, _ in http.requests if url.startswith(GITHUB_PACKAGES_API))
+            self.assertEqual(packages_request.get_header("Authorization"), "Bearer mock-token")
             self.assertEqual(runner.commands, [])
         self.with_repo(run)
 

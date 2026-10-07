@@ -29,6 +29,7 @@ RUBYGEMS_API = "https://rubygems.org/api/v2/rubygems"
 MAVEN_SEARCH = "https://search.maven.org/solrsearch/select"
 PACKAGIST_P2 = "https://repo.packagist.org/p2"
 GO_PROXY = "https://proxy.golang.org"
+GITHUB_PACKAGES_API = f"{GITHUB_API}/orgs/Crawlora-org/packages"
 TIMEOUT_SECONDS = 20
 SUPPORTED = {
     "sofascore": {
@@ -120,6 +121,45 @@ def _http_json(
     return value
 
 
+def _http_json_array(
+    url: str,
+    *,
+    token: str,
+    opener: Callable[..., Any],
+    missing_ok: bool = False,
+) -> list[Any] | None:
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "Crawlora-Platform-Release-Sync/1.0",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Authorization": f"Bearer {token}",
+    }
+    request = Request(url, headers=headers)
+    try:
+        with opener(request, timeout=TIMEOUT_SECONDS) as response:
+            status = getattr(response, "status", response.getcode())
+            body = response.read()
+    except HTTPError as exc:
+        code, reason = exc.code, exc.reason
+        exc.close()
+        if missing_ok and code == 404:
+            return None
+        raise ReleaseSyncError(f"GET {url} returned HTTP {code}: {reason}") from exc
+    except (URLError, TimeoutError, OSError, http.client.HTTPException) as exc:
+        raise ReleaseSyncError(f"GET {url} failed: {exc}") from exc
+    if status != 200:
+        if missing_ok and status == 404:
+            return None
+        raise ReleaseSyncError(f"GET {url} returned HTTP {status}")
+    try:
+        value = json.loads(body)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ReleaseSyncError(f"GET {url} returned malformed JSON: {exc}") from exc
+    if not isinstance(value, list):
+        raise ReleaseSyncError(f"GET {url} returned JSON that is not an array")
+    return value
+
+
 def _registry_url(registry: str, name: str, version: str) -> str:
     if registry == "npm":
         encoded_name = quote(name, safe="@")
@@ -187,6 +227,48 @@ def _published(registry: str, name: str, version: str, *, opener: Callable[..., 
             f"{registry} returned version {found!r} for exact version lookup {name}@{version}"
         )
     return True
+
+
+def _github_package_published(
+    manifest: dict[str, str],
+    version: str,
+    *,
+    token: str,
+    opener: Callable[..., Any],
+) -> bool:
+    packages_url = f"{GITHUB_PACKAGES_API}?package_type=maven&per_page=100"
+    packages = _http_json_array(packages_url, token=token, opener=opener)
+    expected_repository = manifest["repository"].lower()
+    expected_names = {
+        manifest["maven_artifact"],
+        f"{manifest['maven_group']}:{manifest['maven_artifact']}",
+        f"{manifest['maven_group']}.{manifest['maven_artifact']}",
+    }
+    candidates = []
+    for package in packages or []:
+        if not isinstance(package, dict):
+            raise ReleaseSyncError("GitHub Packages returned malformed package metadata")
+        repository = package.get("repository")
+        repository_name = repository.get("full_name") if isinstance(repository, dict) else None
+        if str(repository_name or "").lower() == expected_repository or package.get("name") in expected_names:
+            candidates.append(package)
+    for package in candidates:
+        name = package.get("name")
+        if not isinstance(name, str) or not name:
+            raise ReleaseSyncError("GitHub Packages returned a package without a name")
+        package_url = package.get("url")
+        parsed_url = urlparse(str(package_url or ""))
+        if parsed_url.hostname != "api.github.com" or not parsed_url.path.startswith(
+            "/orgs/Crawlora-org/packages/maven/"
+        ):
+            raise ReleaseSyncError("GitHub Packages returned an invalid Maven package URL")
+        versions_url = str(package_url).rstrip("/") + "/versions?per_page=100"
+        versions = _http_json_array(versions_url, token=token, opener=opener, missing_ok=True)
+        if versions is None:
+            continue
+        if any(isinstance(item, dict) and item.get("name") == version for item in versions):
+            return True
+    return False
 
 
 def _repository_url(repository: str) -> str:
@@ -554,6 +636,9 @@ def sync_release(
     root = Path(root).resolve()
     env = dict(os.environ if environ is None else environ)
     config, manifest = _read_manifest(root)
+    token = env.get("GH_TOKEN") or env.get("GITHUB_TOKEN")
+    if not token:
+        raise ReleaseSyncError("GH_TOKEN or GITHUB_TOKEN is required to verify GitHub Packages")
     published = {
         "npm": _published("npm", manifest["npm"], manifest["version"], opener=opener),
         "pypi": _published("pypi", manifest["pypi"], manifest["version"], opener=opener),
@@ -561,6 +646,9 @@ def sync_release(
         "ruby": _published("ruby", manifest["ruby"], manifest["version"], opener=opener),
         "maven": _published("maven", manifest["maven_artifact"], manifest["version"], opener=opener),
         "packagist": _published("packagist", manifest["packagist"], manifest["version"], opener=opener),
+        "github_packages": _github_package_published(
+            manifest, manifest["version"], token=token, opener=opener
+        ),
     }
     tag = "v" + manifest["version"]
     report: dict[str, Any] = {
@@ -574,9 +662,6 @@ def sync_release(
 
     if report["needs_release"] and not check_only:
         head = _validate_git_root(root, manifest, runner=runner, env=env)
-        token = env.get("GH_TOKEN") or env.get("GITHUB_TOKEN")
-        if not token:
-            raise ReleaseSyncError("GH_TOKEN or GITHUB_TOKEN is required to recover an unpublished version")
         env["GH_TOKEN"] = token
         release = _http_json(
             _release_url(manifest["repository"], tag),
