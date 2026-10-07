@@ -246,6 +246,36 @@ def _template(template: Path, values: dict[str, str]) -> str:
     return content
 
 
+def _changelog(config: dict[str, Any], template: Path, values: dict[str, str]) -> str:
+    """Render optional changelog history in caller-supplied newest-first order."""
+    releases = config.get("releases")
+    if not releases:
+        return _template(template, values)
+    if not isinstance(releases, list):
+        raise ValueError("config['releases'] must be a list ordered newest first")
+
+    sections: list[str] = []
+    seen_versions: set[str] = set()
+    for release in releases:
+        if not isinstance(release, dict):
+            raise ValueError("each config['releases'] entry must be an object")
+        version = str(release.get("version") or "").strip()
+        date = str(release.get("date") or "").strip()
+        changes = release.get("changes")
+        if not version or not date or not changes:
+            raise ValueError("each release requires version, date, and at least one change")
+        if version in seen_versions:
+            raise ValueError(f"duplicate changelog release version: {version}")
+        seen_versions.add(version)
+        if isinstance(changes, str):
+            changes = [changes]
+        if not isinstance(changes, list) or any(not isinstance(change, str) or not change.strip() for change in changes):
+            raise ValueError(f"changes for release {version} must be nonempty strings")
+        bullets = "\n".join(f"- {change.strip()}" for change in changes)
+        sections.append(f"## {version} — {date}\n\n{bullets}")
+    return "# Changelog\n\n" + "\n\n".join(sections)
+
+
 def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path) -> None:
     """Write public-facing docs, runnable examples, and release workflows."""
     root = Path(root)
@@ -287,6 +317,8 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
             content = values["JS_EXAMPLE"] + "\n"
         elif template_name == "python-example.py.tmpl":
             content = values["PYTHON_EXAMPLE"] + "\n"
+        elif output == "CHANGELOG.md":
+            content = _changelog(config, template_root / template_name, values)
         else:
             content = _template(template_root / template_name, values)
         if re.search(r"\{\{[A-Z][A-Z_]*\}\}", content):
