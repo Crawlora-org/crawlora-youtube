@@ -83,6 +83,15 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     elif isinstance(deps, list):
         composer_data["require"].update({item: "*" for item in deps})
     (package / "composer.json").write_text(json.dumps(composer_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    root_composer = json.loads(json.dumps(composer_data))
+    namespace = f"Crawlora\\{class_name}\\"
+    root_composer["autoload"]["psr-4"][namespace] = f"php/src/Crawlora/{class_name}/"
+    root_composer["autoload-dev"]["psr-4"][f"Crawlora\\{class_name}\\Tests\\"] = "php/tests/"
+    root_composer["scripts"]["test"] = "php php/tests/client_test.php"
+    root_composer["homepage"] = "https://crawlora.net/"
+    (Path(root) / "composer.json").write_text(
+        json.dumps(root_composer, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     (package / "tests").mkdir(exist_ok=True)
     test_template = (templates / "client_test.php.tpl").read_text(encoding="utf-8")
     test_values = {

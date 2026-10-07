@@ -36,6 +36,28 @@ export CRAWLORA_API_KEY="your-crawlora-api-key"
 
 Do not commit API keys. See the language-specific READMEs for sync and async use.
 
+## PHP example
+
+The Packagist package is available as `crawlora/youtube`:
+
+```sh
+composer require crawlora/youtube
+```
+
+```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+$apiKey = getenv('CRAWLORA_API_KEY');
+if (!$apiKey) throw new RuntimeException('Set CRAWLORA_API_KEY before running this example.');
+$client = new \Crawlora\YouTube\Client(apiKey: $apiKey);
+$result = $client->request("youtube-search", ['q' => 'science explainers', 'type' => 'video']);
+print_r($result);
+$client->close();
+```
+
+The same example and install details are in [php/README.md](php/README.md).
+
 ## Run examples from a source checkout
 
 From the repository root, set `CRAWLORA_API_KEY` as shown above and run:

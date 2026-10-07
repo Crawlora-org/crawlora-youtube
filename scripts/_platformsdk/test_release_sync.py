@@ -169,7 +169,9 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
     )
     php_dir = root / "php"
     php_dir.mkdir()
-    (php_dir / "composer.json").write_text(json.dumps({"name": expected["packagist"]}), encoding="utf-8")
+    composer = {"name": expected["packagist"]}
+    (root / "composer.json").write_text(json.dumps(composer), encoding="utf-8")
+    (php_dir / "composer.json").write_text(json.dumps(composer), encoding="utf-8")
     (root / "openapi").mkdir()
     (root / "openapi" / "public.json").write_text("{}\n", encoding="utf-8")
     return config

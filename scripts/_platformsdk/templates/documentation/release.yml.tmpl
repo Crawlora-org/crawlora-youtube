@@ -55,7 +55,7 @@ jobs:
           gemspec = pathlib.Path(f"ruby/{config['ruby_gem_name']}.gemspec").read_text()
           pom = ET.parse("java/pom.xml").getroot()
           ns = {"m": "http://maven.apache.org/POM/4.0.0"}
-          composer = json.loads(pathlib.Path("php/composer.json").read_text())
+          composer = json.loads(pathlib.Path("composer.json").read_text())
           checks = {
               "platform.json": config.get("version") == version,
               "npm": npm == version,

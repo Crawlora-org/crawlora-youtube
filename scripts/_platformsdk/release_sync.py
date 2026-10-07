@@ -77,7 +77,7 @@ _VERSION = re.compile(
     r"(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?"
     r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
 )
-_ARTIFACT_PATHS = ("javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "README.md", "openapi/public.json")
+_ARTIFACT_PATHS = ("javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "composer.json", "README.md", "openapi/public.json")
 
 
 class ReleaseSyncError(RuntimeError):
@@ -255,7 +255,8 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
         ruby_gemspecs = list((root / "ruby").glob("*.gemspec"))
         ruby_version = (root / "ruby" / "lib" / "crawlora" / str(config.get("platform")) / "version.rb").read_text(encoding="utf-8")
         java_pom = ET.parse(root / "java" / "pom.xml").getroot()
-        composer = json.loads((root / "php" / "composer.json").read_text(encoding="utf-8"))
+        composer = json.loads((root / "composer.json").read_text(encoding="utf-8"))
+        php_composer = json.loads((root / "php" / "composer.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError, ET.ParseError) as exc:
         raise ReleaseSyncError(f"cannot read the platform release manifest: {exc}") from exc
     if not isinstance(config, dict) or not isinstance(npm_package, dict):
@@ -318,8 +319,8 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
     java_version = java_pom.findtext("m:version", namespaces=namespace)
     if (java_group, java_artifact, java_version) != (expected["maven_group"], expected["maven_artifact"], version):
         raise ReleaseSyncError("java/pom.xml coordinates/version do not match the platform manifest")
-    if composer.get("name") != expected["packagist"]:
-        raise ReleaseSyncError("php/composer.json package name does not match the platform manifest")
+    if composer.get("name") != expected["packagist"] or php_composer.get("name") != expected["packagist"]:
+        raise ReleaseSyncError("root and php/composer.json package names do not match the platform manifest")
     manifest = {**expected, "platform": platform, "version": version, "contract_revision": revision}
     return config, manifest
 
@@ -339,7 +340,7 @@ def _validate_git_root(
     if not re.fullmatch(r"[0-9a-fA-F]{40,64}", head):
         raise ReleaseSyncError(f"git returned an invalid HEAD SHA: {head!r}")
     status = _run(
-        ["git", "status", "--porcelain", "--untracked-files=all", "--", "platform.json", "README.md", "javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "openapi/public.json"],
+        ["git", "status", "--porcelain", "--untracked-files=all", "--", "platform.json", "README.md", "composer.json", "javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "openapi/public.json"],
         root=root,
         runner=runner,
         env=env,
