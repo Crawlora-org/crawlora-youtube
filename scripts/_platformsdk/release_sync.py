@@ -18,7 +18,7 @@ except ImportError:  # pragma: no cover - Python 3.10 compatibility for public r
     tomllib = None
 from typing import Any, Callable
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urlencode, urlparse
+from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
 
@@ -26,7 +26,7 @@ GITHUB_API = "https://api.github.com"
 NPM_REGISTRY = "https://registry.npmjs.org"
 PYPI_JSON = "https://pypi.org/pypi"
 RUBYGEMS_API = "https://rubygems.org/api/v2/rubygems"
-MAVEN_SEARCH = "https://search.maven.org/solrsearch/select"
+MAVEN_CENTRAL = "https://repo.maven.apache.org/maven2"
 PACKAGIST_P2 = "https://repo.packagist.org/p2"
 GO_PROXY = "https://proxy.golang.org"
 GITHUB_PACKAGES_API = f"{GITHUB_API}/orgs/Crawlora-org/packages"
@@ -169,17 +169,20 @@ def _registry_url(registry: str, name: str, version: str) -> str:
     if registry == "ruby":
         return f"{RUBYGEMS_API}/{quote(name, safe='')}/versions/{quote(version, safe='')}.json"
     if registry == "maven":
-        query = f'g:"net.crawlora" AND a:"{name}" AND v:"{version}"'
-        return f"{MAVEN_SEARCH}?{urlencode({'q': query, 'rows': 1, 'wt': 'json'})}"
+        artifact = quote(name, safe="")
+        release = quote(version, safe=".-+")
+        return f"{MAVEN_CENTRAL}/net/crawlora/{artifact}/{release}/{artifact}-{release}.pom"
     if registry == "packagist":
         return f"{PACKAGIST_P2}/{quote(name, safe='/')}.json"
     if registry == "go":
         escaped = "".join("!" + char.lower() if char.isupper() else char for char in name)
-        return f"{GO_PROXY}/{quote(escaped, safe='/')}/@v/v{quote(version, safe='.-+')}.info"
+        return f"{GO_PROXY}/{quote(escaped, safe='/!')}/@v/v{quote(version, safe='.-+')}.info"
     raise ReleaseSyncError(f"unsupported package registry: {registry}")
 
 
 def _published(registry: str, name: str, version: str, *, opener: Callable[..., Any]) -> bool:
+    if registry == "maven":
+        return _maven_published(name, version, opener=opener)
     url = _registry_url(registry, name, version)
     payload = _http_json(url, token=None, opener=opener, missing_ok=True)
     if payload is None:
@@ -226,6 +229,38 @@ def _published(registry: str, name: str, version: str, *, opener: Callable[..., 
         raise ReleaseSyncError(
             f"{registry} returned version {found!r} for exact version lookup {name}@{version}"
         )
+    return True
+
+
+def _maven_published(name: str, version: str, *, opener: Callable[..., Any]) -> bool:
+    url = _registry_url("maven", name, version)
+    request = Request(url, headers={"Accept": "application/xml", "User-Agent": "Crawlora-Platform-Release-Sync/1.0"})
+    try:
+        with opener(request, timeout=TIMEOUT_SECONDS) as response:
+            status = getattr(response, "status", response.getcode())
+            body = response.read()
+    except HTTPError as exc:
+        code, reason = exc.code, exc.reason
+        exc.close()
+        if code == 404:
+            return False
+        raise ReleaseSyncError(f"GET {url} returned HTTP {code}: {reason}") from exc
+    except (URLError, TimeoutError, OSError, http.client.HTTPException) as exc:
+        raise ReleaseSyncError(f"GET {url} failed: {exc}") from exc
+    if status != 200:
+        raise ReleaseSyncError(f"GET {url} returned HTTP {status}")
+    try:
+        pom = ET.fromstring(body)
+    except ET.ParseError as exc:
+        raise ReleaseSyncError(f"Maven Central returned malformed POM metadata for {name}:{version}") from exc
+    namespace = {"m": "http://maven.apache.org/POM/4.0.0"}
+    coordinates = (
+        pom.findtext("m:groupId", namespaces=namespace),
+        pom.findtext("m:artifactId", namespaces=namespace),
+        pom.findtext("m:version", namespaces=namespace),
+    )
+    if coordinates != ("net.crawlora", name, version):
+        raise ReleaseSyncError(f"Maven Central POM coordinates do not match {name}:{version}")
     return True
 
 

@@ -238,7 +238,7 @@ jobs:
           import json, os, time, urllib.error, urllib.parse, urllib.request
           module = "".join("!" + c.lower() if c.isupper() else c for c in os.environ["MODULE"])
           version = "v" + os.environ["VERSION"]
-          url = f"https://proxy.golang.org/{urllib.parse.quote(module, safe='/')}/@v/{version}.info"
+          url = f"https://proxy.golang.org/{urllib.parse.quote(module, safe='/!')}/@v/{version}.info"
           deadline = time.monotonic() + 300
           while True:
               remaining = deadline - time.monotonic()
@@ -344,16 +344,24 @@ jobs:
           VERSION: ${{ needs.verify-release-version.outputs.version }}
         run: |
           python - <<'PY'
-          import json, os, urllib.error, urllib.parse, urllib.request
-          query = f'g:"net.crawlora" AND a:"{os.environ["ARTIFACT"]}" AND v:"{os.environ["VERSION"]}"'
-          url = "https://search.maven.org/solrsearch/select?" + urllib.parse.urlencode({"q": query, "rows": 1, "wt": "json"})
+          import os, urllib.error, urllib.request, xml.etree.ElementTree as ET
+          artifact = os.environ["ARTIFACT"]
+          version = os.environ["VERSION"]
+          url = f"https://repo.maven.apache.org/maven2/net/crawlora/{artifact}/{version}/{artifact}-{version}.pom"
+          request = urllib.request.Request(url, headers={"Accept": "application/xml"})
           try:
-              with urllib.request.urlopen(url, timeout=20) as response:
-                  payload = json.load(response)
-              docs = payload.get("response", {}).get("docs", [])
-              exists = "true" if any(doc.get("g") == "net.crawlora" and doc.get("a") == os.environ["ARTIFACT"] and doc.get("v") == os.environ["VERSION"] for doc in docs) else "false"
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  pom = ET.fromstring(response.read())
+              ns = {"m": "http://maven.apache.org/POM/4.0.0"}
+              coords = (pom.findtext("m:groupId", namespaces=ns), pom.findtext("m:artifactId", namespaces=ns), pom.findtext("m:version", namespaces=ns))
+              if coords != ("net.crawlora", artifact, version):
+                  raise SystemExit("Maven Central returned mismatched POM coordinates")
+              exists = "true"
           except urllib.error.HTTPError as error:
-              raise SystemExit(f"Maven Central check failed with HTTP {error.code}")
+              if error.code == 404:
+                  exists = "false"
+              else:
+                  raise SystemExit(f"Maven Central check failed with HTTP {error.code}")
           print(f"exists={exists}", file=open(os.environ["GITHUB_OUTPUT"], "a"))
           PY
       - uses: actions/setup-java@v4
@@ -381,24 +389,33 @@ jobs:
           VERSION: ${{ needs.verify-release-version.outputs.version }}
         run: |
           python - <<'PY'
-          import json, os, time, urllib.error, urllib.parse, urllib.request
-          query = f'g:"net.crawlora" AND a:"{os.environ["ARTIFACT"]}" AND v:"{os.environ["VERSION"]}"'
-          url = "https://search.maven.org/solrsearch/select?" + urllib.parse.urlencode({"q": query, "rows": 1, "wt": "json"})
+          import os, time, urllib.error, urllib.request, xml.etree.ElementTree as ET
+          artifact = os.environ["ARTIFACT"]
+          version = os.environ["VERSION"]
+          url = f"https://repo.maven.apache.org/maven2/net/crawlora/{artifact}/{version}/{artifact}-{version}.pom"
+          request = urllib.request.Request(url, headers={"Accept": "application/xml"})
           deadline = time.monotonic() + 900
           while True:
               remaining = deadline - time.monotonic()
               if remaining <= 0:
                   raise SystemExit("Maven Central version is not visible after 15 minutes")
               try:
-                  with urllib.request.urlopen(url, timeout=min(20, remaining)) as response:
-                      payload = json.load(response)
-                  docs = payload.get("response", {}).get("docs", [])
-                  if any(doc.get("g") == "net.crawlora" and doc.get("a") == os.environ["ARTIFACT"] and doc.get("v") == os.environ["VERSION"] for doc in docs):
+                  with urllib.request.urlopen(request, timeout=min(20, remaining)) as response:
+                      pom = ET.fromstring(response.read())
+                  ns = {"m": "http://maven.apache.org/POM/4.0.0"}
+                  coords = (pom.findtext("m:groupId", namespaces=ns), pom.findtext("m:artifactId", namespaces=ns), pom.findtext("m:version", namespaces=ns))
+                  if coords == ("net.crawlora", artifact, version):
                       print("Maven Central version is available")
                       break
+                  raise SystemExit("Maven Central returned mismatched POM coordinates")
+              except urllib.error.HTTPError as error:
+                  if error.code != 404:
+                      raise SystemExit(f"Maven Central verification failed with HTTP {error.code}")
                   time.sleep(min(15, remaining))
               except urllib.error.URLError as error:
                   raise SystemExit(f"Maven Central verification failed: {error.reason}")
+              else:
+                  time.sleep(min(15, remaining))
           PY
 
   publish-github-packages:
@@ -542,15 +559,17 @@ jobs:
               raise SystemExit("Packagist credentials are not configured")
           request = urllib.request.Request(
               "https://packagist.org/api/update-package",
-              data=json.dumps({"repository": {"url": os.environ["PACKAGE_URL"]}}).encode(),
+              data=json.dumps({"repository": os.environ["PACKAGE_URL"]}).encode(),
               headers={"Content-Type": "application/json", "Accept": "application/json", "Authorization": "Bearer " + os.environ["USERNAME"] + ":" + os.environ["API_TOKEN"]},
               method="POST",
           )
           try:
               with urllib.request.urlopen(request, timeout=30) as response:
-                  if response.status != 200:
+                  if response.status not in (200, 202):
                       raise SystemExit(f"Packagist update failed with HTTP {response.status}")
-                  response.read()
+                  payload = json.load(response)
+                  if payload.get("status") != "success":
+                      raise SystemExit("Packagist update was not accepted")
           except urllib.error.HTTPError as error:
               raise SystemExit(f"Packagist update failed with HTTP {error.code}")
           except urllib.error.URLError as error:
