@@ -211,6 +211,22 @@ def _render_readme_calls(
     return "\n".join(lines)
 
 
+def _php_value(value: Any) -> str:
+    if value is None:
+        return "null"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, str):
+        return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+    if isinstance(value, list):
+        return "[" + ", ".join(_php_value(item) for item in value) + "]"
+    if isinstance(value, dict):
+        return "[" + ", ".join(f"{_php_value(str(key))} => {_php_value(item)}" for key, item in value.items()) + "]"
+    return str(value)
+
+
 def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[str, str]:
     platform = str(config["platform"])
     display = str(config["display_name"])
@@ -219,10 +235,28 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
     npm = str(config["npm_name"])
     py_name = str(config["python_name"])
     module = str(config["module_name"])
+    go_module = str(config.get("golang_module_name", f"github.com/Crawlora-org/crawlora-{platform}"))
+    gem_name = str(config.get("ruby_gem_name", f"crawlora-{platform}"))
+    composer_name = str(config.get("php_package_name", f"crawlora/{platform}"))
+    maven_group = str(config.get("maven_group_id", "net.crawlora"))
+    maven_artifact = str(config.get("maven_artifact_id", f"crawlora-{platform}"))
     repo = str(config["repository"])
     version = str(config["version"])
     js_example, py_example = _render_examples(platform, config, operations)
     calls = _example_values(platform, operations)
+    php_operation, php_params = calls[0]
+    php_class = chr(92).join(("", "Crawlora", str(config.get("php_class_name", cls.removesuffix("Client"))), "Client"))
+    php_example = "\n".join([
+        "<?php",
+        "require __DIR__ . '/vendor/autoload.php';",
+        "",
+        "$apiKey = getenv('CRAWLORA_API_KEY');",
+        "if (!$apiKey) throw new RuntimeException('Set CRAWLORA_API_KEY before running this example.');",
+        f"$client = new {php_class}(apiKey: $apiKey);",
+        f"$result = $client->request({json.dumps(php_operation['id'])}, {_php_value(php_params)});",
+        "print_r($result);",
+        "$client->close();",
+    ])
     async_calls = calls[:1]
     if platform == "youtube":
         async_calls = [next((call for call in calls if call[0]["id"].lower() == "youtube-transcript"), calls[0])]
@@ -261,6 +295,11 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "NPM_NAME": npm,
         "PYTHON_NAME": py_name,
         "MODULE_NAME": module,
+        "GO_MODULE": go_module,
+        "GEM_NAME": gem_name,
+        "COMPOSER_NAME": composer_name,
+        "MAVEN_COORDINATE": f"{maven_group}:{maven_artifact}:{version}",
+        "MAVEN_ARTIFACT": maven_artifact,
         "REPOSITORY": repo,
         "DOCS_URL": f"{repo}/blob/main/docs/usage.md",
         "JS_EXAMPLE_URL": f"{repo}/blob/main/examples/javascript.mjs",
@@ -271,6 +310,7 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "OPERATION_CATALOG": catalog,
         "JS_EXAMPLE": js_example.rstrip(),
         "PYTHON_EXAMPLE": py_example.rstrip(),
+        "PHP_EXAMPLE": php_example,
         "JS_README_CALLS": _render_readme_calls(calls, "javascript", indent="", asynchronous=True),
         "PYTHON_README_CALLS": _render_readme_calls(calls, "python", indent="    "),
         "PYTHON_ASYNC_README_CALLS": _render_readme_calls(

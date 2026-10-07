@@ -1,0 +1,213 @@
+// Package youtube is a focused Go client for Crawlora's YouTube endpoints.
+package youtube
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"os"
+	"reflect"
+	"strings"
+	"time"
+)
+
+const (
+	DefaultBaseURL = "https://api.crawlora.net/api/v1"
+	Version        = "0.1.4"
+)
+
+// Params maps the exact OpenAPI parameter names expected by this platform client.
+type Params map[string]any
+
+// Client calls only the operation IDs included in this platform module.
+type Client struct {
+	APIKey     string
+	BaseURL    string
+	Timeout    time.Duration
+	HTTPClient *http.Client
+}
+
+// NewClient creates a client using the supplied API key, or CRAWLORA_API_KEY when empty.
+func NewClient(apiKey string) *Client {
+	if apiKey == "" {
+		apiKey = os.Getenv("CRAWLORA_API_KEY")
+	}
+	baseURL := os.Getenv("CRAWLORA_BASE_URL")
+	if baseURL == "" {
+		baseURL = DefaultBaseURL
+	}
+	return &Client{
+		APIKey:     apiKey,
+		BaseURL:    strings.TrimRight(baseURL, "/"),
+		Timeout:    30 * time.Second,
+		HTTPClient: &http.Client{},
+	}
+}
+
+// Close releases idle connections held by the configured HTTP transport.
+func (c *Client) Close() error {
+	if c != nil && c.HTTPClient != nil {
+		c.HTTPClient.CloseIdleConnections()
+	}
+	return nil
+}
+
+// Call executes a selected platform operation by operation ID.
+func (c *Client) Call(ctx context.Context, operationID string, params Params) (any, error) {
+	operation, ok := operations[operationID]
+	if !ok {
+		return nil, fmt.Errorf("unknown YouTube operation: %s", operationID)
+	}
+	if operation.Method != http.MethodGet {
+		return nil, fmt.Errorf("unsupported HTTP method %s for %s", operation.Method, operationID)
+	}
+	if params == nil {
+		params = Params{}
+	}
+	requestURL, err := buildURL(c.BaseURL, operation, params)
+	if err != nil {
+		return nil, err
+	}
+	if c.Timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, c.Timeout)
+		defer cancel()
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("User-Agent", "crawlora-youtube-go/0.1.4")
+	for _, security := range operation.Security {
+		if security == "ApiKeyAuth" && c.APIKey != "" {
+			request.Header.Set("x-api-key", c.APIKey)
+		}
+	}
+	httpClient := c.HTTPClient
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("Crawlora request failed: %w", err)
+	}
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read Crawlora response: %w", err)
+	}
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, fmt.Errorf("Crawlora returned HTTP %d: %s", response.StatusCode, strings.TrimSpace(string(body)))
+	}
+	if wantsText(operation, params, response.Header.Get("Content-Type")) {
+		return string(body), nil
+	}
+	var value any
+	if err := json.Unmarshal(body, &value); err != nil {
+		return nil, fmt.Errorf("decode Crawlora JSON response: %w", err)
+	}
+	return value, nil
+}
+
+func wantsText(operation operationDefinition, params Params, contentType string) bool {
+	if strings.EqualFold(fmt.Sprint(params["responseType"]), "text") {
+		return true
+	}
+	format := strings.ToLower(fmt.Sprint(params["format"]))
+	if format != "" && format != "<nil>" && format != "json" && contains(operation.Produces, "text/plain") {
+		return true
+	}
+	if len(operation.Produces) == 1 && strings.Contains(strings.ToLower(operation.Produces[0]), "text/") {
+		return true
+	}
+	return strings.Contains(strings.ToLower(contentType), "text/plain")
+}
+
+func buildURL(baseURL string, operation operationDefinition, params Params) (string, error) {
+	path := operation.Path
+	for _, name := range operation.PathParams {
+		value, ok := params[name]
+		if !ok || value == nil || fmt.Sprint(value) == "" {
+			return "", fmt.Errorf("missing required path parameter: %s", name)
+		}
+		path = strings.ReplaceAll(path, "{"+name+"}", url.PathEscape(fmt.Sprint(value)))
+	}
+	query := url.Values{}
+	for _, parameter := range operation.QueryParams {
+		value, ok := params[parameter.Name]
+		if !ok || value == nil || isEmptyString(value) {
+			if parameter.Required {
+				return "", fmt.Errorf("missing required query parameter: %s", parameter.Name)
+			}
+			continue
+		}
+		if len(parameter.Enum) > 0 && !enumContains(parameter.Enum, value) {
+			return "", fmt.Errorf("invalid value for %s: %v", parameter.Name, value)
+		}
+		items := stringValues(value)
+		format := parameter.CollectionFormat
+		if format == "" {
+			format = "csv"
+		}
+		separator := map[string]string{"csv": ",", "ssv": " ", "pipes": "|", "tsv": "\t"}[format]
+		if format == "multi" {
+			for _, item := range items {
+				query.Add(parameter.Name, item)
+			}
+		} else if separator != "" {
+			query.Add(parameter.Name, strings.Join(items, separator))
+		} else {
+			return "", fmt.Errorf("unsupported collection format %q for %s", format, parameter.Name)
+		}
+	}
+	requestURL := strings.TrimRight(baseURL, "/") + path
+	if encoded := query.Encode(); encoded != "" {
+		requestURL += "?" + encoded
+	}
+	return requestURL, nil
+}
+
+func stringValues(value any) []string {
+	rv := reflect.ValueOf(value)
+	if rv.IsValid() && (rv.Kind() == reflect.Array || rv.Kind() == reflect.Slice) {
+		values := make([]string, 0, rv.Len())
+		for i := 0; i < rv.Len(); i++ {
+			values = append(values, fmt.Sprint(rv.Index(i).Interface()))
+		}
+		return values
+	}
+	return []string{fmt.Sprint(value)}
+}
+
+func isEmptyString(value any) bool {
+	text, ok := value.(string)
+	return ok && text == ""
+}
+
+func enumContains(values []string, value any) bool {
+	for _, item := range stringValues(value) {
+		found := false
+		for _, allowed := range values {
+			if item == allowed {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func contains(values []string, value string) bool {
+	for _, item := range values {
+		if strings.EqualFold(item, value) {
+			return true
+		}
+	}
+	return false
+}

@@ -1,0 +1,792 @@
+{
+  "platform": "youtube",
+  "operationCount": 14,
+  "operationIds": [
+    "youtube-captions",
+    "youtube-channel-playlists",
+    "youtube-channel-search",
+    "youtube-channel-shorts",
+    "youtube-channel-videos",
+    "youtube-comments",
+    "youtube-playlist",
+    "youtube-profile",
+    "youtube-search",
+    "youtube-suggest",
+    "youtube-tag",
+    "youtube-transcript",
+    "youtube-transcript-languages",
+    "youtube-video"
+  ],
+  "methods": {
+    "captions": "youtube-captions",
+    "channel_playlists": "youtube-channel-playlists",
+    "channel_search": "youtube-channel-search",
+    "channel_shorts": "youtube-channel-shorts",
+    "channel_videos": "youtube-channel-videos",
+    "comments": "youtube-comments",
+    "playlist": "youtube-playlist",
+    "profile": "youtube-profile",
+    "search": "youtube-search",
+    "suggest": "youtube-suggest",
+    "tag": "youtube-tag",
+    "transcript": "youtube-transcript",
+    "transcript_languages": "youtube-transcript-languages",
+    "video": "youtube-video"
+  },
+  "operations": {
+    "youtube-captions": {
+      "id": "youtube-captions",
+      "method": "GET",
+      "path": "/youtube/captions/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "lang",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "YouTube video ID (11-character code)",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "YbJOTdZBX1g"
+        },
+        {
+          "default": "en",
+          "description": "Caption language code (ISO 639-1), defaults to **en**",
+          "in": "query",
+          "name": "lang",
+          "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-channel-playlists": {
+      "id": "youtube-channel-playlists",
+      "method": "GET",
+      "path": "/youtube/channel/{id}/playlists",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+        },
+        {
+          "description": "Pagination token returned by a previous request",
+          "in": "query",
+          "name": "continuation_token",
+          "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-channel-search": {
+      "id": "youtube-channel-search",
+      "method": "GET",
+      "path": "/youtube/channel/{id}/search",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "q",
+          "in": "query",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+        },
+        {
+          "description": "Search query",
+          "in": "query",
+          "name": "q",
+          "required": true,
+          "type": "string",
+          "x-example": "gpt"
+        },
+        {
+          "description": "Pagination token returned by a previous request",
+          "in": "query",
+          "name": "continuation_token",
+          "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-channel-shorts": {
+      "id": "youtube-channel-shorts",
+      "method": "GET",
+      "path": "/youtube/channel/{id}/shorts",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [],
+      "params": [
+        {
+          "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-channel-videos": {
+      "id": "youtube-channel-videos",
+      "method": "GET",
+      "path": "/youtube/channel/{id}/videos",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+        },
+        {
+          "description": "Pagination token returned by a previous request",
+          "in": "query",
+          "name": "continuation_token",
+          "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-comments": {
+      "id": "youtube-comments",
+      "method": "GET",
+      "path": "/youtube/comments/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "YouTube video ID (11-character code)",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "YbJOTdZBX1g"
+        },
+        {
+          "description": "Pagination token returned by a previous request, first page if empty",
+          "in": "query",
+          "name": "continuation_token",
+          "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-playlist": {
+      "id": "youtube-playlist",
+      "method": "GET",
+      "path": "/youtube/playlist/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "YouTube playlist ID or full playlist URL",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "PL-szjqIBRvM_aWOj-uXCVm28l-ZZFa4D2"
+        },
+        {
+          "description": "Pagination token returned by a previous request",
+          "in": "query",
+          "name": "continuation_token",
+          "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-profile": {
+      "id": "youtube-profile",
+      "method": "GET",
+      "path": "/youtube/profile/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [],
+      "params": [
+        {
+          "description": "Channel ID, @handle, /c path, /user path, bare username, or full YouTube channel URL",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-search": {
+      "id": "youtube-search",
+      "method": "GET",
+      "path": "/youtube/search",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "q",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "search_query",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "type",
+          "in": "query",
+          "type": "string",
+          "enum": [
+            "video",
+            "shorts",
+            "channel",
+            "playlist",
+            "movie"
+          ]
+        },
+        {
+          "name": "sort_by",
+          "in": "query",
+          "type": "string",
+          "enum": [
+            "relevance",
+            "upload_date",
+            "view_count",
+            "popularity",
+            "rating"
+          ]
+        },
+        {
+          "name": "upload_date",
+          "in": "query",
+          "type": "string",
+          "enum": [
+            "last_hour",
+            "today",
+            "this_week",
+            "this_month",
+            "this_year"
+          ]
+        },
+        {
+          "name": "duration",
+          "in": "query",
+          "type": "string",
+          "enum": [
+            "under_3_minutes",
+            "three_to_20_minutes",
+            "over_20_minutes",
+            "under_3",
+            "three_to_20",
+            "over_20",
+            "short",
+            "medium",
+            "long"
+          ]
+        },
+        {
+          "name": "features",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "gl",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "params",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "Search query",
+          "in": "query",
+          "name": "q",
+          "type": "string",
+          "x-example": "gpt"
+        },
+        {
+          "description": "Alias for q",
+          "in": "query",
+          "name": "search_query",
+          "type": "string",
+          "x-example": "gpt"
+        },
+        {
+          "description": "Pagination token returned by a previous request",
+          "in": "query",
+          "name": "continuation_token",
+          "type": "string"
+        },
+        {
+          "description": "Filter by type",
+          "enum": [
+            "video",
+            "shorts",
+            "channel",
+            "playlist",
+            "movie"
+          ],
+          "in": "query",
+          "name": "type",
+          "type": "string"
+        },
+        {
+          "description": "Sort results",
+          "enum": [
+            "relevance",
+            "upload_date",
+            "view_count",
+            "popularity",
+            "rating"
+          ],
+          "in": "query",
+          "name": "sort_by",
+          "type": "string"
+        },
+        {
+          "description": "Filter by upload date",
+          "enum": [
+            "last_hour",
+            "today",
+            "this_week",
+            "this_month",
+            "this_year"
+          ],
+          "in": "query",
+          "name": "upload_date",
+          "type": "string"
+        },
+        {
+          "description": "Filter by duration; short, medium, and long preserve their previous upstream encodings",
+          "enum": [
+            "under_3_minutes",
+            "three_to_20_minutes",
+            "over_20_minutes",
+            "under_3",
+            "three_to_20",
+            "over_20",
+            "short",
+            "medium",
+            "long"
+          ],
+          "in": "query",
+          "name": "duration",
+          "type": "string"
+        },
+        {
+          "description": "Comma-separated feature filters. Allowed values: live, 4k, hd, subtitles, cc, creative_commons, 360, vr180, 3d, hdr, location, purchased",
+          "in": "query",
+          "name": "features",
+          "type": "string",
+          "x-example": "hd,subtitles"
+        },
+        {
+          "description": "YouTube interface language",
+          "in": "query",
+          "name": "hl",
+          "type": "string",
+          "x-example": "en"
+        },
+        {
+          "description": "Two-letter YouTube region code",
+          "in": "query",
+          "name": "gl",
+          "type": "string",
+          "x-example": "US"
+        },
+        {
+          "description": "Raw protobuf-encoded search filter (base64)",
+          "in": "query",
+          "name": "params",
+          "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-suggest": {
+      "id": "youtube-suggest",
+      "method": "GET",
+      "path": "/youtube/suggest",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "q",
+          "in": "query",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "count",
+          "in": "query",
+          "type": "integer"
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "gl",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "Search query prefix",
+          "in": "query",
+          "name": "q",
+          "required": true,
+          "type": "string",
+          "x-example": "openai"
+        },
+        {
+          "description": "Suggestions to return; defaults to 10, clamped to 1..20",
+          "in": "query",
+          "maximum": 20,
+          "minimum": 1,
+          "name": "count",
+          "type": "integer",
+          "x-example": 10
+        },
+        {
+          "description": "YouTube interface language, such as en, de, or pt-BR; defaults to en",
+          "in": "query",
+          "name": "hl",
+          "type": "string",
+          "x-example": "en"
+        },
+        {
+          "description": "Two-letter YouTube region code; defaults to US",
+          "in": "query",
+          "name": "gl",
+          "type": "string",
+          "x-example": "US"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-tag": {
+      "id": "youtube-tag",
+      "method": "GET",
+      "path": "/youtube/tag/{tag}",
+      "pathParams": [
+        "tag"
+      ],
+      "queryParams": [
+        {
+          "name": "type",
+          "in": "query",
+          "type": "string",
+          "enum": [
+            "all",
+            "shorts"
+          ]
+        },
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string"
+        }
+      ],
+      "params": [
+        {
+          "description": "Tag to filter videos",
+          "in": "path",
+          "name": "tag",
+          "required": true,
+          "type": "string",
+          "x-example": "openai"
+        },
+        {
+          "default": "all",
+          "description": "Result tab to load",
+          "enum": [
+            "all",
+            "shorts"
+          ],
+          "in": "query",
+          "name": "type",
+          "type": "string"
+        },
+        {
+          "description": "Continuation token for pagination, first page if empty",
+          "in": "query",
+          "name": "continuation_token",
+          "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-transcript": {
+      "id": "youtube-transcript",
+      "method": "GET",
+      "path": "/youtube/transcript/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "lang",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "translate_to",
+          "in": "query",
+          "type": "string"
+        },
+        {
+          "name": "format",
+          "in": "query",
+          "type": "string",
+          "enum": [
+            "json",
+            "text",
+            "srt",
+            "vtt"
+          ]
+        },
+        {
+          "name": "timestamps",
+          "in": "query",
+          "type": "boolean"
+        }
+      ],
+      "params": [
+        {
+          "description": "YouTube video ID (11-character code)",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "YbJOTdZBX1g"
+        },
+        {
+          "default": "en",
+          "description": "Preferred transcript language",
+          "in": "query",
+          "name": "lang",
+          "type": "string"
+        },
+        {
+          "description": "Translate transcript to this language code",
+          "in": "query",
+          "name": "translate_to",
+          "type": "string"
+        },
+        {
+          "default": "json",
+          "description": "Response format",
+          "enum": [
+            "json",
+            "text",
+            "srt",
+            "vtt"
+          ],
+          "in": "query",
+          "name": "format",
+          "type": "string"
+        },
+        {
+          "default": true,
+          "description": "Include timestamps in the JSON response",
+          "in": "query",
+          "name": "timestamps",
+          "type": "boolean"
+        }
+      ],
+      "produces": [
+        "application/json",
+        "text/plain"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-transcript-languages": {
+      "id": "youtube-transcript-languages",
+      "method": "GET",
+      "path": "/youtube/transcript/{id}/languages",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [],
+      "params": [
+        {
+          "description": "YouTube video ID (11-character code)",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "YbJOTdZBX1g"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-video": {
+      "id": "youtube-video",
+      "method": "GET",
+      "path": "/youtube/video/{id}",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [],
+      "params": [
+        {
+          "description": "YouTube video ID (11-char code)",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "YbJOTdZBX1g"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    }
+  }
+}

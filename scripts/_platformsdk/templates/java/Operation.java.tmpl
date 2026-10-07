@@ -1,0 +1,7 @@
+package {{package_name}};
+
+import java.util.List;
+import java.util.Map;
+
+/** Immutable metadata for one operation in this platform client. */
+public record Operation(String id, String method, String path, Map<String, Param> params, List<String> produces) {}

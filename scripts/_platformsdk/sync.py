@@ -555,6 +555,7 @@ def synchronize(
     changelog = changelog_path.read_text(encoding="utf-8") if changelog_path.exists() else ""
     next_config = copy.deepcopy(config)
     next_config["version"] = version
+    next_config["golang_version"] = version
     next_config["contract_revision"] = revision
     next_config["source_contract_sha256"] = source_hash
     next_config["releases"] = _history(

@@ -10,6 +10,14 @@
   "python_name": "crawlora-youtube",
   "releases": [
     {
+      "version": "0.1.4",
+      "date": "2026-10-08",
+      "changes": [
+        "Add focused Go, Ruby, Java, and PHP clients with registry installation examples and Crawlora links.",
+        "Synchronize and verify package releases across npm, PyPI, Go modules, RubyGems, Maven Central, GitHub Packages, and Packagist."
+      ]
+    },
+    {
       "changes": [
         "Add Crawlora website, signup and console links to npm and PyPI package READMEs.",
         "Show platform workflows, API-key setup and asynchronous Python usage directly on package pages."
@@ -43,5 +51,12 @@
   ],
   "repository": "https://github.com/Crawlora-org/crawlora-youtube",
   "source_contract_sha256": "f8ff81231fc46cd7d6ef5f5bb99707dfa301c595ce731a533a67b49d055aa44b",
-  "version": "0.1.3"
+  "version": "0.1.4",
+  "golang_module_name": "github.com/Crawlora-org/crawlora-youtube",
+  "golang_version": "0.1.4",
+  "ruby_gem_name": "crawlora-youtube",
+  "php_package_name": "crawlora/youtube",
+  "maven_group_id": "net.crawlora",
+  "maven_artifact_id": "crawlora-youtube",
+  "general_sdk_version": "1.46.0-sdk.1"
 }

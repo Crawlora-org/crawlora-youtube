@@ -11,40 +11,65 @@ import re
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 try:
     import tomllib
 except ImportError:  # pragma: no cover - Python 3.10 compatibility for public repositories.
     tomllib = None
 from typing import Any, Callable
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlencode, urlparse
 from urllib.request import Request, urlopen
 
 
 GITHUB_API = "https://api.github.com"
 NPM_REGISTRY = "https://registry.npmjs.org"
 PYPI_JSON = "https://pypi.org/pypi"
+RUBYGEMS_API = "https://rubygems.org/api/v2/rubygems"
+MAVEN_SEARCH = "https://search.maven.org/solrsearch/select"
+PACKAGIST_P2 = "https://repo.packagist.org/p2"
+GO_PROXY = "https://proxy.golang.org"
 TIMEOUT_SECONDS = 20
 SUPPORTED = {
     "sofascore": {
         "repository": "Crawlora-org/crawlora-sofascore",
         "npm": "@crawlora-org/sofascore",
         "pypi": "crawlora-sofascore",
+        "go": "github.com/Crawlora-org/crawlora-sofascore",
+        "ruby": "crawlora-sofascore",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-sofascore",
+        "packagist": "crawlora/sofascore",
     },
     "flashscore": {
         "repository": "Crawlora-org/crawlora-flashscore",
         "npm": "@crawlora-org/flashscore",
         "pypi": "crawlora-flashscore",
+        "go": "github.com/Crawlora-org/crawlora-flashscore",
+        "ruby": "crawlora-flashscore",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-flashscore",
+        "packagist": "crawlora/flashscore",
     },
     "fotmob": {
         "repository": "Crawlora-org/crawlora-fotmob",
         "npm": "@crawlora-org/fotmob",
         "pypi": "crawlora-fotmob",
+        "go": "github.com/Crawlora-org/crawlora-fotmob",
+        "ruby": "crawlora-fotmob",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-fotmob",
+        "packagist": "crawlora/fotmob",
     },
     "youtube": {
         "repository": "Crawlora-org/crawlora-youtube",
         "npm": "@crawlora-org/youtube",
         "pypi": "crawlora-youtube",
+        "go": "github.com/Crawlora-org/crawlora-youtube",
+        "ruby": "crawlora-youtube",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-youtube",
+        "packagist": "crawlora/youtube",
     },
 }
 _VERSION = re.compile(
@@ -52,7 +77,7 @@ _VERSION = re.compile(
     r"(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?"
     r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
 )
-_ARTIFACT_PATHS = ("javascript", "python", "openapi/public.json")
+_ARTIFACT_PATHS = ("javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "composer.json", "README.md", "openapi/public.json")
 
 
 class ReleaseSyncError(RuntimeError):
@@ -99,7 +124,19 @@ def _registry_url(registry: str, name: str, version: str) -> str:
     if registry == "npm":
         encoded_name = quote(name, safe="@")
         return f"{NPM_REGISTRY}/{encoded_name}/{quote(version, safe='.-+')}"
-    return f"{PYPI_JSON}/{quote(name, safe='')}/{quote(version, safe='')}/json"
+    if registry == "pypi":
+        return f"{PYPI_JSON}/{quote(name, safe='')}/{quote(version, safe='')}/json"
+    if registry == "ruby":
+        return f"{RUBYGEMS_API}/{quote(name, safe='')}/versions/{quote(version, safe='')}.json"
+    if registry == "maven":
+        query = f'g:"net.crawlora" AND a:"{name}" AND v:"{version}"'
+        return f"{MAVEN_SEARCH}?{urlencode({'q': query, 'rows': 1, 'wt': 'json'})}"
+    if registry == "packagist":
+        return f"{PACKAGIST_P2}/{quote(name, safe='/')}.json"
+    if registry == "go":
+        escaped = "".join("!" + char.lower() if char.isupper() else char for char in name)
+        return f"{GO_PROXY}/{quote(escaped, safe='/')}/@v/v{quote(version, safe='.-+')}.info"
+    raise ReleaseSyncError(f"unsupported package registry: {registry}")
 
 
 def _published(registry: str, name: str, version: str, *, opener: Callable[..., Any]) -> bool:
@@ -111,6 +148,40 @@ def _published(registry: str, name: str, version: str, *, opener: Callable[..., 
     if registry == "pypi":
         info = payload.get("info")
         found = info.get("version") if isinstance(info, dict) else None
+    elif registry == "ruby":
+        found = payload.get("number")
+    elif registry == "maven":
+        response = payload.get("response")
+        docs = response.get("docs") if isinstance(response, dict) else None
+        if not isinstance(docs, list):
+            raise ReleaseSyncError("Maven Central returned malformed exact-version search results")
+        if not docs:
+            return False
+        if not any(
+            isinstance(doc, dict)
+            and doc.get("g") == "net.crawlora"
+            and doc.get("a") == name
+            and doc.get("v") == version
+            for doc in docs
+        ):
+            raise ReleaseSyncError(f"Maven Central returned mismatched coordinates for {name}:{version}")
+        found = version
+    elif registry == "packagist":
+        packages = payload.get("packages")
+        versions = packages.get(name) if isinstance(packages, dict) else None
+        if not isinstance(versions, list):
+            raise ReleaseSyncError(f"Packagist returned malformed package metadata for {name}")
+        matches = [
+            item for item in versions
+            if isinstance(item, dict) and str(item.get("version", "")).removeprefix("v") == version
+        ]
+        if not matches:
+            return False
+        found = version
+    elif registry == "go":
+        found = payload.get("Version")
+        if found == "v" + version:
+            return True
     if found != version:
         raise ReleaseSyncError(
             f"{registry} returned version {found!r} for exact version lookup {name}@{version}"
@@ -179,7 +250,14 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
         config = json.loads((root / "platform.json").read_text(encoding="utf-8"))
         npm_package = json.loads((root / "javascript" / "package.json").read_text(encoding="utf-8"))
         pyproject_text = (root / "python" / "pyproject.toml").read_text(encoding="utf-8")
-    except (OSError, json.JSONDecodeError) as exc:
+        go_mod = (root / "go.mod").read_text(encoding="utf-8")
+        go_client = (root / "client.go").read_text(encoding="utf-8")
+        ruby_gemspecs = list((root / "ruby").glob("*.gemspec"))
+        ruby_version = (root / "ruby" / "lib" / "crawlora" / str(config.get("platform")) / "version.rb").read_text(encoding="utf-8")
+        java_pom = ET.parse(root / "java" / "pom.xml").getroot()
+        composer = json.loads((root / "composer.json").read_text(encoding="utf-8"))
+        php_composer = json.loads((root / "php" / "composer.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, ET.ParseError) as exc:
         raise ReleaseSyncError(f"cannot read the platform release manifest: {exc}") from exc
     if not isinstance(config, dict) or not isinstance(npm_package, dict):
         raise ReleaseSyncError("platform.json and javascript/package.json must contain JSON objects")
@@ -199,6 +277,15 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
         raise ReleaseSyncError(f"platform.json npm_name must be {expected['npm']!r}")
     if config.get("python_name") != expected["pypi"]:
         raise ReleaseSyncError(f"platform.json python_name must be {expected['pypi']!r}")
+    for field, key in (
+        ("golang_module_name", "go"),
+        ("ruby_gem_name", "ruby"),
+        ("php_package_name", "packagist"),
+        ("maven_group_id", "maven_group"),
+        ("maven_artifact_id", "maven_artifact"),
+    ):
+        if config.get(field) != expected[key]:
+            raise ReleaseSyncError(f"platform.json {field} must be {expected[key]!r}")
     wanted_repo = _repository_url(expected["repository"])
     if str(config.get("repository", "")).rstrip("/").removesuffix(".git").lower() != wanted_repo.lower():
         raise ReleaseSyncError(f"platform.json repository must identify {expected['repository']}")
@@ -211,7 +298,30 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
     project = _project_metadata(pyproject_text)
     if project.get("name") != expected["pypi"] or project.get("version") != version:
         raise ReleaseSyncError("python/pyproject.toml project name/version do not match the release manifest")
-    manifest = {**expected, "version": version, "contract_revision": revision}
+    module_match = re.search(r"(?m)^module\s+(\S+)\s*$", go_mod)
+    go_version_match = re.search(r'(?m)^\s*Version\s*=\s*"([^"]+)"', go_client)
+    if not module_match or module_match.group(1) != expected["go"]:
+        raise ReleaseSyncError("go.mod module path does not match the platform manifest")
+    if not go_version_match or go_version_match.group(1) != version:
+        raise ReleaseSyncError("Go client version does not match the release manifest")
+    if len(ruby_gemspecs) != 1:
+        raise ReleaseSyncError("ruby/ must contain exactly one gemspec")
+    gemspec = ruby_gemspecs[0].read_text(encoding="utf-8")
+    gem_name = re.search(r'(?m)^\s*spec\.name\s*=\s*["\']([^"\']+)', gemspec)
+    ruby_version_match = re.search(r'(?m)^\s*VERSION\s*=\s*["\']([^"\']+)', ruby_version)
+    if not gem_name or gem_name.group(1) != expected["ruby"] or ruby_gemspecs[0].stem != expected["ruby"]:
+        raise ReleaseSyncError("Ruby gemspec name does not match the platform manifest")
+    if not ruby_version_match or ruby_version_match.group(1) != version:
+        raise ReleaseSyncError("Ruby gem version does not match the release manifest")
+    namespace = {"m": "http://maven.apache.org/POM/4.0.0"}
+    java_group = java_pom.findtext("m:groupId", namespaces=namespace)
+    java_artifact = java_pom.findtext("m:artifactId", namespaces=namespace)
+    java_version = java_pom.findtext("m:version", namespaces=namespace)
+    if (java_group, java_artifact, java_version) != (expected["maven_group"], expected["maven_artifact"], version):
+        raise ReleaseSyncError("java/pom.xml coordinates/version do not match the platform manifest")
+    if composer.get("name") != expected["packagist"] or php_composer.get("name") != expected["packagist"]:
+        raise ReleaseSyncError("root and php/composer.json package names do not match the platform manifest")
+    manifest = {**expected, "platform": platform, "version": version, "contract_revision": revision}
     return config, manifest
 
 
@@ -230,7 +340,7 @@ def _validate_git_root(
     if not re.fullmatch(r"[0-9a-fA-F]{40,64}", head):
         raise ReleaseSyncError(f"git returned an invalid HEAD SHA: {head!r}")
     status = _run(
-        ["git", "status", "--porcelain", "--untracked-files=all", "--", "platform.json", "javascript", "python", "openapi/public.json"],
+        ["git", "status", "--porcelain", "--untracked-files=all", "--", "platform.json", "README.md", "composer.json", "javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "openapi/public.json"],
         root=root,
         runner=runner,
         env=env,
@@ -415,7 +525,7 @@ def _create_release(
     env: dict[str, str],
 ) -> None:
     notes = (
-        f"Publication recovery for {manifest['npm']} and {manifest['pypi']} "
+        f"Publication recovery for all Crawlora {manifest['platform']} platform packages "
         f"version {manifest['version']} (contract {manifest['contract_revision']}).\n"
     )
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", prefix="release-sync-", suffix=".md", delete=False) as stream:
@@ -440,17 +550,23 @@ def sync_release(
     runner: Callable[..., Any] = subprocess.run,
     environ: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    """Ensure both registries contain the manifest version, safely retrying it if needed."""
+    """Ensure every package registry contains the manifest version, safely retrying it if needed."""
     root = Path(root).resolve()
     env = dict(os.environ if environ is None else environ)
     config, manifest = _read_manifest(root)
-    npm_present = _published("npm", manifest["npm"], manifest["version"], opener=opener)
-    pypi_present = _published("pypi", manifest["pypi"], manifest["version"], opener=opener)
+    published = {
+        "npm": _published("npm", manifest["npm"], manifest["version"], opener=opener),
+        "pypi": _published("pypi", manifest["pypi"], manifest["version"], opener=opener),
+        "go": _published("go", manifest["go"], manifest["version"], opener=opener),
+        "ruby": _published("ruby", manifest["ruby"], manifest["version"], opener=opener),
+        "maven": _published("maven", manifest["maven_artifact"], manifest["version"], opener=opener),
+        "packagist": _published("packagist", manifest["packagist"], manifest["version"], opener=opener),
+    }
     tag = "v" + manifest["version"]
     report: dict[str, Any] = {
         "version": manifest["version"],
-        "published": {"npm": npm_present, "pypi": pypi_present},
-        "needs_release": not (npm_present and pypi_present),
+        "published": published,
+        "needs_release": not all(published.values()),
         "tag": tag,
         "tag_commit": None,
         "dispatched": False,

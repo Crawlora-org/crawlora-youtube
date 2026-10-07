@@ -118,6 +118,7 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertEqual(report["contract_revision"], sync._contract_hash(sync.normalize_public_spec(source, platform)))
                 config = json.loads((root / "platform.json").read_text())
                 self.assertEqual(config["version"], "1.3.0")
+                self.assertEqual(config["golang_version"], "1.3.0")
                 self.assertEqual([release["version"] for release in config["releases"]], ["1.3.0", "1.2.3"])
                 selected = json.loads((root / "openapi/public.json").read_text())
                 operation = selected["paths"][f"/{platform}/feeds/{{id}}"]["get"]
@@ -140,6 +141,11 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertIn("newFeed", docs)
                 self.assertIn(class_name, js_types)
                 self.assertTrue((root / "javascript/package.json").exists())
+                self.assertRegex((root / "client.go").read_text(), r'(?m)\bVersion\s*=\s*"1\.3\.0"')
+                self.assertIn('VERSION = "1.3.0"', (root / "ruby/lib/crawlora" / platform / "version.rb").read_text())
+                self.assertIn("<version>1.3.0</version>", (root / "java/pom.xml").read_text())
+                self.assertEqual(json.loads((root / "php/composer.json").read_text())["name"], f"crawlora/{platform}")
+                self.assertIn("go get github.com/Crawlora-org/crawlora-", (root / "README.md").read_text())
 
     @staticmethod
     def _source_file(root: Path, value: dict) -> Path:

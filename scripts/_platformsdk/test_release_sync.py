@@ -17,6 +17,10 @@ from .release_sync import (
     GITHUB_API,
     NPM_REGISTRY,
     PYPI_JSON,
+    RUBYGEMS_API,
+    MAVEN_SEARCH,
+    PACKAGIST_P2,
+    GO_PROXY,
     SUPPORTED,
     ReleaseSyncError,
     _registry_url,
@@ -124,6 +128,11 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
         "repository": "https://github.com/" + expected["repository"],
         "npm_name": expected["npm"],
         "python_name": expected["pypi"],
+        "golang_module_name": expected["go"],
+        "ruby_gem_name": expected["ruby"],
+        "php_package_name": expected["packagist"],
+        "maven_group_id": expected["maven_group"],
+        "maven_artifact_id": expected["maven_artifact"],
         "version": VERSION,
         "contract_revision": REVISION,
     }
@@ -142,27 +151,59 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
     (python_root / "pyproject.toml").write_text(
         f'[project]\nname = "{expected["pypi"]}"\nversion = "{VERSION}"\n', encoding="utf-8"
     )
+    (root / "go.mod").write_text(f"module {expected['go']}\n\ngo 1.22\n", encoding="utf-8")
+    (root / "client.go").write_text(f'package client\n\nconst (\n\tVersion = "{VERSION}"\n)\n', encoding="utf-8")
+    (root / "operations.go").write_text("package client\n", encoding="utf-8")
+    ruby_dir = root / "ruby" / "lib" / "crawlora" / platform
+    ruby_dir.mkdir(parents=True)
+    (root / "ruby" / f"{expected['ruby']}.gemspec").write_text(
+        f'spec.name = "{expected["ruby"]}"\n', encoding="utf-8"
+    )
+    (ruby_dir / "version.rb").write_text(f'module Crawlora\n  VERSION = "{VERSION}"\nend\n', encoding="utf-8")
+    java_dir = root / "java"
+    java_dir.mkdir()
+    (java_dir / "pom.xml").write_text(
+        f'<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>{expected["maven_group"]}</groupId>'
+        f'<artifactId>{expected["maven_artifact"]}</artifactId><version>{VERSION}</version></project>',
+        encoding="utf-8",
+    )
+    php_dir = root / "php"
+    php_dir.mkdir()
+    composer = {"name": expected["packagist"]}
+    (root / "composer.json").write_text(json.dumps(composer), encoding="utf-8")
+    (php_dir / "composer.json").write_text(json.dumps(composer), encoding="utf-8")
     (root / "openapi").mkdir()
     (root / "openapi" / "public.json").write_text("{}\n", encoding="utf-8")
     return config
 
 
 def http_fixture(platform: str = "sofascore", *, npm: int = 404, pypi: int = 404,
+                 go: int = 404, ruby: int = 404, maven: int = 404, packagist: int = 404,
                  release_status: int = 200, release_payload: dict | None = None) -> FakeHTTP:
     names = SUPPORTED[platform]
+    statuses = {"npm": npm, "pypi": pypi, "go": go, "ruby": ruby, "maven": maven, "packagist": packagist}
+    payloads = {
+        "npm": {"version": VERSION},
+        "pypi": {"info": {"version": VERSION}},
+        "go": {"Version": "v" + VERSION},
+        "ruby": {"number": VERSION},
+        "maven": {"response": {"numFound": 1, "docs": [{"g": names["maven_group"], "a": names["maven_artifact"], "v": VERSION}]}},
+        "packagist": {"packages": {names["packagist"]: [{"version": "v" + VERSION}]}},
+    }
     answers = {
-        _registry_url("npm", names["npm"], VERSION): (
-            npm, json.dumps({"version": VERSION}).encode() if npm == 200 else b"{}"
-        ),
-        _registry_url("pypi", names["pypi"], VERSION): (
-            pypi, json.dumps({"info": {"version": VERSION}}).encode() if pypi == 200 else b"{}"
-        ),
+        _registry_url(registry, names[name_key] if name_key in names else names["maven_artifact"], VERSION): (
+            statuses[registry], json.dumps(payloads[registry]).encode() if statuses[registry] == 200 else b"{}"
+        )
+        for registry, name_key in (("npm", "npm"), ("pypi", "pypi"), ("go", "go"), ("ruby", "ruby"),
+                                   ("maven", "maven_artifact"), ("packagist", "packagist"))
+    }
+    answers.update({
         f"{GITHUB_API}/repos/{names['repository']}/releases/tags/v{VERSION}": (
             release_status,
             json.dumps(release_payload or {"tag_name": "v" + VERSION, "draft": False}).encode()
             if release_status == 200 else b"{}",
         ),
-    }
+    })
     return FakeHTTP(answers)
 
 
@@ -208,15 +249,17 @@ class ReleaseSyncTests(unittest.TestCase):
             **kwargs,
         )
 
-    def test_both_registries_published_is_a_noop(self):
+    def test_all_registries_published_is_a_noop(self):
         def run(root, config):
-            http = http_fixture(npm=200, pypi=200)
+            http = http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200)
             runner = FakeRunner(config)
             report = self.sync(root, config, http, runner)
-            self.assertEqual(report["published"], {"npm": True, "pypi": True})
+            self.assertEqual(report["published"], {
+                "npm": True, "pypi": True, "go": True, "ruby": True, "maven": True, "packagist": True,
+            })
             self.assertFalse(report["needs_release"])
             self.assertEqual(runner.commands, [])
-            self.assertEqual(len(http.requests), 2)
+            self.assertEqual(len(http.requests), 6)
         self.with_repo(run)
 
     def test_npm_git_plus_https_repository_url_is_accepted(self):
@@ -225,7 +268,7 @@ class ReleaseSyncTests(unittest.TestCase):
             package = json.loads(package_path.read_text())
             package["repository"]["url"] = "git+https://github.com/" + SUPPORTED[config["platform"]]["repository"] + ".git"
             package_path.write_text(json.dumps(package))
-            report = self.sync(root, config, http_fixture(npm=200, pypi=200), FakeRunner(config))
+            report = self.sync(root, config, http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200), FakeRunner(config))
             self.assertFalse(report["needs_release"])
         self.with_repo(run)
 
@@ -257,7 +300,9 @@ class ReleaseSyncTests(unittest.TestCase):
             http = http_fixture(release_status=404)
             runner = FakeRunner(config)
             report = self.sync(root, config, http, runner, check_only=True)
-            self.assertEqual(report["published"], {"npm": False, "pypi": False})
+            self.assertEqual(report["published"], {
+                "npm": False, "pypi": False, "go": False, "ruby": False, "maven": False, "packagist": False,
+            })
             npm_request = next(request for url, request, _ in http.requests if url.startswith(NPM_REGISTRY))
             self.assertEqual(npm_request.get_header("Accept"), "application/json")
             self.assertIsNone(npm_request.get_header("Authorization"))
@@ -265,6 +310,10 @@ class ReleaseSyncTests(unittest.TestCase):
             pypi_request = next(request for url, request, _ in http.requests if url.startswith(PYPI_JSON))
             self.assertEqual(pypi_request.get_header("Accept"), "application/json")
             self.assertIsNone(pypi_request.get_header("Authorization"))
+            for prefix in (RUBYGEMS_API, MAVEN_SEARCH, PACKAGIST_P2, GO_PROXY):
+                request = next(request for url, request, _ in http.requests if url.startswith(prefix))
+                self.assertEqual(request.get_header("Accept"), "application/json")
+                self.assertIsNone(request.get_header("Authorization"))
             self.assertEqual(runner.commands, [])
         self.with_repo(run)
 
@@ -276,6 +325,12 @@ class ReleaseSyncTests(unittest.TestCase):
                 (_registry_url("npm", config["npm_name"], VERSION), 403, b"{}"),
                 (_registry_url("pypi", config["python_name"], VERSION), 200,
                  json.dumps({"info": {"version": "0.2.0"}}).encode()),
+                (_registry_url("ruby", config["ruby_gem_name"], VERSION), 200,
+                 json.dumps({"number": "0.2.0"}).encode()),
+                (_registry_url("maven", config["maven_artifact_id"], VERSION), 200,
+                 json.dumps({"response": {"numFound": 1, "docs": [{"g": "net.crawlora", "a": config["maven_artifact_id"], "v": "0.2.0"}]}}).encode()),
+                (_registry_url("go", config["golang_module_name"], VERSION), 200,
+                 json.dumps({"Version": "v0.2.0"}).encode()),
             ]
             for url, status, body in cases:
                 with self.subTest(url=url, status=status, body=body):
