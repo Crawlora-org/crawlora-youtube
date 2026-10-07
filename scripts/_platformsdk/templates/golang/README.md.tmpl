@@ -1,0 +1,35 @@
+# Crawlora {{display_name}} Go client
+
+Focused Go module for the Crawlora {{display_name}} API, generated from its selected public OpenAPI contract.
+Current module version: `{{version}}`.
+
+```sh
+go get {{module_path}}@latest
+```
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"{{module_path}}"
+)
+
+func main() {
+	client := {{package_name}}.NewClient("your-crawlora-api-key")
+	defer client.Close()
+	result, err := client.Call(context.Background(), "{{sample_operation}}", {{package_name}}.{{sample_params}})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(result)
+}
+```
+
+The client exposes `{{operation_count}}` {{display_name}} operation IDs through `OperationIDs` and direct methods for the selected operations. `Call` accepts the general Go SDK's `crawlora.Params` map and enforces this module's operation allowlist. Set `BaseURL`, `Timeout`, or `HTTPClient` on `Client` to customize requests. Text transcript/feed responses are returned as strings; JSON responses are decoded into Go values.
+
+API keys can be passed to `NewClient` or supplied with `CRAWLORA_API_KEY`. The only default request destination is Crawlora's hosted API at `https://api.crawlora.net/api/v1`.
+
+Create an account at [crawlora.net](https://crawlora.net/signup), then open the [Crawlora console](https://crawlora.net/app) to get an API key. See the [API documentation](https://crawlora.net/docs) or visit [the general Go SDK](https://github.com/Crawlora-org/crawlora-go-sdk) for shared API-key setup.

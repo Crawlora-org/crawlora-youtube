@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4 — 2026-10-08
+
+- Add focused Go, Ruby, Java, and PHP clients with registry installation examples and Crawlora links.
+- Synchronize and verify package releases across npm, PyPI, Go modules, RubyGems, Maven Central, GitHub Packages, and Packagist.
+
 ## 0.1.3 — 2026-10-07
 
 - Add Crawlora website, signup and console links to npm and PyPI package READMEs.

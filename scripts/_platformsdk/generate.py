@@ -1,4 +1,4 @@
-"""Create or regenerate focused npm and Python client repositories."""
+"""Create or regenerate focused multi-language platform client repositories."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ def regenerate(root: Path) -> None:
     # running generation from an already-selected public repository.
     spec = select(spec, config["platform"])
     assets = Path(__file__).resolve().parent / "vendor"
-    for name in ["javascript", "python", "documentation"]:
+    for name in ["javascript", "python", "golang", "java", "ruby", "php", "documentation"]:
         emitter = importlib.import_module("." + name, __package__)
         emitter.emit(root, config, spec, assets)
 

@@ -219,6 +219,11 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
     npm = str(config["npm_name"])
     py_name = str(config["python_name"])
     module = str(config["module_name"])
+    go_module = str(config.get("golang_module_name", f"github.com/Crawlora-org/crawlora-{platform}"))
+    gem_name = str(config.get("ruby_gem_name", f"crawlora-{platform}"))
+    composer_name = str(config.get("php_package_name", f"crawlora/{platform}"))
+    maven_group = str(config.get("maven_group_id", "net.crawlora"))
+    maven_artifact = str(config.get("maven_artifact_id", f"crawlora-{platform}"))
     repo = str(config["repository"])
     version = str(config["version"])
     js_example, py_example = _render_examples(platform, config, operations)
@@ -261,6 +266,11 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "NPM_NAME": npm,
         "PYTHON_NAME": py_name,
         "MODULE_NAME": module,
+        "GO_MODULE": go_module,
+        "GEM_NAME": gem_name,
+        "COMPOSER_NAME": composer_name,
+        "MAVEN_COORDINATE": f"{maven_group}:{maven_artifact}:{version}",
+        "MAVEN_ARTIFACT": maven_artifact,
         "REPOSITORY": repo,
         "DOCS_URL": f"{repo}/blob/main/docs/usage.md",
         "JS_EXAMPLE_URL": f"{repo}/blob/main/examples/javascript.mjs",

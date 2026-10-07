@@ -1,0 +1,22 @@
+package {{package_name}};
+
+/** Raised when a Crawlora API request fails or its response cannot be read. */
+public final class CrawloraException extends RuntimeException {
+    private final int statusCode;
+    private final Object responseBody;
+
+    public CrawloraException(String message, int statusCode, Object responseBody) {
+        super(message);
+        this.statusCode = statusCode;
+        this.responseBody = responseBody;
+    }
+
+    public CrawloraException(String message, Throwable cause) {
+        super(message, cause);
+        this.statusCode = 0;
+        this.responseBody = null;
+    }
+
+    public int statusCode() { return statusCode; }
+    public Object responseBody() { return responseBody; }
+}
