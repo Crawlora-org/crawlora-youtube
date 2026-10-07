@@ -28,7 +28,7 @@ func main() {
 }
 ```
 
-The client exposes `{{operation_count}}` {{display_name}} operation IDs through `OperationIDs` and direct methods for the selected operations. `Call` accepts the general Go SDK's `crawlora.Params` map and enforces this module's operation allowlist. Set `BaseURL`, `Timeout`, or `HTTPClient` on `Client` to customize requests. Text transcript/feed responses are returned as strings; JSON responses are decoded into Go values.
+The client exposes `{{operation_count}}` {{display_name}} operation IDs through `OperationIDs` and direct methods for the selected operations. `Call` accepts a `Params` map and enforces this module's operation allowlist. Set `BaseURL`, `Timeout`, or `HTTPClient` on `Client` to customize requests. Text transcript/feed responses are returned as strings; JSON responses are decoded into Go values.
 
 API keys can be passed to `NewClient` or supplied with `CRAWLORA_API_KEY`. The only default request destination is Crawlora's hosted API at `https://api.crawlora.net/api/v1`.
 

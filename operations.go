@@ -5,8 +5,6 @@ package youtube
 import (
 	"context"
 	"sort"
-
-	crawlora "github.com/Crawlora-org/crawlora-go-sdk"
 )
 
 type parameterDefinition struct {
@@ -58,71 +56,71 @@ func OperationIDs() []string {
 }
 
 // Captions calls the youtube-captions operation.
-func (c *Client) Captions(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Captions(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-captions", params)
 }
 
 // ChannelPlaylists calls the youtube-channel-playlists operation.
-func (c *Client) ChannelPlaylists(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) ChannelPlaylists(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-channel-playlists", params)
 }
 
 // ChannelSearch calls the youtube-channel-search operation.
-func (c *Client) ChannelSearch(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) ChannelSearch(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-channel-search", params)
 }
 
 // ChannelShorts calls the youtube-channel-shorts operation.
-func (c *Client) ChannelShorts(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) ChannelShorts(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-channel-shorts", params)
 }
 
 // ChannelVideos calls the youtube-channel-videos operation.
-func (c *Client) ChannelVideos(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) ChannelVideos(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-channel-videos", params)
 }
 
 // Comments calls the youtube-comments operation.
-func (c *Client) Comments(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Comments(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-comments", params)
 }
 
 // Playlist calls the youtube-playlist operation.
-func (c *Client) Playlist(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Playlist(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-playlist", params)
 }
 
 // Profile calls the youtube-profile operation.
-func (c *Client) Profile(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Profile(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-profile", params)
 }
 
 // Search calls the youtube-search operation.
-func (c *Client) Search(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Search(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-search", params)
 }
 
 // Suggest calls the youtube-suggest operation.
-func (c *Client) Suggest(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Suggest(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-suggest", params)
 }
 
 // Tag calls the youtube-tag operation.
-func (c *Client) Tag(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Tag(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-tag", params)
 }
 
 // Transcript calls the youtube-transcript operation.
-func (c *Client) Transcript(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Transcript(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-transcript", params)
 }
 
 // TranscriptLanguages calls the youtube-transcript-languages operation.
-func (c *Client) TranscriptLanguages(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) TranscriptLanguages(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-transcript-languages", params)
 }
 
 // Video calls the youtube-video operation.
-func (c *Client) Video(ctx context.Context, params crawlora.Params) (any, error) {
+func (c *Client) Video(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-video", params)
 }

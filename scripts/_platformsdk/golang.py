@@ -134,17 +134,12 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         raise ValueError(f"invalid Go package name for platform: {package_name!r}")
     module_path = _module_name(config)
     version = str(config.get("golang_version", config.get("version", "0.1.4")))
-    general_sdk_version = str(config.get("general_sdk_version", "v1.46.0-sdk.1"))
-    if not general_sdk_version.startswith("v"):
-        general_sdk_version = "v" + general_sdk_version
-
     values = {
         "platform": platform,
         "package_name": package_name,
         "display_name": str(config.get("display_name", platform.title())),
         "module_path": module_path,
         "version": version,
-        "general_sdk_version": general_sdk_version,
         "repository": str(config.get("repository", f"https://github.com/Crawlora-org/crawlora-{platform}")),
         "operation_count": str(model.operation_count),
         "user_agent": f"crawlora-{platform}-go/{version}",
@@ -166,7 +161,7 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
             reserved.add(method)
             methods.append(
                 f"// {method} calls the {operation_id} operation.\n"
-                f"func (c *Client) {method}(ctx context.Context, params crawlora.Params) (any, error) {{\n"
+                f"func (c *Client) {method}(ctx context.Context, params Params) (any, error) {{\n"
                 f"\treturn c.Call(ctx, {_go_string(operation_id)}, params)\n"
                 "}"
             )

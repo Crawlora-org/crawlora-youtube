@@ -12,8 +12,6 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
-	crawlora "github.com/Crawlora-org/crawlora-go-sdk"
 )
 
 const (
@@ -21,8 +19,8 @@ const (
 	Version        = "0.1.4"
 )
 
-// Params matches the general Crawlora Go SDK parameter map.
-type Params = crawlora.Params
+// Params maps the exact OpenAPI parameter names expected by this platform client.
+type Params map[string]any
 
 // Client calls only the operation IDs included in this platform module.
 type Client struct {
