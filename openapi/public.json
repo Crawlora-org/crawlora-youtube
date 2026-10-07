@@ -1,0 +1,1911 @@
+{
+  "basePath": "/api/v1",
+  "definitions": {
+    "app.Response": {
+      "description": "The Response struct is used for wrapping the API response with a code, message, and data.",
+      "properties": {
+        "code": {
+          "description": "Code is the HTTP status code or a custom code used to indicate the result of the request\n@example 200",
+          "type": "integer"
+        },
+        "data": {
+          "description": "Data is the response data (can be any object or null)\n@example {\"id\": 1, \"name\": \"John Doe\"}"
+        },
+        "msg": {
+          "description": "Msg is the message that describes the result of the request\n@example \"Request successful\""
+        }
+      },
+      "type": "object"
+    },
+    "suggest.Response": {
+      "properties": {
+        "query": {
+          "example": "openai",
+          "type": "string"
+        },
+        "suggestions": {
+          "items": {
+            "$ref": "#/definitions/suggest.Suggestion"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "suggest.Suggestion": {
+      "properties": {
+        "position": {
+          "example": 1,
+          "type": "integer"
+        },
+        "query": {
+          "example": "openai api key",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.Caption": {
+      "properties": {
+        "duration": {
+          "type": "number"
+        },
+        "start": {
+          "type": "number"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.ChannelFeedResponse": {
+      "properties": {
+        "channel_id": {
+          "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
+          "type": "string"
+        },
+        "channel_title": {
+          "example": "OpenAI",
+          "type": "string"
+        },
+        "channel_url": {
+          "example": "https://www.youtube.com/@OpenAI",
+          "type": "string"
+        },
+        "continuation_token": {
+          "example": "NEXT_TOKEN",
+          "type": "string"
+        },
+        "handle": {
+          "example": "@OpenAI",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/definitions/youtube.SearchItem"
+          },
+          "type": "array"
+        },
+        "query": {
+          "example": "gpt",
+          "type": "string"
+        },
+        "thumbnail": {
+          "example": "https://yt3.googleusercontent.com/example=s176-c-k-c0x00ffffff-no-rj",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.ChannelShort": {
+      "properties": {
+        "position": {
+          "example": 1,
+          "type": "integer"
+        },
+        "thumbnail": {
+          "example": "https://i.ytimg.com/vi/abc123xyz89/oar2.jpg",
+          "type": "string"
+        },
+        "title": {
+          "example": "OpenAI demo clip",
+          "type": "string"
+        },
+        "url": {
+          "example": "https://www.youtube.com/shorts/abc123xyz89",
+          "type": "string"
+        },
+        "video_id": {
+          "example": "abc123xyz89",
+          "type": "string"
+        },
+        "view_count": {
+          "example": "1.2M views",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.ChannelShortsResponse": {
+      "properties": {
+        "channel_id": {
+          "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
+          "type": "string"
+        },
+        "channel_title": {
+          "example": "OpenAI",
+          "type": "string"
+        },
+        "channel_url": {
+          "example": "https://www.youtube.com/@OpenAI",
+          "type": "string"
+        },
+        "handle": {
+          "example": "@OpenAI",
+          "type": "string"
+        },
+        "shorts": {
+          "items": {
+            "$ref": "#/definitions/youtube.ChannelShort"
+          },
+          "type": "array"
+        },
+        "thumbnail": {
+          "example": "https://yt3.googleusercontent.com/example=s176-c-k-c0x00ffffff-no-rj",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.Comment": {
+      "properties": {
+        "channel_id": {
+          "type": "string"
+        },
+        "comment_id": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "continuation_token": {
+          "type": "string"
+        },
+        "likes_count": {
+          "type": "integer"
+        },
+        "published_time": {
+          "type": "string"
+        },
+        "reply_count": {
+          "type": "integer"
+        },
+        "user_name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.CommentResponse": {
+      "properties": {
+        "comments": {
+          "items": {
+            "$ref": "#/definitions/youtube.Comment"
+          },
+          "type": "array"
+        },
+        "continuation_token": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.PlaylistResponse": {
+      "properties": {
+        "channel_id": {
+          "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
+          "type": "string"
+        },
+        "channel_title": {
+          "example": "OpenAI",
+          "type": "string"
+        },
+        "continuation_token": {
+          "example": "NEXT_TOKEN",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/definitions/youtube.SearchItem"
+          },
+          "type": "array"
+        },
+        "playlist_id": {
+          "example": "PL1234567890abcdef",
+          "type": "string"
+        },
+        "thumbnail": {
+          "example": "https://i.ytimg.com/vi/abc123xyz89/hqdefault.jpg",
+          "type": "string"
+        },
+        "title": {
+          "example": "OpenAI Podcast",
+          "type": "string"
+        },
+        "url": {
+          "example": "https://www.youtube.com/playlist?list=PL1234567890abcdef",
+          "type": "string"
+        },
+        "video_count": {
+          "example": "12 videos",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.Profile": {
+      "properties": {
+        "bio": {
+          "example": "OpenAI’s mission is to ensure that artificial general intelligence benefits all of humanity.",
+          "type": "string"
+        },
+        "channel_id": {
+          "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
+          "type": "string"
+        },
+        "channel_name": {
+          "example": "OpenAI",
+          "type": "string"
+        },
+        "channel_url": {
+          "example": "http://www.youtube.com/@OpenAI",
+          "type": "string"
+        },
+        "created_at": {
+          "example": "2025-07-12T08:46:11.740932549Z",
+          "type": "string"
+        },
+        "id": {
+          "example": "fe03dcedad8ab90c5f81eb4a405a464b",
+          "type": "string"
+        },
+        "joined_date": {
+          "example": "2017-03-10T00:00:00Z",
+          "type": "string"
+        },
+        "links": {
+          "example": [
+            "twitter.com/openai",
+            "linkedin.com/company/openai",
+            "openai.com"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profile_pic": {
+          "example": "https://yt3.googleusercontent.com/MopgmVAFV9BqlzOJ-UINtmutvEPcNe5IbKMmP_4vZZo3vnJXcZGtybUBsXaEVxkmxKyGqX9R=s900-c-k-c0x00ffffff-no-rj",
+          "type": "string"
+        },
+        "region": {
+          "example": "United States",
+          "type": "string"
+        },
+        "stats": {
+          "$ref": "#/definitions/youtube.ProfileStats"
+        },
+        "updated_at": {
+          "example": "2025-07-12T08:46:11.740932749Z",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.ProfileStats": {
+      "properties": {
+        "followers_count": {
+          "example": 1580000,
+          "type": "integer"
+        },
+        "videos_count": {
+          "example": 305,
+          "type": "integer"
+        },
+        "views_count": {
+          "example": 75159285,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.SearchItem": {
+      "properties": {
+        "badges": {
+          "example": [
+            "HD",
+            "CC"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "channel_id": {
+          "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
+          "type": "string"
+        },
+        "channel_thumbnail": {
+          "example": "https://yt3.ggpht.com/example=s68-c-k-c0x00ffffff-no-rj",
+          "type": "string"
+        },
+        "channel_title": {
+          "example": "OpenAI",
+          "type": "string"
+        },
+        "description_snippet": {
+          "example": "A concise walkthrough of GPT features.",
+          "type": "string"
+        },
+        "duration": {
+          "example": "12:34",
+          "type": "string"
+        },
+        "duration_seconds": {
+          "example": 754,
+          "type": "integer"
+        },
+        "handle": {
+          "example": "@OpenAI",
+          "type": "string"
+        },
+        "is_live": {
+          "type": "boolean"
+        },
+        "is_short": {
+          "type": "boolean"
+        },
+        "is_verified": {
+          "type": "boolean"
+        },
+        "playlist_id": {
+          "example": "PL1234567890abcdef",
+          "type": "string"
+        },
+        "position": {
+          "example": 1,
+          "type": "integer"
+        },
+        "published_text": {
+          "example": "2 days ago",
+          "type": "string"
+        },
+        "short_view_count": {
+          "example": "123K views",
+          "type": "string"
+        },
+        "subscriber_count": {
+          "example": "1.93M subscribers",
+          "type": "string"
+        },
+        "thumbnail": {
+          "example": "https://i.ytimg.com/vi/abc123/hq720.jpg",
+          "type": "string"
+        },
+        "title": {
+          "example": "ChatGPT Explained",
+          "type": "string"
+        },
+        "type": {
+          "example": "video",
+          "type": "string"
+        },
+        "url": {
+          "example": "https://www.youtube.com/watch?v=abc123",
+          "type": "string"
+        },
+        "video_count": {
+          "example": "9 lessons",
+          "type": "string"
+        },
+        "video_id": {
+          "example": "abc123xyz89",
+          "type": "string"
+        },
+        "view_count": {
+          "example": "123,456 views",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.SearchResponse": {
+      "properties": {
+        "continuation_token": {
+          "example": "NEXT_TOKEN",
+          "type": "string"
+        },
+        "estimated_results": {
+          "example": 9895225,
+          "type": "integer"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/definitions/youtube.SearchItem"
+          },
+          "type": "array"
+        },
+        "query": {
+          "example": "gpt",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.TagResp": {
+      "properties": {
+        "continuation_token": {
+          "type": "string"
+        },
+        "meta": {
+          "$ref": "#/definitions/youtube.tagMeta"
+        },
+        "videos": {
+          "items": {
+            "$ref": "#/definitions/youtube.VideoDetail"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.TranscriptLanguage": {
+      "properties": {
+        "is_generated": {
+          "type": "boolean"
+        },
+        "is_translatable": {
+          "type": "boolean"
+        },
+        "language": {
+          "example": "English",
+          "type": "string"
+        },
+        "language_code": {
+          "example": "en",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.TranscriptResponse": {
+      "properties": {
+        "is_generated": {
+          "type": "boolean"
+        },
+        "language": {
+          "example": "English",
+          "type": "string"
+        },
+        "language_code": {
+          "example": "en",
+          "type": "string"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/definitions/youtube.TranscriptSegment"
+          },
+          "type": "array"
+        },
+        "text": {
+          "example": "Never gonna give you up",
+          "type": "string"
+        },
+        "translation_language": {
+          "example": "es",
+          "type": "string"
+        },
+        "video_id": {
+          "example": "dQw4w9WgXcQ",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.TranscriptSegment": {
+      "properties": {
+        "duration": {
+          "type": "number"
+        },
+        "start": {
+          "type": "number"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.VideoDetail": {
+      "properties": {
+        "channel_id": {
+          "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
+          "type": "string"
+        },
+        "channel_title": {
+          "example": "OpenAI",
+          "type": "string"
+        },
+        "comments_count": {
+          "example": 1400,
+          "type": "integer"
+        },
+        "description": {
+          "example": "On the first episode of the OpenAI Podcast...",
+          "type": "string"
+        },
+        "dislikes_count": {
+          "description": "may be hidden",
+          "example": 0,
+          "type": "integer"
+        },
+        "duration_seconds": {
+          "description": "length in seconds",
+          "example": 2423,
+          "type": "number"
+        },
+        "id": {
+          "example": "YbJOTdZBX1g",
+          "type": "string"
+        },
+        "likes_count": {
+          "example": 11000,
+          "type": "integer"
+        },
+        "published_at": {
+          "example": "2025-06-18T07:59:20-07:00",
+          "type": "string"
+        },
+        "title": {
+          "example": "Sam Altman on AGI, GPT-5, and what’s next — the OpenAI Podcast Ep. 1",
+          "type": "string"
+        },
+        "views_count": {
+          "example": 460176,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.captionsResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "items": {
+            "$ref": "#/definitions/youtube.Caption"
+          },
+          "type": "array"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.channelFeedResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.ChannelFeedResponse"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.channelSearchResponseDataDoc": {
+      "properties": {
+        "channel_id": {
+          "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
+          "type": "string"
+        },
+        "channel_title": {
+          "example": "OpenAI",
+          "type": "string"
+        },
+        "channel_url": {
+          "example": "https://www.youtube.com/@OpenAI",
+          "type": "string"
+        },
+        "continuation_token": {
+          "example": "NEXT_TOKEN",
+          "type": "string"
+        },
+        "handle": {
+          "example": "@OpenAI",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/definitions/youtube.SearchItem"
+          },
+          "type": "array"
+        },
+        "query": {
+          "example": "gpt",
+          "type": "string"
+        },
+        "thumbnail": {
+          "example": "https://yt3.googleusercontent.com/example=s176-c-k-c0x00ffffff-no-rj",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.channelSearchResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.channelSearchResponseDataDoc"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.channelShortsResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.ChannelShortsResponse"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.commentsResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.CommentResponse"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.playlistResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.PlaylistResponse"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.profileResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.Profile"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.searchResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.SearchResponse"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.suggestResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/suggest.Response"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.tagMeta": {
+      "properties": {
+        "channelsCount": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "videosCount": {
+          "format": "int64",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.tagResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.TagResp"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.transcriptLanguagesResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "items": {
+            "$ref": "#/definitions/youtube.TranscriptLanguage"
+          },
+          "type": "array"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.transcriptResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.TranscriptResponse"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "youtube.videoResponseDoc": {
+      "properties": {
+        "code": {
+          "example": 200,
+          "type": "integer"
+        },
+        "data": {
+          "$ref": "#/definitions/youtube.VideoDetail"
+        },
+        "msg": {
+          "example": "OK",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "api.crawlora.net",
+  "info": {
+    "contact": {
+      "email": "support@crawlora.net",
+      "name": "API Support",
+      "url": "https://crawlora.net"
+    },
+    "description": "Crawlora is a hosted web-data and SERP API: call documented REST endpoints and get normalized JSON instead of HTML to parse — across search/SERP, maps and local, e-commerce, app stores, social, media and finance. One API key; Crawlora runs the proxy rotation, headless browsers and parsing behind the scenes. Billed pay-on-success: charged only on a successful 2xx response, 1-10 credits per call, with a free tier of 2,000 credits per month and no card. A hosted MCP server (mcp.crawlora.net/mcp) exposes the same catalog as agent tools. Search endpoints accept `q` as a universal alias for whichever search-term parameter they document (`query`, `term`, `keyword`, or Amazon's `k`), so one parameter name works across the whole catalog; an explicitly supplied documented name always wins.",
+    "license": {
+      "name": "Crawlora Terms of Service",
+      "url": "https://crawlora.net/terms"
+    },
+    "termsOfService": "https://crawlora.net/terms",
+    "title": "Crawlora API",
+    "version": "1.2",
+    "x-logo": {
+      "altText": "Crawlora",
+      "backgroundColor": "#FFFFFF",
+      "url": "https://raw.githubusercontent.com/Crawlora-org/crawlora-mcp/main/assets/logo-400x400.png"
+    }
+  },
+  "paths": {
+    "/youtube/captions/{id}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns the caption cues for a specific YouTube video.",
+        "operationId": "youtube-captions",
+        "parameters": [
+          {
+            "description": "YouTube video ID (11-character code)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "YbJOTdZBX1g"
+          },
+          {
+            "default": "en",
+            "description": "Caption language code (ISO 639-1), defaults to **en**",
+            "in": "query",
+            "name": "lang",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Wrapped caption payload (map[string][]Subtitle)",
+            "schema": {
+              "$ref": "#/definitions/youtube.captionsResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve auto-generated or human captions",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/channel/{id}/playlists": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns normalized playlist items from a channel's Playlists tab and an optional continuation token.",
+        "operationId": "youtube-channel-playlists",
+        "parameters": [
+          {
+            "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+          },
+          {
+            "description": "Pagination token returned by a previous request",
+            "in": "query",
+            "name": "continuation_token",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.channelFeedResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve the playlists tab for a YouTube channel",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/channel/{id}/search": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns normalized video search items scoped to a specific channel, including the resolved top-level `query`.",
+        "operationId": "youtube-channel-search",
+        "parameters": [
+          {
+            "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+          },
+          {
+            "description": "Search query",
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "type": "string",
+            "x-example": "gpt"
+          },
+          {
+            "description": "Pagination token returned by a previous request",
+            "in": "query",
+            "name": "continuation_token",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.channelSearchResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Search within a YouTube channel",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/channel/{id}/shorts": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns normalized short-form video entries from a channel's Shorts tab.",
+        "operationId": "youtube-channel-shorts",
+        "parameters": [
+          {
+            "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.channelShortsResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve the shorts tab for a YouTube channel",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/channel/{id}/videos": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns normalized video items from a channel's Videos tab and an optional continuation token.",
+        "operationId": "youtube-channel-videos",
+        "parameters": [
+          {
+            "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+          },
+          {
+            "description": "Pagination token returned by a previous request",
+            "in": "query",
+            "name": "continuation_token",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.channelFeedResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve the videos tab for a YouTube channel",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/comments/{id}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns a page of comments for a specific YouTube video.",
+        "operationId": "youtube-comments",
+        "parameters": [
+          {
+            "description": "YouTube video ID (11-character code)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "YbJOTdZBX1g"
+          },
+          {
+            "description": "Pagination token returned by a previous request, first page if empty",
+            "in": "query",
+            "name": "continuation_token",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Wrapped comments payload ([]CommentThread)",
+            "schema": {
+              "$ref": "#/definitions/youtube.commentsResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve video comments (top-level & replies)",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/playlist/{id}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns playlist metadata, normalized video items, and an optional continuation token for pagination.",
+        "operationId": "youtube-playlist",
+        "parameters": [
+          {
+            "description": "YouTube playlist ID or full playlist URL",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "PL-szjqIBRvM_aWOj-uXCVm28l-ZZFa4D2"
+          },
+          {
+            "description": "Pagination token returned by a previous request",
+            "in": "query",
+            "name": "continuation_token",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.playlistResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve playlist metadata and items",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/profile/{id}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns full profile details for a YouTube channel.",
+        "operationId": "youtube-profile",
+        "parameters": [
+          {
+            "description": "Channel ID, @handle, /c path, /user path, bare username, or full YouTube channel URL",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Wrapped *Profile* payload",
+            "schema": {
+              "$ref": "#/definitions/youtube.profileResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid *id* parameter",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve channel profile",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/search": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns normalized YouTube search results using YouTube's InnerTube search API.\nPass `continuation_token` from a previous response to retrieve the next page.\nUse `q` as the primary query parameter; `search_query` is accepted as an alias.\n`hl` and `gl` localize ranking and result context; they default to `en` and `US`.\nNamed filters cover the public web search filters. Account-only chips such as Watched and Unwatched are not exposed.",
+        "operationId": "youtube-search",
+        "parameters": [
+          {
+            "description": "Search query",
+            "in": "query",
+            "name": "q",
+            "type": "string",
+            "x-example": "gpt"
+          },
+          {
+            "description": "Alias for q",
+            "in": "query",
+            "name": "search_query",
+            "type": "string",
+            "x-example": "gpt"
+          },
+          {
+            "description": "Pagination token returned by a previous request",
+            "in": "query",
+            "name": "continuation_token",
+            "type": "string"
+          },
+          {
+            "description": "Filter by type",
+            "enum": [
+              "video",
+              "shorts",
+              "channel",
+              "playlist",
+              "movie"
+            ],
+            "in": "query",
+            "name": "type",
+            "type": "string"
+          },
+          {
+            "description": "Sort results",
+            "enum": [
+              "relevance",
+              "upload_date",
+              "view_count",
+              "popularity",
+              "rating"
+            ],
+            "in": "query",
+            "name": "sort_by",
+            "type": "string"
+          },
+          {
+            "description": "Filter by upload date",
+            "enum": [
+              "last_hour",
+              "today",
+              "this_week",
+              "this_month",
+              "this_year"
+            ],
+            "in": "query",
+            "name": "upload_date",
+            "type": "string"
+          },
+          {
+            "description": "Filter by duration; short, medium, and long preserve their previous upstream encodings",
+            "enum": [
+              "under_3_minutes",
+              "three_to_20_minutes",
+              "over_20_minutes",
+              "under_3",
+              "three_to_20",
+              "over_20",
+              "short",
+              "medium",
+              "long"
+            ],
+            "in": "query",
+            "name": "duration",
+            "type": "string"
+          },
+          {
+            "description": "Comma-separated feature filters. Allowed values: live, 4k, hd, subtitles, cc, creative_commons, 360, vr180, 3d, hdr, location, purchased",
+            "in": "query",
+            "name": "features",
+            "type": "string",
+            "x-example": "hd,subtitles"
+          },
+          {
+            "description": "YouTube interface language",
+            "in": "query",
+            "name": "hl",
+            "type": "string",
+            "x-example": "en"
+          },
+          {
+            "description": "Two-letter YouTube region code",
+            "in": "query",
+            "name": "gl",
+            "type": "string",
+            "x-example": "US"
+          },
+          {
+            "description": "Raw protobuf-encoded search filter (base64)",
+            "in": "query",
+            "name": "params",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.searchResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Search YouTube",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/suggest": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns YouTube search-box autocomplete completions for a query prefix, in YouTube's own ranking order.\n`hl` and `gl` localize the list; they default to `en` and `US`.",
+        "operationId": "youtube-suggest",
+        "parameters": [
+          {
+            "description": "Search query prefix",
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "type": "string",
+            "x-example": "openai"
+          },
+          {
+            "description": "Suggestions to return; defaults to 10, clamped to 1..20",
+            "in": "query",
+            "maximum": 20,
+            "minimum": 1,
+            "name": "count",
+            "type": "integer",
+            "x-example": 10
+          },
+          {
+            "description": "YouTube interface language, such as en, de, or pt-BR; defaults to en",
+            "in": "query",
+            "name": "hl",
+            "type": "string",
+            "x-example": "en"
+          },
+          {
+            "description": "Two-letter YouTube region code; defaults to US",
+            "in": "query",
+            "name": "gl",
+            "type": "string",
+            "x-example": "US"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.suggestResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "503": {
+            "description": "YouTube upstream request failed",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Suggest YouTube search queries",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/tag/{tag}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns normalized videos from the public YouTube hashtag page for the supplied tag.\nSet `type=shorts` to use the Shorts tab, or pass `continuation_token` from a previous response to fetch the next page.",
+        "operationId": "youtube-tag",
+        "parameters": [
+          {
+            "description": "Tag to filter videos",
+            "in": "path",
+            "name": "tag",
+            "required": true,
+            "type": "string",
+            "x-example": "openai"
+          },
+          {
+            "default": "all",
+            "description": "Result tab to load",
+            "enum": [
+              "all",
+              "shorts"
+            ],
+            "in": "query",
+            "name": "type",
+            "type": "string"
+          },
+          {
+            "description": "Continuation token for pagination, first page if empty",
+            "in": "query",
+            "name": "continuation_token",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Wrapped list of videos",
+            "schema": {
+              "$ref": "#/definitions/youtube.tagResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "404": {
+            "description": "Tag page not found",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve YouTube videos by tag",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/transcript/{id}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns transcript segments for a YouTube video using YouTube's native player captions.\nSet `format=text`, `format=srt`, or `format=vtt` to receive plain-text output instead of the standard response envelope.\nReturns `404` when the video currently has no transcript/captions available in any language — this is a normal, non-retryable result, not an error condition.\nReturns `503` when the request is temporarily blocked or rate-limited; retrying after a short delay may succeed.",
+        "operationId": "youtube-transcript",
+        "parameters": [
+          {
+            "description": "YouTube video ID (11-character code)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "YbJOTdZBX1g"
+          },
+          {
+            "default": "en",
+            "description": "Preferred transcript language",
+            "in": "query",
+            "name": "lang",
+            "type": "string"
+          },
+          {
+            "description": "Translate transcript to this language code",
+            "in": "query",
+            "name": "translate_to",
+            "type": "string"
+          },
+          {
+            "default": "json",
+            "description": "Response format",
+            "enum": [
+              "json",
+              "text",
+              "srt",
+              "vtt"
+            ],
+            "in": "query",
+            "name": "format",
+            "type": "string"
+          },
+          {
+            "default": true,
+            "description": "Include timestamps in the JSON response",
+            "in": "query",
+            "name": "timestamps",
+            "type": "boolean"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.transcriptResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve transcript for a YouTube video",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/transcript/{id}/languages": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns the transcript languages exposed by YouTube for a specific video.",
+        "operationId": "youtube-transcript-languages",
+        "parameters": [
+          {
+            "description": "YouTube video ID (11-character code)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "YbJOTdZBX1g"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.transcriptLanguagesResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "List transcript languages for a YouTube video",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/video/{id}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns title, description, stats, and captions for a YouTube video ID.",
+        "operationId": "youtube-video",
+        "parameters": [
+          {
+            "description": "YouTube video ID (11-char code)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "YbJOTdZBX1g"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Video details payload",
+            "schema": {
+              "$ref": "#/definitions/youtube.videoResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid *id* parameter",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve video metadata & captions",
+        "tags": [
+          "youtube"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "in": "header",
+      "name": "x-api-key",
+      "type": "apiKey"
+    }
+  },
+  "swagger": "2.0",
+  "tags": [
+    {
+      "name": "youtube"
+    }
+  ]
+}

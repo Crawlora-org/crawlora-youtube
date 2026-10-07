@@ -1,0 +1,14 @@
+{
+  "async_class_name": "AsyncYouTubeClient",
+  "class_name": "YouTubeClient",
+  "contract_revision": "sha256:677d4bc412f42cf0083135b32bf36b478ab37efbea5f35fc5e8b6e86caaf6a68",
+  "display_name": "YouTube",
+  "group_name": "youtube",
+  "module_name": "crawlora_youtube",
+  "npm_name": "@crawlora-org/youtube",
+  "platform": "youtube",
+  "python_name": "crawlora-youtube",
+  "repository": "https://github.com/Crawlora-org/crawlora-youtube",
+  "source_contract_sha256": "f8ff81231fc46cd7d6ef5f5bb99707dfa301c595ce731a533a67b49d055aa44b",
+  "version": "0.1.0"
+}
