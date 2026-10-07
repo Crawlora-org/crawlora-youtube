@@ -214,6 +214,16 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         )
     else:
         special_notes = ""
+    sync_schedules = {
+        "sofascore": "17 3 * * *",
+        "flashscore": "27 3 * * *",
+        "fotmob": "37 3 * * *",
+        "youtube": "47 3 * * *",
+    }
+    try:
+        sync_cron = sync_schedules[platform]
+    except KeyError as error:
+        raise ValueError(f"no daily contract sync schedule is configured for {platform}") from error
     catalog = _operation_catalog(operations)
     return {
         "PLATFORM": platform,
@@ -236,6 +246,8 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "QUICKSTART_JS_CALL": quickstart_js,
         "QUICKSTART_PY_CALL": quickstart_py,
         "PLATFORM_SPECIAL_NOTES": special_notes,
+        "SYNC_CRON": sync_cron,
+        "SYNC_UTC_TIME": sync_cron.split()[1].zfill(2) + ":" + sync_cron.split()[0].zfill(2),
     }
 
 
@@ -307,6 +319,7 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
         "docs/usage.md": "usage.md.tmpl",
         ".github/workflows/ci.yml": "ci.yml.tmpl",
         ".github/workflows/release.yml": "release.yml.tmpl",
+        ".github/workflows/sync-contract.yml": "sync-contract.yml.tmpl",
         "examples/javascript.mjs": "javascript-example.mjs.tmpl",
         "examples/python.py": "python-example.py.tmpl",
     }

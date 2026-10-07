@@ -41,7 +41,10 @@ def create(spec: dict, platform: str, root: Path, *, revision: str, version: str
     code.mkdir(parents=True, exist_ok=True)
     source = Path(__file__).resolve().parent
     for child in source.iterdir():
-        if child.name.startswith("test_") or child.name == "__pycache__":
+        # The synchronization checks also run in each public repository. Keep
+        # their fixtures self-contained and their imports relative to this
+        # package; the emitter tests remain private maintenance tooling.
+        if (child.name.startswith("test_") and child.name not in {"test_sync.py", "test_release_sync.py"}) or child.name == "__pycache__":
             continue
         target = code / child.name
         if child.is_dir():
@@ -53,6 +56,12 @@ def create(spec: dict, platform: str, root: Path, *, revision: str, version: str
         'from pathlib import Path\nfrom _platformsdk.generate import regenerate\n\n'
         'regenerate(Path(__file__).resolve().parents[1])\n'
     )
+    for script, module in [("sync_contract.py", "sync"), ("release_sync.py", "release_sync")]:
+        (root / "scripts" / script).write_text(
+            f'"""Run the platform {module} helper from this source checkout."""\n'
+            f'from _platformsdk.{module} import main\n\n'
+            'if __name__ == "__main__":\n    raise SystemExit(main())\n'
+        )
     regenerate(root)
 
 

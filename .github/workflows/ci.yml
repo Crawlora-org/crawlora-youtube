@@ -6,6 +6,15 @@ on:
   pull_request:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      ref:
+        description: Git revision to validate
+        required: false
+        type: string
+      candidate_artifact:
+        description: Source artifact produced by sync-contract.yml
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -22,6 +31,20 @@ jobs:
         working-directory: javascript
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Download generated candidate
+        if: ${{ inputs.candidate_artifact != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.candidate_artifact }}
+          path: ${{ runner.temp }}/candidate
+      - name: Apply generated candidate
+        if: ${{ inputs.candidate_artifact != '' }}
+        run: |
+          mkdir -p "${{ runner.temp }}/candidate/tree"
+          tar -xzf "${{ runner.temp }}/candidate/source.tar.gz" -C "${{ runner.temp }}/candidate/tree"
+          rsync -a --delete --exclude=.git "${{ runner.temp }}/candidate/tree/" "$GITHUB_WORKSPACE/"
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -43,6 +66,20 @@ jobs:
         working-directory: python
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Download generated candidate
+        if: ${{ inputs.candidate_artifact != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.candidate_artifact }}
+          path: ${{ runner.temp }}/candidate
+      - name: Apply generated candidate
+        if: ${{ inputs.candidate_artifact != '' }}
+        run: |
+          mkdir -p "${{ runner.temp }}/candidate/tree"
+          tar -xzf "${{ runner.temp }}/candidate/source.tar.gz" -C "${{ runner.temp }}/candidate/tree"
+          rsync -a --delete --exclude=.git "${{ runner.temp }}/candidate/tree/" "$GITHUB_WORKSPACE/"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
@@ -55,16 +92,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Download generated candidate
+        if: ${{ inputs.candidate_artifact != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.candidate_artifact }}
+          path: ${{ runner.temp }}/candidate
+      - name: Apply generated candidate
+        if: ${{ inputs.candidate_artifact != '' }}
+        run: |
+          mkdir -p "${{ runner.temp }}/candidate/tree"
+          tar -xzf "${{ runner.temp }}/candidate/source.tar.gz" -C "${{ runner.temp }}/candidate/tree"
+          rsync -a --delete --exclude=.git "${{ runner.temp }}/candidate/tree/" "$GITHUB_WORKSPACE/"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Capture candidate before regeneration
+        run: |
+          git add -A
+          git diff --cached --binary > "$RUNNER_TEMP/before-generation.patch"
+      - run: python -m unittest discover -s scripts -p 'test_*sync.py'
       - run: python scripts/generate.py
-      - run: git diff --exit-code
-      - name: Reject generated untracked files
-        run: test -z "$(git status --porcelain)"
+      - name: Verify regeneration preserved the candidate snapshot
+        run: |
+          git add -A
+          git diff --cached --binary > "$RUNNER_TEMP/after-generation.patch"
+          cmp "$RUNNER_TEMP/before-generation.patch" "$RUNNER_TEMP/after-generation.patch"
       - run: npm pack --pack-destination "$RUNNER_TEMP" --json
         working-directory: javascript
       - run: python -m pip install build

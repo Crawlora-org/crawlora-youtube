@@ -1,0 +1,157 @@
+name: Sync live API contract
+
+on:
+  schedule:
+    - cron: "47 3 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Apply and report the candidate without validating, committing, tagging, or publishing it
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contract-sync
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      base_sha: ${{ steps.base.outputs.sha }}
+      changed: ${{ steps.sync.outputs.changed }}
+      version: ${{ steps.sync.outputs.version }}
+      contract_revision: ${{ steps.sync.outputs.contract_revision }}
+      dry_run: ${{ steps.flags.outputs.dry_run }}
+      artifact_name: candidate-source
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: base
+        name: Require a clean main checkout
+        run: |
+          test "$(git branch --show-current)" = main
+          test -z "$(git status --porcelain)"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - id: flags
+        name: Record run mode
+        env:
+          DRY_RUN: ${{ inputs.dry_run || false }}
+        run: echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+      - name: Run the exported sync tests
+        run: python -m unittest discover -s scripts -p 'test_*sync.py'
+      - id: sync
+        name: Fetch and apply the live contract
+        run: >-
+          python scripts/sync_contract.py --root . --apply
+          --report "$RUNNER_TEMP/sync-report.json"
+          --github-output "$GITHUB_OUTPUT"
+      - name: Summarize sync result
+        env:
+          REPORT: ${{ runner.temp }}/sync-report.json
+          DRY_RUN: ${{ steps.flags.outputs.dry_run }}
+        run: |
+          python - <<'PY'
+          import json, os
+          report = json.load(open(os.environ["REPORT"], encoding="utf-8"))
+          print(f"Contract revision: {report['contract_revision']}")
+          print(f"Package version: {report['version']}")
+          print(f"Candidate changed: {str(report['changed']).lower()}")
+          print(f"Dry run: {os.environ['DRY_RUN']}")
+          PY
+      - name: Build candidate source artifact
+        if: ${{ steps.sync.outputs.changed == 'true' && steps.flags.outputs.dry_run != 'true' }}
+        run: |
+          tar \
+            --exclude=.git \
+            --exclude=node_modules \
+            --exclude=.venv \
+            --exclude=venv \
+            --exclude=.pytest_cache \
+            --exclude=__pycache__ \
+            -czf "$RUNNER_TEMP/source.tar.gz" .
+      - name: Upload candidate source
+        if: ${{ steps.sync.outputs.changed == 'true' && steps.flags.outputs.dry_run != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-source
+          path: ${{ runner.temp }}/source.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  validate:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.changed == 'true' && needs.prepare.outputs.dry_run != 'true' }}
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.prepare.outputs.base_sha }}
+      candidate_artifact: ${{ needs.prepare.outputs.artifact_name }}
+
+  commit:
+    needs: [prepare, validate]
+    if: ${{ needs.prepare.outputs.changed == 'true' && needs.prepare.outputs.dry_run != 'true' && needs.validate.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      landed: ${{ steps.commit.outputs.landed }}
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Download candidate source
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.artifact_name }}
+          path: ${{ runner.temp }}/candidate
+      - id: commit
+        name: Commit only against the prepared main revision
+        env:
+          BASE_SHA: ${{ needs.prepare.outputs.base_sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$BASE_SHA"
+          git checkout --detach "$BASE_SHA"
+          mkdir -p "$RUNNER_TEMP/candidate/tree"
+          tar -xzf "$RUNNER_TEMP/candidate/source.tar.gz" -C "$RUNNER_TEMP/candidate/tree"
+          rsync -a --delete --exclude=.git "$RUNNER_TEMP/candidate/tree/" "$GITHUB_WORKSPACE/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git diff --cached --quiet && { echo "candidate artifact contains no changes" >&2; exit 1; }
+          git commit -m "chore(youtube): sync live API contract"
+          git push origin HEAD:main
+          echo "landed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  recover-release:
+    needs: [prepare, validate, commit]
+    if: >-
+      always() && needs.prepare.result == 'success' && needs.prepare.outputs.dry_run != 'true' &&
+      (needs.prepare.outputs.changed == 'false' || needs.commit.outputs.landed == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.commit.outputs.sha || needs.prepare.outputs.base_sha }}
+          fetch-depth: 0
+      - name: Recover incomplete registry publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT: ${{ runner.temp }}/release-sync-report.json
+        run: python scripts/release_sync.py --root . --report "$REPORT" --github-output "$GITHUB_OUTPUT"

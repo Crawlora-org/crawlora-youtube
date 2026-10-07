@@ -11,6 +11,14 @@
   "releases": [
     {
       "changes": [
+        "Add daily live-contract synchronization with validation before committing new endpoint methods and types.",
+        "Retry incomplete npm and PyPI publication at the same immutable release tag."
+      ],
+      "date": "2026-10-07",
+      "version": "0.1.2"
+    },
+    {
+      "changes": [
         "Publish and verify npm releases through package-specific GitHub trusted publishing.",
         "Retain the complete platform contract and Python/JavaScript client behavior."
       ],
@@ -27,5 +35,5 @@
   ],
   "repository": "https://github.com/Crawlora-org/crawlora-youtube",
   "source_contract_sha256": "f8ff81231fc46cd7d6ef5f5bb99707dfa301c595ce731a533a67b49d055aa44b",
-  "version": "0.1.1"
+  "version": "0.1.2"
 }
