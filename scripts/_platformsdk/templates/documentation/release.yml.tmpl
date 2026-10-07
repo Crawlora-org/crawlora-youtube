@@ -69,7 +69,7 @@ jobs:
           python - <<'PY'
           import json, os, urllib.error, urllib.request
           url = "https://registry.npmjs.org/" + os.environ["PACKAGE"].replace("/", "%2f") + "/" + os.environ["VERSION"]
-          request = urllib.request.Request(url, headers={"Accept": "application/vnd.npm.install-v1+json"})
+          request = urllib.request.Request(url, headers={"Accept": "application/json"})
           try:
               with urllib.request.urlopen(request, timeout=20) as response:
                   if response.status != 200:
@@ -99,9 +99,13 @@ jobs:
           python - <<'PY'
           import json, os, time, urllib.error, urllib.request
           url = "https://registry.npmjs.org/" + os.environ["PACKAGE"].replace("/", "%2f") + "/" + os.environ["VERSION"]
-          for attempt in range(6):
+          deadline = time.monotonic() + 300
+          while True:
+              remaining = deadline - time.monotonic()
+              if remaining <= 0:
+                  raise SystemExit("published npm version is not visible after 5 minutes")
               try:
-                  with urllib.request.urlopen(url, timeout=20) as response:
+                  with urllib.request.urlopen(url, timeout=min(20, remaining)) as response:
                       payload = json.load(response)
                       if response.status == 200 and payload.get("version") == os.environ["VERSION"]:
                           print("npm version is available")
@@ -110,9 +114,10 @@ jobs:
               except urllib.error.HTTPError as error:
                   if error.code != 404:
                       raise SystemExit(f"npm verification failed with HTTP {error.code}")
-                  if attempt == 5:
-                      raise SystemExit("published npm version is not visible after retry window")
-                  time.sleep(10)
+                  remaining = deadline - time.monotonic()
+                  if remaining <= 0:
+                      raise SystemExit("published npm version is not visible after 5 minutes")
+                  time.sleep(min(10, remaining))
               except urllib.error.URLError as error:
                   raise SystemExit(f"npm verification failed: {error.reason}")
           PY
@@ -169,9 +174,13 @@ jobs:
           python - <<'PY'
           import json, os, time, urllib.error, urllib.request
           url = f"https://pypi.org/pypi/{os.environ['PACKAGE']}/{os.environ['VERSION']}/json"
-          for attempt in range(6):
+          deadline = time.monotonic() + 300
+          while True:
+              remaining = deadline - time.monotonic()
+              if remaining <= 0:
+                  raise SystemExit("published PyPI version is not visible after 5 minutes")
               try:
-                  with urllib.request.urlopen(url, timeout=20) as response:
+                  with urllib.request.urlopen(url, timeout=min(20, remaining)) as response:
                       payload = json.load(response)
                       if response.status == 200 and payload.get("info", {}).get("version") == os.environ["VERSION"]:
                           print("PyPI version is available")
@@ -180,9 +189,10 @@ jobs:
               except urllib.error.HTTPError as error:
                   if error.code != 404:
                       raise SystemExit(f"PyPI verification failed with HTTP {error.code}")
-                  if attempt == 5:
-                      raise SystemExit("published PyPI version is not visible after retry window")
-                  time.sleep(10)
+                  remaining = deadline - time.monotonic()
+                  if remaining <= 0:
+                      raise SystemExit("published PyPI version is not visible after 5 minutes")
+                  time.sleep(min(10, remaining))
               except urllib.error.URLError as error:
                   raise SystemExit(f"PyPI verification failed: {error.reason}")
           PY
