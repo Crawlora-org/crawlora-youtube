@@ -12,6 +12,7 @@ The packages do not run a browser or scrape YouTube locally. Crawlora is an inde
 - PHP: [`crawlora/youtube`](php/README.md)
 - Full endpoint and parameter reference: [docs/usage.md](docs/usage.md)
 - Runnable samples: [examples/](examples/)
+- Source repository: [https://github.com/Crawlora-org/crawlora-youtube](https://github.com/Crawlora-org/crawlora-youtube)
 
 Create an account at [crawlora.net](https://crawlora.net/signup), open the [Crawlora console](https://crawlora.net/app) to get an API key, or read the [API documentation](https://crawlora.net/docs).
 
