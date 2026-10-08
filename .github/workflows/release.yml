@@ -375,6 +375,23 @@ jobs:
           server-password: MAVEN_CENTRAL_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Install Maven 3.9.16
+        env:
+          MAVEN_VERSION: "3.9.16"
+          MAVEN_SHA512: "831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6"
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/apache-maven-$MAVEN_VERSION-bin.tar.gz"
+          curl --fail --silent --show-error --location \
+            "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$MAVEN_VERSION/apache-maven-$MAVEN_VERSION-bin.tar.gz" \
+            --output "$archive"
+          echo "$MAVEN_SHA512  $archive" | sha512sum --check
+          tar -xzf "$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-$MAVEN_VERSION/bin" >> "$GITHUB_PATH"
+      - name: Verify Maven version
+        run: |
+          mvn --version
+          test "$(mvn --version | sed -n '1s/^Apache Maven \([^ ]*\).*/\1/p')" = "3.9.16"
       - name: Publish and sign Maven Central artifacts
         if: steps.registry.outputs.exists == 'false'
         run: mvn --batch-mode -P release deploy
