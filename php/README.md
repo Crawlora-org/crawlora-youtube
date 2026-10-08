@@ -20,6 +20,6 @@ print_r($result);
 $client->close();
 ```
 
-The client uses PHP cURL and JSON. Constructor options are `apiKey`, `baseUrl`, `timeout`, and an optional callable `transport` for tests. Call a generated method for direct access to each supported operation, or `request($operationId, $params, $responseType)` to dispatch by operation ID. Set `$responseType` to `text` for raw text output such as transcript formats. The package contains 14 operations and follows contract revision `sha256:677d4bc412f42cf0083135b32bf36b478ab37efbea5f35fc5e8b6e86caaf6a68`.
+The client uses PHP cURL and JSON. Constructor options are `apiKey`, `baseUrl`, and `timeout`. Call a generated method for direct access to each supported operation, or `request($operationId, $params, $responseType)` to dispatch by operation ID. Set `$responseType` to `text` for raw text output where supported. The package supports 14 operations.
 
 See [Crawlora](https://crawlora.net/), the [API documentation](https://crawlora.net/docs), and [the package repository](https://github.com/Crawlora-org/crawlora-youtube) for account setup and the complete operation reference.

@@ -12,7 +12,6 @@ The packages do not run a browser or scrape {{DISPLAY_NAME}} locally. Crawlora i
 - PHP: [`{{COMPOSER_NAME}}`](php/README.md)
 - Full endpoint and parameter reference: [docs/usage.md](docs/usage.md)
 - Runnable samples: [examples/](examples/)
-- Source repository: [{{REPOSITORY}}]({{REPOSITORY}})
 
 Create an account at [crawlora.net](https://crawlora.net/signup), open the [Crawlora console](https://crawlora.net/app) to get an API key, or read the [API documentation](https://crawlora.net/docs).
 
@@ -49,30 +48,6 @@ composer require {{COMPOSER_NAME}}
 ```
 
 The same example and install details are in [php/README.md](php/README.md).
-
-## Run examples from a source checkout
-
-From the repository root, set `CRAWLORA_API_KEY` as shown above and run:
-
-```sh
-node examples/javascript.mjs
-python -m pip install ./python
-python examples/python.py
-```
-
-The checked-in JavaScript example imports the generated local source at `javascript/src/index.js`. The Python command installs this checkout's package before running its example. Every language-specific README also includes an install snippet and a client call for the corresponding registry package.
-
-## Contract
-
-This package release is `{{VERSION}}`. The generated client methods follow the bundled `openapi/public.json` contract at revision `{{CONTRACT_REVISION}}`. `scripts/generate.py` regenerates all six language clients and the documentation from the shared source.
-
-## Contract updates and releases
-
-The `Sync live API contract` workflow checks the deployed public OpenAPI contract every day at **{{SYNC_UTC_TIME}} UTC**. It always reads `https://api.crawlora.net/swagger/doc.json`; its only manual option is `dry_run`, which applies the candidate in the workflow and reports the result without validating, committing, tagging, or publishing it.
-
-An unchanged contract is a no-op and does not run the client test matrix or create a release. Additions and updates are applied to a candidate, checked across Node.js, Python, Go, Ruby, Java, and PHP, then committed to `main` only after all checks pass. Removing or deprecating an existing operation stops the run for maintainer review; packages already published remain available. The release workflow publishes accepted versions to npm, PyPI, Go modules, RubyGems, Maven Central, GitHub Packages, and Packagist. A failed fetch, invalid contract, or failed check also stops before the commit. A later scheduled run can resume an incomplete registry publication at the same package version and immutable tag; recovery does not bypass the removed-operation review.
-
-The workflow does not accept an alternate source URL or a caller-supplied version. To preview a change, open **Actions → Sync live API contract → Run workflow** and select `dry_run`.
 
 ## License
 
