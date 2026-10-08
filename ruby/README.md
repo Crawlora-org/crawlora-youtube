@@ -20,14 +20,14 @@ puts result
 client.close
 ```
 
-Use a generated operation method for normal calls. `request(operation_id, params = {}, response_type: :auto)` is available for every operation. `response_type: :text` returns raw response text. This gem contains 14 operations and follows contract revision `sha256:677d4bc412f42cf0083135b32bf36b478ab37efbea5f35fc5e8b6e86caaf6a68`.
+Use a operation-specific method for normal calls. `request(operation_id, params = {}, response_type: :auto)` is available for every operation. `response_type: :text` returns raw response text. This gem supports 14 operations.
 
 ```ruby
 client = Crawlora::Youtube::Client.new(api_key: ENV.fetch("CRAWLORA_API_KEY"), timeout: 30)
-# client.<operation_method>(<contract parameters>)
+# client.<operation_method>(...)
 client.close
 ```
 
-Client options include `api_key`, `base_url`, and `timeout`. Ruby stdlib provides the HTTP and JSON transport. The gem follows contract revision `sha256:677d4bc412f42cf0083135b32bf36b478ab37efbea5f35fc5e8b6e86caaf6a68` and contains 14 operations.
+Client options include `api_key`, `base_url`, and `timeout`. Ruby stdlib provides the HTTP and JSON transport.
 
-See [Crawlora](https://crawlora.net/), the [API documentation](https://crawlora.net/docs), and [the package repository](https://github.com/Crawlora-org/crawlora-youtube) for account setup, the generated operation reference, and release history.
+See [Crawlora](https://crawlora.net/), the [API documentation](https://crawlora.net/docs), and [the package repository](https://github.com/Crawlora-org/crawlora-youtube) for account setup, the operation reference, and release history.

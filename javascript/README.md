@@ -40,9 +40,7 @@ The client also exports `Client` as an alias for `YouTubeClient`. Operation
 methods are available directly in camelCase and through the `youtube`
 group. See the full method and parameter list in the [online reference](https://github.com/Crawlora-org/crawlora-youtube/blob/main/docs/usage.md).
 
-Methods return promises and can be awaited. See the [runnable example](https://github.com/Crawlora-org/crawlora-youtube/blob/main/examples/javascript.mjs) for contract-backed examples and text transcript output where supported.
-
-The import snippet above is for a project where this npm package is installed. The checked-in repository example instead imports `../javascript/src/index.js` so it runs directly from the repository root; see the [source-checkout instructions](https://github.com/Crawlora-org/crawlora-youtube#run-examples-from-a-source-checkout).
+Methods return promises and can be awaited. See the [runnable example](https://github.com/Crawlora-org/crawlora-youtube/blob/main/examples/javascript.mjs) for additional endpoint examples and text transcript output where supported.
 
 ## Configuration
 
