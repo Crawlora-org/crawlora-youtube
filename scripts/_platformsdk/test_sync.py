@@ -5,11 +5,13 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
 from urllib.error import URLError
+from urllib.parse import parse_qs, urlsplit
 
 from . import sync
 from .generate import regenerate
@@ -87,6 +89,40 @@ def _snapshot(root: Path) -> dict[str, bytes]:
 
 
 class ContractSyncTests(unittest.TestCase):
+    def test_generated_readme_crawlora_links_have_surface_specific_utms(self) -> None:
+        readmes = {
+            "README.md": ("github", "repository"),
+            "javascript/README.md": ("npm", "javascript"),
+            "python/README.md": ("pypi", "python"),
+            "ruby/README.md": ("rubygems", "ruby"),
+            "java/README.md": ("maven-central", "java"),
+            "php/README.md": ("packagist", "php"),
+        }
+        destinations = {
+            "": "homepage",
+            "/": "homepage",
+            "/signup": "signup",
+            "/app": "console",
+            "/docs": "api-docs",
+        }
+        for platform in PLATFORMS:
+            with self.subTest(platform=platform), tempfile.TemporaryDirectory(prefix="platform-utm-") as temp:
+                root = Path(temp)
+                _make_root(root, platform)
+                for relative, (source, surface) in readmes.items():
+                    readme = root / relative
+                    self.assertTrue(readme.is_file(), f"missing {relative}")
+                    links = re.findall(r"\]\((https://crawlora\.net[^)\s]*)\)", readme.read_text(encoding="utf-8"))
+                    self.assertTrue(links, f"no Crawlora website links in {relative}")
+                    for link in links:
+                        parsed = urlsplit(link)
+                        query = parse_qs(parsed.query, strict_parsing=True)
+                        self.assertEqual(query.get("utm_source"), [source], link)
+                        self.assertEqual(query.get("utm_medium"), ["referral"], link)
+                        self.assertEqual(query.get("utm_campaign"), ["platform-clients"], link)
+                        destination = destinations.get(parsed.path, parsed.path.strip("/").replace("/", "-"))
+                        self.assertEqual(query.get("utm_content"), [f"{platform}-{surface}-{destination}"], link)
+
     def test_raw_header_normalization_matches_selected_public_contract(self) -> None:
         for platform in PLATFORMS:
             with self.subTest(platform=platform):
