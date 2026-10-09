@@ -129,7 +129,7 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
         "VERSION": version,
         "REPOSITORY": repo,
         "HOMEPAGE_URL": crawlora_url(source="rubygems", platform=platform, surface="ruby", destination="homepage"),
-        "DOCUMENTATION_URL": crawlora_url(source="rubygems", platform=platform, surface="ruby", destination="api-docs", path="/docs"),
+        "DOCUMENTATION_URL": repo.rstrip("/") + "/blob/main/ruby/README.md",
         "CONTRACT_REVISION": str(config.get("contract_revision", "")),
         "OPERATION_JSON": json.dumps(operations, ensure_ascii=False, sort_keys=True),
         "OPERATION_IDS_JSON": json.dumps(sorted(operations)),

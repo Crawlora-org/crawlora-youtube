@@ -23,7 +23,7 @@
   },
   "homepage": "https://crawlora.net/?utm_source=packagist&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-php-homepage",
   "support": {
-    "source": "https://github.com/Crawlora-org/crawlora-youtube",
+    "source": "https://github.com/Crawlora-org/crawlora-youtube-php",
     "docs": "https://crawlora.net/docs?utm_source=packagist&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-php-api-docs"
   }
 }

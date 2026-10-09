@@ -227,6 +227,46 @@ def _php_value(value: Any) -> str:
     return str(value)
 
 
+def _npm_oidc_validation_values(platform: str) -> tuple[str, str]:
+    """Keep BBB's existing opt-in npm OIDC staging check without affecting other packages."""
+    if platform != "bbb":
+        return "", ""
+    dispatch_input = """    inputs:
+      validate_npm_trusted_publishing:
+        description: Stage a non-public prerelease to verify npm OIDC publishing.
+        required: false
+        default: false
+        type: boolean"""
+    validation_job = """  validate-npm-trusted-publisher:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.validate_npm_trusted_publishing }}
+    needs: [validate, verify-release-version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          scope: '@crawlora-org'
+      - name: Install npm trusted-publishing-capable CLI
+        run: |
+          npm install --global npm@11.21.0
+          test "$(npm --version)" = "11.21.0"
+      - name: Stage a non-public OIDC validation version
+        working-directory: javascript
+        env:
+          BASE_VERSION: ${{ needs.verify-release-version.outputs.version }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          npm version "${BASE_VERSION}-oidc-validation.${RUN_NUMBER}" --no-git-tag-version --ignore-scripts
+          npm stage publish --access public --tag oidc-validation
+
+"""
+    return dispatch_input, validation_job
+
 def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[str, str]:
     platform = str(config["platform"])
     display = str(config["display_name"])
@@ -287,6 +327,7 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
     except KeyError as error:
         raise ValueError(f"no daily contract sync schedule is configured for {platform}") from error
     catalog = _operation_catalog(operations)
+    oidc_dispatch_input, oidc_validation_job = _npm_oidc_validation_values(platform)
     return {
         "PLATFORM": platform,
         "DISPLAY_NAME": display,
@@ -322,6 +363,8 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "PLATFORM_SPECIAL_NOTES": special_notes,
         "SYNC_CRON": sync_cron,
         "SYNC_UTC_TIME": sync_cron.split()[1].zfill(2) + ":" + sync_cron.split()[0].zfill(2),
+        "NPM_OIDC_DISPATCH_INPUT": oidc_dispatch_input,
+        "NPM_OIDC_VALIDATION_JOB": oidc_validation_job,
     }
 
 

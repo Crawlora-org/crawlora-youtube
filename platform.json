@@ -10,6 +10,14 @@
   "python_name": "crawlora-youtube",
   "releases": [
     {
+      "version": "0.1.7",
+      "date": "2026-10-09",
+      "changes": [
+        "Publish the PHP Composer package from a PHP-only source repository so Packagist displays only PHP installation and usage.",
+        "Link RubyGems and Maven Central directly to their Ruby and Java guides, and add a tested Go package documentation example."
+      ]
+    },
+    {
       "changes": [
         "Enrich the Maven Central description with platform-specific Java client capabilities and API-key requirements."
       ],
@@ -65,13 +73,14 @@
   ],
   "repository": "https://github.com/Crawlora-org/crawlora-youtube",
   "source_contract_sha256": "f8ff81231fc46cd7d6ef5f5bb99707dfa301c595ce731a533a67b49d055aa44b",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "golang_module_name": "github.com/Crawlora-org/crawlora-youtube",
-  "golang_version": "0.1.6",
+  "golang_version": "0.1.7",
   "ruby_gem_name": "crawlora-youtube",
   "php_package_name": "crawlora/youtube",
   "maven_group_id": "net.crawlora",
   "maven_artifact_id": "crawlora-youtube",
   "java_description": "Java client for Crawlora's hosted YouTube API, with methods for search, channels, videos, playlists, comments, captions, and transcripts. Requires a Crawlora API key.",
-  "general_sdk_version": "1.46.0-sdk.1"
+  "general_sdk_version": "1.46.0-sdk.1",
+  "php_repository": "https://github.com/Crawlora-org/crawlora-youtube-php"
 }

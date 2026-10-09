@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.7 — 2026-10-09
+
+- Publish the PHP Composer package from a PHP-only source repository so Packagist displays only PHP installation and usage.
+- Link RubyGems and Maven Central directly to their Ruby and Java guides, and add a tested Go package documentation example.
+
 ## 0.1.6 — 2026-10-09
 
 - Enrich the Maven Central description with platform-specific Java client capabilities and API-key requirements.
