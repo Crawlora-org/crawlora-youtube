@@ -7,6 +7,8 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Any
+
+from .utm import crawlora_url
 from urllib.parse import quote, urlencode
 
 
@@ -395,7 +397,12 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     (package / "py.typed").write_text("", encoding="utf-8")
 
     pyproject = (template_root / "pyproject.toml.tpl").read_text(encoding="utf-8")
-    for key, value in config.items():
+    template_values = {
+        **config,
+        "homepage_url": crawlora_url(source="pypi", platform=config["platform"], surface="python", destination="homepage"),
+        "documentation_url": crawlora_url(source="pypi", platform=config["platform"], surface="python", destination="api-docs", path="/docs"),
+    }
+    for key, value in template_values.items():
         pyproject = pyproject.replace("{{" + key.upper() + "}}", str(value))
     (root / "python" / "pyproject.toml").write_text(pyproject, encoding="utf-8")
     license_text = (template_root / "LICENSE.tpl").read_text(encoding="utf-8")

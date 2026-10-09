@@ -7,6 +7,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .utm import crawlora_url
+
 from .ruby import _example_call, _operations, _replace
 
 
@@ -57,6 +59,8 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
         "PACKAGE_NAME": package_name,
         "VERSION": version,
         "REPOSITORY": repo,
+        "HOMEPAGE_URL": crawlora_url(source="packagist", platform=platform, surface="php", destination="homepage"),
+        "DOCUMENTATION_URL": crawlora_url(source="packagist", platform=platform, surface="php", destination="api-docs", path="/docs"),
         "CONTRACT_REVISION": str(config.get("contract_revision", "")),
         "OPERATION_JSON": json.dumps(operations, ensure_ascii=False, sort_keys=True),
         "OPERATION_IDS_JSON": json.dumps(sorted(operations)),
@@ -88,7 +92,7 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     root_composer["autoload"]["psr-4"][namespace] = f"php/src/Crawlora/{class_name}/"
     root_composer["autoload-dev"]["psr-4"][f"Crawlora\\{class_name}\\Tests\\"] = "php/tests/"
     root_composer["scripts"]["test"] = "php php/tests/client_test.php"
-    root_composer["homepage"] = "https://crawlora.net/"
+    root_composer["homepage"] = values["HOMEPAGE_URL"]
     (Path(root) / "composer.json").write_text(
         json.dumps(root_composer, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )

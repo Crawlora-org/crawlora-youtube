@@ -10,6 +10,13 @@
   "python_name": "crawlora-youtube",
   "releases": [
     {
+      "changes": [
+        "Add registry-specific UTM-tagged Crawlora homepage and API documentation links to package metadata."
+      ],
+      "date": "2026-10-09",
+      "version": "0.1.5"
+    },
+    {
       "version": "0.1.4",
       "date": "2026-10-08",
       "changes": [
@@ -51,9 +58,9 @@
   ],
   "repository": "https://github.com/Crawlora-org/crawlora-youtube",
   "source_contract_sha256": "f8ff81231fc46cd7d6ef5f5bb99707dfa301c595ce731a533a67b49d055aa44b",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "golang_module_name": "github.com/Crawlora-org/crawlora-youtube",
-  "golang_version": "0.1.4",
+  "golang_version": "0.1.5",
   "ruby_gem_name": "crawlora-youtube",
   "php_package_name": "crawlora/youtube",
   "maven_group_id": "net.crawlora",

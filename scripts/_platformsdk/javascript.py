@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .utm import crawlora_url
+
 
 def _load_generator(assets: Path):
     assets = assets.resolve()
@@ -102,7 +104,7 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         "version": config["version"],
         "user_agent": f"crawlora-{platform}-js/{config['version']}",
         "repository": config["repository"],
-        "homepage": config["repository"].rstrip("/") + "#readme",
+        "homepage": crawlora_url(source="npm", platform=platform, surface="javascript", destination="homepage"),
         "bugs_url": config["repository"].rstrip("/") + "/issues",
         "group_name": config["group_name"],
         "contract_revision": config["contract_revision"],

@@ -12,6 +12,8 @@ import urllib.parse
 from pathlib import Path
 from typing import Any
 
+from .utm import crawlora_url
+
 
 def _load_generator(assets: Path):
     assets = Path(assets).resolve()
@@ -141,6 +143,7 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         "module_path": module_path,
         "version": version,
         "repository": str(config.get("repository", f"https://github.com/Crawlora-org/crawlora-{platform}")),
+        "docs_url": crawlora_url(source="pkg.go.dev", platform=platform, surface="go", destination="api-docs", path="/docs"),
         "operation_count": str(model.operation_count),
         "user_agent": f"crawlora-{platform}-go/{version}",
         "version_json": _go_string(version),

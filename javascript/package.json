@@ -1,8 +1,8 @@
 {
   "name": "@crawlora-org/youtube",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Typed JavaScript client for the Crawlora YouTube API",
-  "homepage": "https://github.com/Crawlora-org/crawlora-youtube#readme",
+  "homepage": "https://crawlora.net/?utm_source=npm&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-javascript-homepage",
   "bugs": { "url": "https://github.com/Crawlora-org/crawlora-youtube/issues" },
   "keywords": ["crawlora", "api-client", "web-scraping", "youtube", "typescript"],
   "type": "module",

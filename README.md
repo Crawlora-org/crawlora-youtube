@@ -8,7 +8,7 @@ The packages do not run a browser or scrape YouTube locally. Crawlora is an inde
 - Python: [`crawlora-youtube`](python/README.md)
 - Go: [`github.com/Crawlora-org/crawlora-youtube`](go.mod)
 - Ruby: [`crawlora-youtube`](ruby/README.md)
-- Java: [`net.crawlora:crawlora-youtube:0.1.4`](java/README.md)
+- Java: [`net.crawlora:crawlora-youtube:0.1.5`](java/README.md)
 - PHP: [`crawlora/youtube`](php/README.md)
 - Full endpoint and parameter reference: [docs/usage.md](docs/usage.md)
 - Runnable samples: [examples/](examples/)
@@ -26,7 +26,7 @@ gem install crawlora-youtube
 composer require crawlora/youtube
 ```
 
-For Java, add `net.crawlora:crawlora-youtube:0.1.4` to your Maven dependencies; see [java/README.md](java/README.md).
+For Java, add `net.crawlora:crawlora-youtube:0.1.5` to your Maven dependencies; see [java/README.md](java/README.md).
 
 Set your Crawlora key in the environment before running a client:
 
