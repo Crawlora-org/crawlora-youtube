@@ -7,6 +7,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .utm import crawlora_url
+
 
 def _class_name(platform: str) -> str:
     return "".join(part.capitalize() for part in re.split(r"[^a-zA-Z0-9]+", platform))
@@ -126,6 +128,8 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
         "GEM_NAME": gem_name,
         "VERSION": version,
         "REPOSITORY": repo,
+        "HOMEPAGE_URL": crawlora_url(source="rubygems", platform=platform, surface="ruby", destination="homepage"),
+        "DOCUMENTATION_URL": crawlora_url(source="rubygems", platform=platform, surface="ruby", destination="api-docs", path="/docs"),
         "CONTRACT_REVISION": str(config.get("contract_revision", "")),
         "OPERATION_JSON": json.dumps(operations, ensure_ascii=False, sort_keys=True),
         "OPERATION_IDS_JSON": json.dumps(sorted(operations)),

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5 — 2026-10-09
+
+- Add registry-specific UTM-tagged Crawlora homepage and API documentation links to package metadata.
+
 ## 0.1.4 — 2026-10-08
 
 - Add focused Go, Ruby, Java, and PHP clients with registry installation examples and Crawlora links.

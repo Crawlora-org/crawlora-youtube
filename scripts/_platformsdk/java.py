@@ -8,6 +8,9 @@ import re
 import sys
 from pathlib import Path
 from typing import Any
+from xml.sax.saxutils import escape
+
+from .utm import crawlora_url
 
 
 def _load_core(assets: Path):
@@ -130,6 +133,8 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     values["class_name"] = "Client"
     values["default_base_url"] = "https://api.crawlora.net/api/v1"
     values["scm_url"] = config["repository"].removesuffix(".git")
+    values["homepage_url"] = escape(crawlora_url(source="maven-central", platform=platform, surface="java", destination="homepage"))
+    values["organization_url"] = escape(crawlora_url(source="maven-central", platform=platform, surface="java", destination="organization-homepage"))
     values["repository_name"] = values["scm_url"].rstrip("/").rsplit("/", 1)[-1]
     values["test_operation_id"], test_params, test_method = _test_operation(model)
     values["test_params"] = test_params

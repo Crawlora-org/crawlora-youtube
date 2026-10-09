@@ -12,13 +12,14 @@ import unittest
 from unittest.mock import patch
 from urllib.error import URLError
 from urllib.parse import parse_qs, urlsplit
+from xml.etree import ElementTree as ET
 
 from . import sync
 from .generate import regenerate
-from .spec import config_for, dumps, select
+from .spec import PLATFORMS as SUPPORTED_PLATFORMS, config_for, dumps, select
 
 
-PLATFORMS = ("sofascore", "flashscore", "fotmob", "youtube")
+PLATFORMS = tuple(SUPPORTED_PLATFORMS)
 
 
 def _operation(platform: str, suffix: str, *, description: str = "A fixture operation") -> dict:
@@ -37,6 +38,7 @@ def _raw_spec(platform: str, *, extra: bool = False) -> dict:
         "flashscore": [("search", "search"), ("sports", "sports"), ("scores", "scores")],
         "fotmob": [("leagues", "leagues"), ("search", "search")],
         "youtube": [("search", "search"), ("video", "video"), ("transcript", "transcript")],
+        "bbb": [("search", "search"), ("business", "business"), ("scamtracker-search", "scamtracker/search")],
     }[platform]
     paths = {}
     for suffix, path_suffix in operation_ids:
@@ -123,6 +125,61 @@ class ContractSyncTests(unittest.TestCase):
                         destination = destinations.get(parsed.path, parsed.path.strip("/").replace("/", "-"))
                         self.assertEqual(query.get("utm_content"), [f"{platform}-{surface}-{destination}"], link)
 
+    def test_registry_package_metadata_has_tracked_homepage_and_docs_links(self) -> None:
+        def assert_utm(url: str, *, source: str, platform: str, surface: str, destination: str, path: str = "/") -> None:
+            parsed = urlsplit(url)
+            self.assertEqual((parsed.scheme, parsed.netloc, parsed.path), ("https", "crawlora.net", path), url)
+            query = parse_qs(parsed.query, strict_parsing=True)
+            self.assertEqual(
+                set(query), {"utm_source", "utm_medium", "utm_campaign", "utm_content"},
+                f"unexpected or duplicate UTM keys in {url}",
+            )
+            self.assertEqual(query["utm_source"], [source], url)
+            self.assertEqual(query["utm_medium"], ["referral"], url)
+            self.assertEqual(query["utm_campaign"], ["platform-clients"], url)
+            self.assertEqual(query["utm_content"], [f"{platform}-{surface}-{destination}"], url)
+
+        for platform in PLATFORMS:
+            with self.subTest(platform=platform), tempfile.TemporaryDirectory(prefix="platform-utm-metadata-") as temp:
+                root = Path(temp)
+                _make_root(root, platform)
+
+                npm = json.loads((root / "javascript/package.json").read_text(encoding="utf-8"))
+                assert_utm(npm["homepage"], source="npm", platform=platform, surface="javascript", destination="homepage")
+                self.assertIn(f"https://github.com/Crawlora-org/crawlora-{platform}", npm["repository"]["url"])
+
+                pyproject = (root / "python/pyproject.toml").read_text(encoding="utf-8")
+                python_urls = {
+                    key: value
+                    for key, value in re.findall(r'(?m)^(Homepage|Documentation|Repository) = "([^"]+)"$', pyproject)
+                }
+                assert_utm(python_urls["Homepage"], source="pypi", platform=platform, surface="python", destination="homepage")
+                assert_utm(python_urls["Documentation"], source="pypi", platform=platform, surface="python", destination="api-docs", path="/docs")
+                self.assertEqual(python_urls["Repository"], f"https://github.com/Crawlora-org/crawlora-{platform}")
+
+                gemspec = next((root / "ruby").glob("*.gemspec")).read_text(encoding="utf-8")
+                ruby_homepage = re.search(r'(?m)^\s*spec\.homepage = "([^"]+)"$', gemspec)
+                ruby_docs = re.search(r'"documentation_uri"\s*=>\s*"([^"]+)"', gemspec)
+                ruby_source = re.search(r'"source_code_uri"\s*=>\s*"([^"]+)"', gemspec)
+                self.assertIsNotNone(ruby_homepage)
+                self.assertIsNotNone(ruby_docs)
+                self.assertIsNotNone(ruby_source)
+                assert_utm(ruby_homepage.group(1), source="rubygems", platform=platform, surface="ruby", destination="homepage")
+                assert_utm(ruby_docs.group(1), source="rubygems", platform=platform, surface="ruby", destination="api-docs", path="/docs")
+                self.assertEqual(ruby_source.group(1), f"https://github.com/Crawlora-org/crawlora-{platform}")
+
+                pom = ET.parse(root / "java/pom.xml").getroot()
+                namespace = "{http://maven.apache.org/POM/4.0.0}"
+                assert_utm(pom.findtext(f"{namespace}url"), source="maven-central", platform=platform, surface="java", destination="homepage")
+                assert_utm(pom.findtext(f"{namespace}developers/{namespace}developer/{namespace}organizationUrl"), source="maven-central", platform=platform, surface="java", destination="organization-homepage")
+                self.assertEqual(pom.findtext(f"{namespace}scm/{namespace}url"), f"https://github.com/Crawlora-org/crawlora-{platform}")
+
+                for relative in ("composer.json", "php/composer.json"):
+                    composer = json.loads((root / relative).read_text(encoding="utf-8"))
+                    assert_utm(composer["homepage"], source="packagist", platform=platform, surface="php", destination="homepage")
+                    assert_utm(composer["support"]["docs"], source="packagist", platform=platform, surface="php", destination="api-docs", path="/docs")
+                    self.assertEqual(composer["support"]["source"], f"https://github.com/Crawlora-org/crawlora-{platform}")
+
     def test_raw_header_normalization_matches_selected_public_contract(self) -> None:
         for platform in PLATFORMS:
             with self.subTest(platform=platform):
@@ -137,7 +194,7 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertEqual(normalized, expected)
                 self.assertEqual(set(normalized["definitions"]), {"Envelope", "Item"})
 
-    def test_discovers_and_generates_new_operation_for_all_four_clients(self) -> None:
+    def test_discovers_and_generates_new_operation_for_all_five_clients(self) -> None:
         for platform in PLATFORMS:
             with self.subTest(platform=platform), tempfile.TemporaryDirectory(prefix="platform-sync-") as temp:
                 root = Path(temp)

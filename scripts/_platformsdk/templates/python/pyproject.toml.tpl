@@ -23,7 +23,8 @@ async = ["httpx>=0.27"]
 test = ["mypy>=1.11", "pytest>=8"]
 
 [project.urls]
-Homepage = "{{REPOSITORY}}"
+Homepage = "{{HOMEPAGE_URL}}"
+Documentation = "{{DOCUMENTATION_URL}}"
 Repository = "{{REPOSITORY}}"
 
 [tool.setuptools.packages.find]

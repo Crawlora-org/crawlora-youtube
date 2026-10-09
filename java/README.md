@@ -8,7 +8,7 @@ The official Java client for Crawlora's hosted YouTube API. It calls Crawlora's 
 <dependency>
   <groupId>net.crawlora</groupId>
   <artifactId>crawlora-youtube</artifactId>
-  <version>0.1.4</version>
+  <version>0.1.5</version>
 </dependency>
 ```
 

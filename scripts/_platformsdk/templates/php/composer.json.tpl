@@ -21,8 +21,9 @@
   "scripts": {
     "test": "php tests/client_test.php"
   },
-  "homepage": "{{REPOSITORY}}",
+  "homepage": "{{HOMEPAGE_URL}}",
   "support": {
-    "source": "{{REPOSITORY}}"
+    "source": "{{REPOSITORY}}",
+    "docs": "{{DOCUMENTATION_URL}}"
   }
 }

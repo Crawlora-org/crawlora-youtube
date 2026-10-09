@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 2.6"
   spec.files = Dir["lib/**/*.rb", "README.md", "CHANGELOG.md", "LICENSE"]
   spec.require_paths = ["lib"]
-  spec.homepage = "{{REPOSITORY}}"
-  spec.metadata = { "source_code_uri" => "{{REPOSITORY}}", "rubygems_mfa_required" => "true" }
+  spec.homepage = "{{HOMEPAGE_URL}}"
+  spec.metadata = { "source_code_uri" => "{{REPOSITORY}}", "documentation_uri" => "{{DOCUMENTATION_URL}}", "rubygems_mfa_required" => "true" }
 {{DEPENDENCIES}}
 end
