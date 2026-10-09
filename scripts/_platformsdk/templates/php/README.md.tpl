@@ -8,7 +8,7 @@ This package calls the Crawlora hosted API at `https://api.crawlora.net/api/v1`.
 composer require {{PACKAGE_NAME}}
 ```
 
-Create an account at [crawlora.net](https://crawlora.net/signup), open the [Crawlora console](https://crawlora.net/app) to get an API key, then set `CRAWLORA_API_KEY` in your environment.
+Create an account at [crawlora.net](https://crawlora.net/signup?utm_source=packagist&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-php-signup), open the [Crawlora console](https://crawlora.net/app?utm_source=packagist&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-php-console) to get an API key, then set `CRAWLORA_API_KEY` in your environment.
 
 ```php
 <?php
@@ -22,4 +22,4 @@ $client->close();
 
 The client uses PHP cURL and JSON. Constructor options are `apiKey`, `baseUrl`, and `timeout`. Call an operation-specific method for direct access to each supported operation, or `request($operationId, $params, $responseType)` to dispatch by operation ID. Set `$responseType` to `text` for raw text output where supported. The package supports {{OPERATION_COUNT}} operations.
 
-See [Crawlora](https://crawlora.net/), the [API documentation](https://crawlora.net/docs), and [the package repository]({{REPOSITORY}}) for account setup and the complete operation reference.
+See [Crawlora](https://crawlora.net/?utm_source=packagist&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-php-homepage), the [API documentation](https://crawlora.net/docs?utm_source=packagist&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-php-api-docs), and [the package repository]({{REPOSITORY}}) for account setup and the complete operation reference.

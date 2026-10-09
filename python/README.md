@@ -1,7 +1,7 @@
 # crawlora-youtube
 
 Python client for Crawlora's hosted YouTube API. It calls Crawlora's
-service at [Crawlora](https://crawlora.net); it does not run a browser or scrape
+service at [Crawlora](https://crawlora.net?utm_source=pypi&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-python-homepage); it does not run a browser or scrape
 YouTube locally. A Crawlora account and `CRAWLORA_API_KEY` are required,
 and API use is billed under your Crawlora account. Crawlora is independent from and not endorsed by
 YouTube or its owners.
@@ -14,7 +14,7 @@ python -m pip install crawlora-youtube
 
 ## Get an API key
 
-Create an account at [crawlora.net](https://crawlora.net/signup), then open the [Crawlora console](https://crawlora.net/app) for API-key setup. Set your key in the shell before running the client:
+Create an account at [crawlora.net](https://crawlora.net/signup?utm_source=pypi&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-python-signup), then open the [Crawlora console](https://crawlora.net/app?utm_source=pypi&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-python-console) for API-key setup. Set your key in the shell before running the client:
 
 ```sh
 export CRAWLORA_API_KEY="your-crawlora-api-key"
