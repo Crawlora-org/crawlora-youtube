@@ -23,7 +23,7 @@
   },
   "homepage": "{{HOMEPAGE_URL}}",
   "support": {
-    "source": "{{PHP_REPOSITORY}}",
+    "source": "{{REPOSITORY}}",
     "docs": "{{DOCUMENTATION_URL}}"
   }
 }

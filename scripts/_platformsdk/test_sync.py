@@ -209,7 +209,7 @@ class ContractSyncTests(unittest.TestCase):
                     composer = json.loads((root / relative).read_text(encoding="utf-8"))
                     assert_utm(composer["homepage"], source="packagist", platform=platform, surface="php", destination="homepage")
                     assert_utm(composer["support"]["docs"], source="packagist", platform=platform, surface="php", destination="api-docs", path="/docs")
-                    self.assertEqual(composer["support"]["source"], f"https://github.com/Crawlora-org/crawlora-{platform}-php")
+                    self.assertEqual(composer["support"]["source"], f"https://github.com/Crawlora-org/crawlora-{platform}")
 
     def test_raw_header_normalization_matches_selected_public_contract(self) -> None:
         for platform in PLATFORMS:

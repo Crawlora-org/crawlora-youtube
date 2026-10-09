@@ -1,7 +1,7 @@
 # {{NPM_NAME}}
 
 JavaScript and TypeScript client for Crawlora's hosted {{DISPLAY_NAME}} API.
-It calls [Crawlora](https://crawlora.net?utm_source=npm&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-javascript-homepage); it does not run a browser or scrape {{DISPLAY_NAME}} locally. A Crawlora account and `CRAWLORA_API_KEY` are required, and API use is billed under your Crawlora account. Crawlora is independent from and not endorsed by {{DISPLAY_NAME}} or its owners.
+It calls [Crawlora](https://crawlora.net/?utm_source=npm&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-javascript-homepage); it does not run a browser or scrape {{DISPLAY_NAME}} locally. A Crawlora account and `CRAWLORA_API_KEY` are required, and API use is billed under your Crawlora account. Crawlora is independent from and not endorsed by {{DISPLAY_NAME}} or its owners.
 
 ## Install
 
@@ -35,11 +35,12 @@ The client also exports `Client` as an alias for `{{CLASS_NAME}}`. Operation
 methods are available directly in camelCase and through the `{{PLATFORM}}`
 group. See the full method and parameter list in the [online reference]({{DOCS_URL}}).
 
-Methods return promises and can be awaited. See the [runnable example]({{JS_EXAMPLE_URL}}) for additional endpoint examples and text transcript output where supported.
+Methods return promises and can be awaited. See the [runnable example]({{JS_EXAMPLE_URL}}) for a complete usage example.
+
 
 ## Configuration
 
 Pass your key through `apiKey` or set `CRAWLORA_API_KEY` and read it from the
 environment. Keep credentials out of source control and logs. Requests are
-made to Crawlora's hosted API; response data and availability follow that
-service's current contract.
+made to Crawlora's hosted API. Response data and availability depend on
+Crawlora's current API behavior.

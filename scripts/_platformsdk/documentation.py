@@ -140,6 +140,22 @@ def _example_values(platform: str, operations: list[dict[str, Any]]) -> list[tup
         add("youtube-search", {"q": "science explainers", "type": "video"})
         add("youtube-video", {"id": "dQw4w9WgXcQ"})
         add("youtube-transcript", {"id": "dQw4w9WgXcQ", "format": "text"})
+    elif platform == "bbb":
+        add("bbb-search", {"query": "coffee", "location": "New York, NY"})
+        add("bbb-business", {"url": "https://www.bbb.org/us/tx/austin/profile/plumber/calixto-plumbing-0825-1000223803"})
+        add("bbb-scamtracker-search", {"query": "package delivery", "state": "NY"})
+    elif platform == "reddit":
+        add("reddit-search", {"q": "open source"})
+        add("reddit-subreddit-posts", {"subreddit": "technology"})
+    elif platform == "tiktok":
+        add("tiktok-search", {"keyword": "science"})
+        add("tiktok-trending", {})
+    elif platform == "amazon":
+        add("amazon-search", {"k": "wireless headphones"})
+        add("amazon-suggest", {"keyword": "wireless headphones"})
+    elif platform == "imdb":
+        add("imdb-search", {"query": "Inception"})
+        add("imdb-charts", {})
     return selected
 
 
@@ -267,6 +283,7 @@ def _npm_oidc_validation_values(platform: str) -> tuple[str, str]:
 """
     return dispatch_input, validation_job
 
+
 def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[str, str]:
     platform = str(config["platform"])
     display = str(config["display_name"])
@@ -285,7 +302,8 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
     js_example, py_example = _render_examples(platform, config, operations)
     calls = _example_values(platform, operations)
     php_operation, php_params = calls[0]
-    php_class = chr(92).join(("", "Crawlora", str(config.get("php_class_name", cls.removesuffix("Client"))), "Client"))
+    php_namespace = str(config.get("php_namespace") or platform.capitalize())
+    php_class = chr(92).join(("", "Crawlora", php_namespace, "Client"))
     php_example = "\n".join([
         "<?php",
         "require __DIR__ . '/vendor/autoload.php';",
@@ -321,6 +339,11 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "flashscore": "27 3 * * *",
         "fotmob": "37 3 * * *",
         "youtube": "47 3 * * *",
+        "bbb": "57 3 * * *",
+        "reddit": "07 4 * * *",
+        "tiktok": "17 4 * * *",
+        "amazon": "27 4 * * *",
+        "imdb": "37 4 * * *",
     }
     try:
         sync_cron = sync_schedules[platform]

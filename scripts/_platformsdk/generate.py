@@ -17,9 +17,28 @@ if __package__ in {None, ""}:
 from .spec import PLATFORMS, config_for, dumps, select
 
 
+def refresh_embedded_tooling(root: Path) -> None:
+    """Keep the public repository's generator snapshot aligned with this source."""
+    code = root / "scripts/_platformsdk"
+    code.mkdir(parents=True, exist_ok=True)
+    (code / "packagist_mirror.py").unlink(missing_ok=True)
+    source = Path(__file__).resolve().parent
+    for child in source.iterdir():
+        if (child.name.startswith("test_") and child.name not in {"test_sync.py", "test_release_sync.py"}) or child.name == "__pycache__":
+            continue
+        target = code / child.name
+        if child.resolve() == target.resolve():
+            continue
+        if child.is_dir():
+            shutil.copytree(child, target, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        elif child.suffix in {".py", ".json"}:
+            shutil.copyfile(child, target)
+
+
 def regenerate(root: Path) -> None:
     config = json.loads((root / "platform.json").read_text())
     spec = json.loads((root / "openapi/public.json").read_text())
+    refresh_embedded_tooling(root)
     # Re-selection validates the complete scope and schema closure even when
     # running generation from an already-selected public repository.
     spec = select(spec, config["platform"])
@@ -37,20 +56,7 @@ def create(spec: dict, platform: str, root: Path, *, revision: str, version: str
     (root / "openapi").mkdir(exist_ok=True)
     (root / "platform.json").write_text(dumps(config))
     (root / "openapi/public.json").write_text(dumps(selected))
-    code = root / "scripts/_platformsdk"
-    code.mkdir(parents=True, exist_ok=True)
-    source = Path(__file__).resolve().parent
-    for child in source.iterdir():
-        # The synchronization checks also run in each public repository. Keep
-        # their fixtures self-contained and their imports relative to this
-        # package; the emitter tests remain private maintenance tooling.
-        if (child.name.startswith("test_") and child.name not in {"test_sync.py", "test_release_sync.py"}) or child.name == "__pycache__":
-            continue
-        target = code / child.name
-        if child.is_dir():
-            shutil.copytree(child, target, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
-        elif child.suffix in {".py", ".json"}:
-            shutil.copyfile(child, target)
+    refresh_embedded_tooling(root)
     (root / "scripts/generate.py").write_text(
         '"""Regenerate clients, types, docs, and examples from the pinned public contract."""\n'
         'from pathlib import Path\nfrom _platformsdk.generate import regenerate\n\n'

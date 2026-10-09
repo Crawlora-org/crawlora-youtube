@@ -93,7 +93,8 @@ def config_for(platform: str, *, version: str = "0.1.0", revision: str = "") -> 
         ),
         "general_sdk_version": "1.46.0-sdk.1",
         "repository": "https://github.com/Crawlora-org/crawlora-" + platform,
-        "php_repository": "https://github.com/Crawlora-org/crawlora-" + platform + "-php",
+        # Composer publishes from the multi-language platform repository.
+        "php_repository": "https://github.com/Crawlora-org/crawlora-" + platform,
         "version": version,
         "contract_revision": revision,
     }

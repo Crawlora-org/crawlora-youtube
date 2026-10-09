@@ -72,6 +72,56 @@ SUPPORTED = {
         "maven_artifact": "crawlora-youtube",
         "packagist": "crawlora/youtube",
     },
+    "bbb": {
+        "repository": "Crawlora-org/crawlora-bbb",
+        "npm": "@crawlora-org/bbb",
+        "pypi": "crawlora-bbb",
+        "go": "github.com/Crawlora-org/crawlora-bbb",
+        "ruby": "crawlora-bbb",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-bbb",
+        "packagist": "crawlora/bbb",
+    },
+    "reddit": {
+        "repository": "Crawlora-org/crawlora-reddit",
+        "npm": "@crawlora-org/reddit",
+        "pypi": "crawlora-reddit",
+        "go": "github.com/Crawlora-org/crawlora-reddit",
+        "ruby": "crawlora-reddit",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-reddit",
+        "packagist": "crawlora/reddit",
+    },
+    "tiktok": {
+        "repository": "Crawlora-org/crawlora-tiktok",
+        "npm": "@crawlora-org/tiktok",
+        "pypi": "crawlora-tiktok",
+        "go": "github.com/Crawlora-org/crawlora-tiktok",
+        "ruby": "crawlora-tiktok",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-tiktok",
+        "packagist": "crawlora/tiktok",
+    },
+    "amazon": {
+        "repository": "Crawlora-org/crawlora-amazon",
+        "npm": "@crawlora-org/amazon",
+        "pypi": "crawlora-amazon",
+        "go": "github.com/Crawlora-org/crawlora-amazon",
+        "ruby": "crawlora-amazon",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-amazon",
+        "packagist": "crawlora/amazon",
+    },
+    "imdb": {
+        "repository": "Crawlora-org/crawlora-imdb",
+        "npm": "@crawlora-org/imdb",
+        "pypi": "crawlora-imdb",
+        "go": "github.com/Crawlora-org/crawlora-imdb",
+        "ruby": "crawlora-imdb",
+        "maven_group": "net.crawlora",
+        "maven_artifact": "crawlora-imdb",
+        "packagist": "crawlora/imdb",
+    },
 }
 _VERSION = re.compile(
     r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
@@ -406,6 +456,8 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
     wanted_repo = _repository_url(expected["repository"])
     if str(config.get("repository", "")).rstrip("/").removesuffix(".git").lower() != wanted_repo.lower():
         raise ReleaseSyncError(f"platform.json repository must identify {expected['repository']}")
+    if _normalize_remote(str(config.get("php_repository", ""))) != expected["repository"].lower():
+        raise ReleaseSyncError("platform.json php_repository must identify the primary platform repository")
     package_repo = npm_package.get("repository")
     package_repo = package_repo.get("url") if isinstance(package_repo, dict) else package_repo
     if npm_package.get("name") != expected["npm"] or npm_package.get("version") != version:
@@ -438,6 +490,11 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
         raise ReleaseSyncError("java/pom.xml coordinates/version do not match the platform manifest")
     if composer.get("name") != expected["packagist"] or php_composer.get("name") != expected["packagist"]:
         raise ReleaseSyncError("root and php/composer.json package names do not match the platform manifest")
+    if any(
+        _normalize_remote(str(package.get("support", {}).get("source", ""))) != expected["repository"].lower()
+        for package in (composer, php_composer)
+    ):
+        raise ReleaseSyncError("root and php/composer.json source links must identify the primary repository")
     manifest = {**expected, "platform": platform, "version": version, "contract_revision": revision}
     return config, manifest
 

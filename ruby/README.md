@@ -20,14 +20,14 @@ puts result
 client.close
 ```
 
-Use a operation-specific method for normal calls. `request(operation_id, params = {}, response_type: :auto)` is available for every operation. `response_type: :text` returns raw response text. This gem supports 14 operations.
+Use an operation-specific method for normal calls. `request(operation_id, params = {}, response_type: :auto)` is available for every operation. `response_type: :text` returns raw response text. This gem includes 14 API operations.
 
 ```ruby
 client = Crawlora::Youtube::Client.new(api_key: ENV.fetch("CRAWLORA_API_KEY"), timeout: 30)
-# client.<operation_method>(...)
+# client.<operation_method>(<endpoint parameters>)
 client.close
 ```
 
-Client options include `api_key`, `base_url`, and `timeout`. Ruby stdlib provides the HTTP and JSON transport.
+Client options include `api_key`, `base_url`, and `timeout`. Ruby stdlib provides the HTTP and JSON support.
 
-See [Crawlora](https://crawlora.net/?utm_source=rubygems&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-ruby-homepage), the [API documentation](https://crawlora.net/docs?utm_source=rubygems&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-ruby-api-docs), and [the package repository](https://github.com/Crawlora-org/crawlora-youtube) for account setup, the operation reference, and release history.
+See [Crawlora](https://crawlora.net/?utm_source=rubygems&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-ruby-homepage), the [API documentation](https://crawlora.net/docs?utm_source=rubygems&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-ruby-api-docs), and [the package repository](https://github.com/Crawlora-org/crawlora-youtube) for account setup, the API operation reference, and release history.

@@ -13,6 +13,14 @@ from xml.sax.saxutils import escape
 from .utm import crawlora_url
 
 
+_JAVA_EXAMPLE_CALLS = {
+    "reddit": ("reddit-search", {"q": "open source"}),
+    "tiktok": ("tiktok-search", {"keyword": "science"}),
+    "amazon": ("amazon-search", {"k": "wireless headphones"}),
+    "imdb": ("imdb-search", {"query": "Inception"}),
+}
+
+
 def _load_core(assets: Path):
     assets = Path(assets).resolve()
     if str(assets) not in sys.path:
@@ -150,15 +158,36 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         if any(param.get("in") == "path" for param in test_operation["params"])
         else "            // This operation has no path parameters to encode."
     )
-    usage_operation, usage_method = next(
-        (
-            (op_id, method)
-            for group in model.groups.values()
-            for method, op_id in group.items()
-            if model.meta[op_id]["has_required_params"]
-        ),
-        next((op_id, method) for group in model.groups.values() for method, op_id in group.items()),
-    )
+    aliases = {op_id: method for group in model.groups.values() for method, op_id in group.items()}
+    java_example = _JAVA_EXAMPLE_CALLS.get(platform)
+    if java_example:
+        usage_operation, example_params = java_example
+        if usage_operation not in model.meta:
+            raise ValueError(f"Java example operation is missing from {platform}: {usage_operation}")
+        known_params = {
+            param["name"] for param in model.meta[usage_operation]["params"]
+            if param.get("in") in {"path", "query"} and param.get("name", "").lower() != "x-api-key"
+        }
+        required_params = {
+            param["name"] for param in model.meta[usage_operation]["params"]
+            if param.get("in") in {"path", "query"} and param.get("required")
+            and param.get("name", "").lower() != "x-api-key"
+        }
+        if not set(example_params).issubset(known_params) or not required_params.issubset(example_params):
+            raise ValueError(f"Java example parameters do not satisfy {usage_operation}")
+        usage_method = aliases[usage_operation]
+        usage_params = _java_map_literal(example_params)
+    else:
+        usage_operation, usage_method = next(
+            (
+                (op_id, method)
+                for group in model.groups.values()
+                for method, op_id in group.items()
+                if model.meta[op_id]["has_required_params"]
+            ),
+            next((op_id, method) for group in model.groups.values() for method, op_id in group.items()),
+        )
+        usage_params = _sample_param_map(model.meta[usage_operation]["params"])
     if config.get("platform") == "bbb" and "bbb-search" in model.meta:
         usage_operation = "bbb-search"
         usage_method = next(
@@ -173,7 +202,7 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
             'Map.ofEntries(Map.entry("query", "coffee"), Map.entry("location", "New York, NY"))'
         )
     else:
-        values["usage_params"] = _sample_param_map(model.meta[usage_operation]["params"])
+        values["usage_params"] = usage_params
     text_operation = next(
         (op_id for op_id, operation in model.operations.items() if "text/plain" in operation.get("produces", [])),
         next(iter(model.operations)),
@@ -234,6 +263,10 @@ def _sample_param_map(params: list[dict[str, Any]], *, special_query: bool = Fal
         )
         if query:
             values[query["name"]] = "value &/one"
+    return _java_map_literal(values)
+
+
+def _java_map_literal(values: dict[str, Any]) -> str:
     if not values:
         return "Map.of()"
     return "Map.ofEntries(" + ", ".join(f"Map.entry({_quote(key)}, {_java_value(value)})" for key, value in values.items()) + ")"
