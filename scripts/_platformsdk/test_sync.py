@@ -19,7 +19,19 @@ from .generate import regenerate
 from .spec import PLATFORMS as SUPPORTED_PLATFORMS, config_for, dumps, select
 
 
-PLATFORMS = tuple(SUPPORTED_PLATFORMS)
+ALL_PLATFORMS = tuple(SUPPORTED_PLATFORMS)
+_PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+_PACKAGE_CONFIG = _PACKAGE_ROOT / "platform.json"
+if _PACKAGE_CONFIG.is_file():
+    _PACKAGE_PLATFORM = json.loads(_PACKAGE_CONFIG.read_text(encoding="utf-8")).get("platform")
+    if _PACKAGE_PLATFORM not in SUPPORTED_PLATFORMS:
+        raise ValueError(f"unsupported package platform in {_PACKAGE_CONFIG}: {_PACKAGE_PLATFORM!r}")
+    # Vendored sync tests run in a single-platform package repository. The
+    # canonical generator suite has no root platform.json and tests every
+    # platform from PLATFORMS.
+    PLATFORMS = (_PACKAGE_PLATFORM,)
+else:
+    PLATFORMS = ALL_PLATFORMS
 
 
 def _operation(platform: str, suffix: str, *, description: str = "A fixture operation") -> dict:
@@ -39,11 +51,18 @@ def _raw_spec(platform: str, *, extra: bool = False) -> dict:
         "fotmob": [("leagues", "leagues"), ("search", "search")],
         "youtube": [("search", "search"), ("video", "video"), ("transcript", "transcript")],
         "bbb": [("search", "search"), ("business", "business"), ("scamtracker-search", "scamtracker/search")],
+        "reddit": [("search", "search"), ("subreddit-posts", "subreddit/posts")],
+        "tiktok": [("search", "search"), ("trending", "trending")],
+        "amazon": [("search", "search"), ("product", "product")],
+        "imdb": [("search", "search"), ("charts", "charts")],
     }[platform]
     paths = {}
     for suffix, path_suffix in operation_ids:
         operation = _operation(platform, suffix)
         if suffix == "search":
+            query_name = {"tiktok": "keyword", "amazon": "k", "imdb": "query"}.get(platform)
+            if query_name:
+                operation["parameters"][0]["name"] = query_name
             operation["parameters"].append({"name": "X-API-Key", "in": "header", "type": "string"})
         paths[f"/{platform}/{path_suffix}"] = {"get": operation}
     search = paths[f"/{platform}/{operation_ids[0][1]}"]["get"]
@@ -206,12 +225,28 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertEqual(normalized, expected)
                 self.assertEqual(set(normalized["definitions"]), {"Envelope", "Item"})
 
-    def test_discovers_and_generates_new_operation_for_all_five_clients(self) -> None:
+    def test_discovers_and_generates_new_operation_for_all_nine_clients(self) -> None:
         for platform in PLATFORMS:
             with self.subTest(platform=platform), tempfile.TemporaryDirectory(prefix="platform-sync-") as temp:
                 root = Path(temp)
                 _make_root(root, platform)
                 source = _raw_spec(platform, extra=True)
+                new_path = f"/{platform}/feeds/{{id}}"
+                if platform == "tiktok":
+                    source["paths"][new_path]["get"]["tags"] = ["TikTok Creative Center"]
+                if platform == "amazon":
+                    source["paths"]["/amazon-jobs/search"] = {
+                        "get": {
+                            "operationId": "amazon-jobs-search",
+                            "tags": ["Amazon Jobs"],
+                            "responses": {"200": {"description": "OK"}},
+                        }
+                    }
+                before_ids = {
+                    operation["operationId"]
+                    for methods in json.loads((root / "openapi/public.json").read_text())["paths"].values()
+                    for operation in methods.values()
+                }
                 dry_run_before = _snapshot(root)
                 report = sync.synchronize(root, spec_path=self._source_file(root, source))
                 self.assertEqual(report["added"], [f"{platform}-new-feed"])
@@ -226,7 +261,14 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertEqual(config["golang_version"], "1.3.0")
                 self.assertEqual([release["version"] for release in config["releases"]], ["1.3.0", "1.2.3"])
                 selected = json.loads((root / "openapi/public.json").read_text())
-                operation = selected["paths"][f"/{platform}/feeds/{{id}}"]["get"]
+                selected_ids = {
+                    operation["operationId"]
+                    for methods in selected["paths"].values()
+                    for operation in methods.values()
+                }
+                self.assertEqual(selected_ids, before_ids | {f"{platform}-new-feed"})
+                self.assertNotIn("amazon-jobs-search", selected_ids)
+                operation = selected["paths"][new_path]["get"]
                 self.assertEqual(operation["security"], [{"ApiKeyAuth": []}])
                 self.assertFalse(any(p.get("in") == "header" for p in operation.get("parameters", [])))
 
@@ -247,10 +289,38 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertIn(class_name, js_types)
                 self.assertTrue((root / "javascript/package.json").exists())
                 self.assertRegex((root / "client.go").read_text(), r'(?m)\bVersion\s*=\s*"1\.3\.0"')
+                generated_operation_files = (
+                    root / "javascript/src/operations.js",
+                    root / "python" / config["module_name"] / "operations.py",
+                    root / "operations.go",
+                    root / "ruby/lib/crawlora" / platform / "operations.json",
+                    root / "java/src/main/java/net/crawlora" / platform / "Client.java",
+                    root / "php/src/Crawlora" / platform.capitalize() / "operations.json",
+                )
+                for generated_file in generated_operation_files:
+                    with self.subTest(platform=platform, generated_file=str(generated_file)):
+                        self.assertIn(f"{platform}-new-feed", generated_file.read_text())
                 self.assertIn('VERSION = "1.3.0"', (root / "ruby/lib/crawlora" / platform / "version.rb").read_text())
                 self.assertIn("<version>1.3.0</version>", (root / "java/pom.xml").read_text())
                 self.assertEqual(json.loads((root / "php/composer.json").read_text())["name"], f"crawlora/{platform}")
                 self.assertIn(f"github.com/Crawlora-org/crawlora-{platform}", (root / "README.md").read_text())
+
+    def test_platform_tagged_operation_with_unexpected_id_is_not_silently_ignored(self) -> None:
+        tag_by_platform = {
+            "reddit": "Reddit",
+            "tiktok": "TikTok Top Ads",
+            "amazon": "Amazon",
+            "imdb": "IMDb",
+        }
+        for platform, tag in tag_by_platform.items():
+            with self.subTest(platform=platform):
+                source = _raw_spec(platform)
+                operation = _operation(platform, "unexpected-id")
+                operation["operationId"] = "new-endpoint-without-platform-prefix"
+                operation["tags"] = [tag]
+                source["paths"][f"/{platform}/new-endpoint"] = {"get": operation}
+                with self.assertRaisesRegex(ValueError, "unexpected operation ID"):
+                    sync.normalize_public_spec(source, platform)
 
     @staticmethod
     def _source_file(root: Path, value: dict) -> Path:
@@ -259,23 +329,24 @@ class ContractSyncTests(unittest.TestCase):
         return path
 
     def test_cycles_are_retained_and_unrelated_changes_are_noop(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="platform-sync-") as temp:
-            root = Path(temp) / "client"
-            root.mkdir()
-            raw = _raw_spec("sofascore")
-            raw["definitions"]["Envelope"]["properties"]["parent"] = {"$ref": "#/definitions/Item"}
-            raw["definitions"]["Item"]["properties"]["envelope"] = {"$ref": "#/definitions/Envelope"}
-            config = _make_root(root, "sofascore", raw)
-            self.assertEqual(set(json.loads((root / "openapi/public.json").read_text())["definitions"]), {"Envelope", "Item"})
-            before = _snapshot(root)
-            unrelated = copy.deepcopy(raw)
-            unrelated["info"]["version"] = "2027.01"
-            unrelated["paths"]["/other/endpoint"] = {"get": _operation("other", "endpoint")}
-            report = sync.synchronize(root, spec_path=self._source_file(root, unrelated))
-            self.assertFalse(report["changed"])
-            self.assertEqual(report["contract_revision"], config["contract_revision"])
-            self.assertEqual(_snapshot(root), before)
-            self.assertEqual(json.loads((root / "platform.json").read_text())["source_contract_sha256"], config["source_contract_sha256"])
+        for platform in PLATFORMS:
+            with self.subTest(platform=platform), tempfile.TemporaryDirectory(prefix="platform-sync-") as temp:
+                root = Path(temp) / "client"
+                root.mkdir()
+                raw = _raw_spec(platform)
+                raw["definitions"]["Envelope"]["properties"]["parent"] = {"$ref": "#/definitions/Item"}
+                raw["definitions"]["Item"]["properties"]["envelope"] = {"$ref": "#/definitions/Envelope"}
+                config = _make_root(root, platform, raw)
+                self.assertEqual(set(json.loads((root / "openapi/public.json").read_text())["definitions"]), {"Envelope", "Item"})
+                before = _snapshot(root)
+                unrelated = copy.deepcopy(raw)
+                unrelated["info"]["version"] = "2027.01"
+                unrelated["paths"]["/other/endpoint"] = {"get": _operation("other", "endpoint")}
+                report = sync.synchronize(root, spec_path=self._source_file(root, unrelated))
+                self.assertFalse(report["changed"])
+                self.assertEqual(report["contract_revision"], config["contract_revision"])
+                self.assertEqual(_snapshot(root), before)
+                self.assertEqual(json.loads((root / "platform.json").read_text())["source_contract_sha256"], config["source_contract_sha256"])
 
     def test_description_only_change_is_patch_and_applies_with_history(self) -> None:
         with tempfile.TemporaryDirectory(prefix="platform-sync-") as temp:

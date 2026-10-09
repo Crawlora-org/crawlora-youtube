@@ -11,6 +11,58 @@ PLATFORMS = {
     "flashscore": ("Flashscore", "FlashscoreClient"),
     "fotmob": ("FotMob", "FotMobClient"),
     "youtube": ("YouTube", "YouTubeClient"),
+    "bbb": ("Better Business Bureau", "BBBClient"),
+    "reddit": ("Reddit", "RedditClient"),
+    "tiktok": ("TikTok", "TikTokClient"),
+    "amazon": ("Amazon", "AmazonClient"),
+    "imdb": ("IMDb", "IMDbClient"),
+}
+# TikTok's public API uses product-area tags for several operation groups. Keep
+# those in the TikTok package while excluding neighboring products that share
+# an operation-ID prefix (for example Amazon Jobs).
+PLATFORM_TAG_ALIASES = {
+    "tiktok": frozenset({"tiktok", "tiktok creative center", "tiktok popular trend", "tiktok top ads"}),
+}
+PLATFORM_EXCLUDED_TAGS = {
+    "amazon": frozenset({"amazon jobs"}),
+}
+JAVA_DESCRIPTIONS = {
+    "sofascore": (
+        "Java client for Crawlora's hosted SofaScore API, with direct methods for live events, match details, "
+        "lineups, statistics, tournaments, and player/team data. Requires a Crawlora API key."
+    ),
+    "flashscore": (
+        "Java client for Crawlora's hosted Flashscore API, with methods for scores, match details, competitions, "
+        "teams, players, odds, and news. Requires a Crawlora API key."
+    ),
+    "fotmob": (
+        "Java client for Crawlora's hosted FotMob API, with methods for leagues, matches, fixtures, teams, "
+        "players, search, standings, news, and rankings. Requires a Crawlora API key."
+    ),
+    "youtube": (
+        "Java client for Crawlora's hosted YouTube API, with methods for search, channels, videos, playlists, "
+        "comments, captions, and transcripts. Requires a Crawlora API key."
+    ),
+    "bbb": (
+        "Java client for Crawlora's hosted Better Business Bureau API, with methods for business search, profiles, "
+        "complaints, reviews, categories, and ScamTracker reports. Requires a Crawlora API key."
+    ),
+    "reddit": (
+        "Java client for Crawlora's hosted Reddit API, with search, post and comment details, subreddit feeds, "
+        "user history, domain listings, trends, and leads. Requires a Crawlora API key."
+    ),
+    "tiktok": (
+        "Java client for Crawlora's hosted TikTok API, with video, user, and hashtag search; profiles and posts; "
+        "comments; trends; Creative Center; and Top Ads data. Requires a Crawlora API key."
+    ),
+    "amazon": (
+        "Java client for Crawlora's hosted Amazon Marketplace API, with product search, suggestions, product details, "
+        "and chart/category discovery. Requires a Crawlora API key."
+    ),
+    "imdb": (
+        "Java client for Crawlora's hosted IMDb API, with title and name search, charts, ratings, credits, awards, "
+        "episodes, reviews, images, and title metadata. Requires a Crawlora API key."
+    ),
 }
 HTTP_METHODS = frozenset({"get", "put", "post", "delete", "options", "head", "patch"})
 
@@ -34,8 +86,14 @@ def config_for(platform: str, *, version: str = "0.1.0", revision: str = "") -> 
         "php_package_name": "crawlora/" + platform,
         "maven_group_id": "net.crawlora",
         "maven_artifact_id": "crawlora-" + platform,
+        "java_description": JAVA_DESCRIPTIONS.get(
+            platform,
+            f"Java client for Crawlora's hosted {display} API, with direct methods for supported operations. "
+            "Requires a Crawlora API key.",
+        ),
         "general_sdk_version": "1.46.0-sdk.1",
         "repository": "https://github.com/Crawlora-org/crawlora-" + platform,
+        "php_repository": "https://github.com/Crawlora-org/crawlora-" + platform + "-php",
         "version": version,
         "contract_revision": revision,
     }
@@ -73,10 +131,24 @@ def select(spec: dict, platform: str) -> dict:
             if method not in HTTP_METHODS or not isinstance(original, dict):
                 continue
             identifier = original.get("operationId", "")
-            if not identifier.startswith(platform + "-") or original.get("deprecated"):
+            if original.get("deprecated"):
+                continue
+            tags = {str(tag).strip().lower() for tag in original.get("tags", []) if str(tag).strip()}
+            allowed_tags = PLATFORM_TAG_ALIASES.get(platform, frozenset({platform}))
+            if tags.intersection(PLATFORM_EXCLUDED_TAGS.get(platform, frozenset())):
+                continue
+            path_matches = path.startswith("/" + platform + "/")
+            tag_matches = bool(tags.intersection(allowed_tags))
+            if not isinstance(identifier, str) or not identifier.startswith(platform + "-"):
+                if path_matches or tag_matches:
+                    raise ValueError(
+                        f"unexpected operation ID for {platform} operation at {path}: {identifier!r}"
+                    )
                 continue
             if not path.startswith("/" + platform + "/"):
                 raise ValueError(f"unexpected path for {identifier}: {path}")
+            if tags and tags.isdisjoint(allowed_tags):
+                raise ValueError(f"unexpected tag for {identifier}: {sorted(tags)}")
             if identifier in seen:
                 raise ValueError(f"duplicate operation: {identifier}")
             seen.add(identifier)
