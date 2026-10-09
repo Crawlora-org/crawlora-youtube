@@ -114,6 +114,10 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     values = {
         "platform": platform,
         "display_name": config["display_name"],
+        "java_description": config.get("java_description") or (
+            f"Java client for Crawlora's hosted {config['display_name']} API, with direct methods for supported operations. "
+            "Requires a Crawlora API key."
+        ),
         "package_name": package_name,
         "version": config["version"],
         "repository": config["repository"],

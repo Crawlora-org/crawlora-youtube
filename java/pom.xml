@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.crawlora</groupId>
   <artifactId>crawlora-youtube</artifactId>
-  <version>0.1.5</version>
+  <version>0.1.6</version>
   <packaging>jar</packaging>
   <name>Crawlora YouTube Java Client</name>
-  <description>Java client for Crawlora hosted YouTube scraping endpoints.</description>
+  <description>Java client for Crawlora's hosted YouTube API, with methods for search, channels, videos, playlists, comments, captions, and transcripts. Requires a Crawlora API key.</description>
   <url>https://crawlora.net/?utm_source=maven-central&amp;utm_medium=referral&amp;utm_campaign=platform-clients&amp;utm_content=youtube-java-homepage</url>
   <licenses><license><name>MIT License</name><url>https://opensource.org/licenses/MIT</url><distribution>repo</distribution></license></licenses>
   <developers><developer><name>Crawlora</name><organization>Crawlora</organization><organizationUrl>https://crawlora.net/?utm_source=maven-central&amp;utm_medium=referral&amp;utm_campaign=platform-clients&amp;utm_content=youtube-java-organization-homepage</organizationUrl></developer></developers>
@@ -35,6 +35,6 @@
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-source-plugin</artifactId><version>3.3.1</version><executions><execution><id>attach-sources</id><goals><goal>jar-no-fork</goal></goals></execution></executions></plugin>
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-javadoc-plugin</artifactId><version>3.6.3</version><executions><execution><id>attach-javadocs</id><goals><goal>jar</goal></goals></execution></executions></plugin>
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-gpg-plugin</artifactId><version>3.2.4</version><executions><execution><id>sign-artifacts</id><phase>verify</phase><goals><goal>sign</goal></goals></execution></executions></plugin>
-    <plugin><groupId>org.sonatype.central</groupId><artifactId>central-publishing-maven-plugin</artifactId><version>0.11.0</version><extensions>true</extensions><configuration><publishingServerId>central</publishingServerId><autoPublish>true</autoPublish><deploymentName>Crawlora YouTube 0.1.5</deploymentName><waitUntil>published</waitUntil></configuration></plugin>
+    <plugin><groupId>org.sonatype.central</groupId><artifactId>central-publishing-maven-plugin</artifactId><version>0.11.0</version><extensions>true</extensions><configuration><publishingServerId>central</publishingServerId><autoPublish>true</autoPublish><deploymentName>Crawlora YouTube 0.1.6</deploymentName><waitUntil>published</waitUntil></configuration></plugin>
   </plugins></build></profile></profiles>
 </project>
