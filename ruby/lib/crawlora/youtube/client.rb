@@ -29,7 +29,7 @@ module Crawlora
     class Client
       attr_reader :base_url
 
-      def initialize(api_key: ENV["CRAWLORA_API_KEY"], base_url: "https://api.crawlora.net/api/v1", timeout: 30, user_agent: "crawlora-youtube-ruby/0.1.7", transport: nil)
+      def initialize(api_key: ENV["CRAWLORA_API_KEY"], base_url: "https://api.crawlora.net/api/v1", timeout: 30, user_agent: "crawlora-youtube-ruby/0.1.8", transport: nil)
         @api_key = api_key
         @base_url = base_url.to_s.sub(%r{/+$}, "")
         @timeout = Float(timeout)

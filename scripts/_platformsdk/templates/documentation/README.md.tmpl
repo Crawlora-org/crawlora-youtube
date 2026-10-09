@@ -1,8 +1,8 @@
 # {{DISPLAY_NAME}} clients for Crawlora
 
-Official Crawlora client packages for the hosted {{DISPLAY_NAME}} API. These packages send requests to Crawlora's API and require a Crawlora account and `CRAWLORA_API_KEY`; service usage follows your Crawlora account billing plan.
+Official Crawlora client packages for the hosted {{DISPLAY_NAME}} API. These clients call Crawlora's hosted API; they do not scrape {{DISPLAY_NAME}} locally. Requests use your Crawlora account and `CRAWLORA_API_KEY`; service usage follows your account billing plan. Crawlora is independent from and not affiliated with or endorsed by {{DISPLAY_NAME}} or its owners.
 
-The packages do not run a browser or scrape {{DISPLAY_NAME}} locally. Crawlora is an independent service and is not affiliated with or endorsed by {{DISPLAY_NAME}} or its owners.
+## Language packages
 
 - JavaScript / TypeScript: [`{{NPM_NAME}}`](javascript/README.md)
 - Python: [`{{PYTHON_NAME}}`](python/README.md)
@@ -10,45 +10,14 @@ The packages do not run a browser or scrape {{DISPLAY_NAME}} locally. Crawlora i
 - Ruby: [`{{GEM_NAME}}`](ruby/README.md)
 - Java: [`{{MAVEN_COORDINATE}}`](java/README.md)
 - PHP: [`{{COMPOSER_NAME}}`](php/README.md)
-- Full endpoint and parameter reference: [docs/usage.md](docs/usage.md)
-- Runnable samples: [examples/](examples/)
-- Source repository: [{{REPOSITORY}}]({{REPOSITORY}})
 
-Create an account at [crawlora.net](https://crawlora.net/signup?utm_source=github&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-repository-signup), open the [Crawlora console](https://crawlora.net/app?utm_source=github&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-repository-console) to get an API key, or read the [API documentation](https://crawlora.net/docs?utm_source=github&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-repository-api-docs).
+For installation and runnable examples, use the README for your language. See the [API endpoint and parameter reference](docs/usage.md) for shared operation details.
 
-## Install
+Create an account at [crawlora.net](https://crawlora.net/signup?utm_source=github&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-repository-signup), open the [Crawlora console](https://crawlora.net/app?utm_source=github&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-repository-console) to get an API key, or read the [API documentation](https://crawlora.net/docs?utm_source=github&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-repository-api-docs). Keep `CRAWLORA_API_KEY` out of source control.
 
-```sh
-npm install {{NPM_NAME}}
-python -m pip install {{PYTHON_NAME}}
-go get {{GO_MODULE}}@latest
-gem install {{GEM_NAME}}
-composer require {{COMPOSER_NAME}}
-```
+## API coverage
 
-For Java, add `{{MAVEN_COORDINATE}}` to your Maven dependencies; see [java/README.md](java/README.md).
-
-Set your Crawlora key in the environment before running a client:
-
-```sh
-export CRAWLORA_API_KEY="your-crawlora-api-key"
-```
-
-Do not commit API keys. See the language-specific READMEs for sync and async use.
-
-## PHP example
-
-The Packagist package is available as `{{COMPOSER_NAME}}`:
-
-```sh
-composer require {{COMPOSER_NAME}}
-```
-
-```php
-{{PHP_EXAMPLE}}
-```
-
-The same example and install details are in [php/README.md](php/README.md).
+The six clients provide access to {{OPERATION_COUNT}} public API operations. See the [API reference](docs/usage.md) for supported operations, parameters, and response details.
 
 ## License
 
