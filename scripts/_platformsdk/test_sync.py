@@ -250,7 +250,7 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertIn('VERSION = "1.3.0"', (root / "ruby/lib/crawlora" / platform / "version.rb").read_text())
                 self.assertIn("<version>1.3.0</version>", (root / "java/pom.xml").read_text())
                 self.assertEqual(json.loads((root / "php/composer.json").read_text())["name"], f"crawlora/{platform}")
-                self.assertIn("go get github.com/Crawlora-org/crawlora-", (root / "README.md").read_text())
+                self.assertIn(f"github.com/Crawlora-org/crawlora-{platform}", (root / "README.md").read_text())
 
     @staticmethod
     def _source_file(root: Path, value: dict) -> Path:

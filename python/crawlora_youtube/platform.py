@@ -7,7 +7,7 @@ from .async_client import AsyncCrawloraClient
 class YouTubeClient(CrawloraClient):
     """Synchronous YouTube API client."""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        kwargs.setdefault('user_agent', 'crawlora-youtube-python/0.1.7')
+        kwargs.setdefault('user_agent', 'crawlora-youtube-python/0.1.8')
         super().__init__(*args, **kwargs)
 
     def captions(self, **params: Any) -> Any:
@@ -97,7 +97,7 @@ class YouTubeClient(CrawloraClient):
 class AsyncYouTubeClient(AsyncCrawloraClient):
     """Asynchronous YouTube API client."""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        kwargs.setdefault('user_agent', 'crawlora-youtube-python/0.1.7')
+        kwargs.setdefault('user_agent', 'crawlora-youtube-python/0.1.8')
         super().__init__(*args, **kwargs)
 
     async def captions(self, **params: Any) -> Any:

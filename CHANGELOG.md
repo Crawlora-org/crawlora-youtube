@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8 — 2026-10-09
+
+- Keep the platform README as a language-package index without cross-language installation commands or code examples; pkg.go.dev now shows only its Go example.
+
 ## 0.1.7 — 2026-10-09
 
 - Publish the PHP Composer package from a PHP-only source repository so Packagist displays only PHP installation and usage.

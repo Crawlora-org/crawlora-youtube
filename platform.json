@@ -10,6 +10,13 @@
   "python_name": "crawlora-youtube",
   "releases": [
     {
+      "version": "0.1.8",
+      "date": "2026-10-09",
+      "changes": [
+        "Keep the platform README as a language-package index without cross-language installation commands or code examples; pkg.go.dev now shows only its Go example."
+      ]
+    },
+    {
       "version": "0.1.7",
       "date": "2026-10-09",
       "changes": [
@@ -73,9 +80,9 @@
   ],
   "repository": "https://github.com/Crawlora-org/crawlora-youtube",
   "source_contract_sha256": "f8ff81231fc46cd7d6ef5f5bb99707dfa301c595ce731a533a67b49d055aa44b",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "golang_module_name": "github.com/Crawlora-org/crawlora-youtube",
-  "golang_version": "0.1.7",
+  "golang_version": "0.1.8",
   "ruby_gem_name": "crawlora-youtube",
   "php_package_name": "crawlora/youtube",
   "maven_group_id": "net.crawlora",
