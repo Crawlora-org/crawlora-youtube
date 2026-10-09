@@ -4,6 +4,7 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+{{NPM_OIDC_DISPATCH_INPUT}}
 
 permissions:
   contents: read
@@ -71,6 +72,7 @@ jobs:
           print(f"value={version}", file=open(os.environ["GITHUB_OUTPUT"], "a"))
           PY
 
+{{NPM_OIDC_VALIDATION_JOB}}
   publish-npm:
     needs: [validate, verify-release-version]
     runs-on: ubuntu-latest
@@ -375,23 +377,20 @@ jobs:
           server-password: MAVEN_CENTRAL_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      - name: Install Maven 3.9.16
-        env:
-          MAVEN_VERSION: "3.9.16"
-          MAVEN_SHA512: "831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6"
+      - name: Set up Maven 3.9.16
         run: |
           set -euo pipefail
-          archive="$RUNNER_TEMP/apache-maven-$MAVEN_VERSION-bin.tar.gz"
-          curl --fail --silent --show-error --location \
-            "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$MAVEN_VERSION/apache-maven-$MAVEN_VERSION-bin.tar.gz" \
-            --output "$archive"
-          echo "$MAVEN_SHA512  $archive" | sha512sum --check
+          version=3.9.16
+          checksum=831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6
+          url="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$version/apache-maven-$version-bin.tar.gz"
+          archive="$RUNNER_TEMP/apache-maven-$version-bin.tar.gz"
+          curl -fsSL "$url" -o "$archive"
+          echo "$checksum  $archive" | sha512sum --check -
           tar -xzf "$archive" -C "$RUNNER_TEMP"
-          echo "$RUNNER_TEMP/apache-maven-$MAVEN_VERSION/bin" >> "$GITHUB_PATH"
-      - name: Verify Maven version
-        run: |
-          mvn --version
-          test "$(mvn --version | sed -n '1s/^Apache Maven \([^ ]*\).*/\1/p')" = "3.9.16"
+          maven_bin="$RUNNER_TEMP/apache-maven-$version/bin"
+          echo "$maven_bin" >> "$GITHUB_PATH"
+          export PATH="$maven_bin:$PATH"
+          mvn --version | grep -q '^Apache Maven 3.9.16 '
       - name: Publish and sign Maven Central artifacts
         if: steps.registry.outputs.exists == 'false'
         run: mvn --batch-mode -P release deploy
@@ -556,8 +555,55 @@ jobs:
                   time.sleep(min(10, remaining))
           PY
 
-  publish-packagist:
+  sync-php-package-repository:
     needs: [validate, verify-release-version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Crawlora-org/crawlora-{{PLATFORM}}-php
+          ref: main
+          token: ${{ secrets.PHP_REPOSITORY_SYNC_TOKEN }}
+          path: .php-package
+      - name: Export and validate the PHP-only Composer package
+        run: python3 scripts/_platformsdk/packagist_mirror.py --source php --target .php-package
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+      - name: Validate and test the mirrored Composer package
+        working-directory: .php-package
+        run: composer validate --no-check-publish && composer test
+      - name: Push the PHP package snapshot and immutable release tag
+        working-directory: .php-package
+        env:
+          VERSION: ${{ needs.verify-release-version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Release {{DISPLAY_NAME}} PHP package v${VERSION}"
+            git push origin main
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" >/dev/null 2>&1; then
+            git fetch origin "refs/tags/v${VERSION}:refs/tags/v${VERSION}"
+            tag_commit="$(git rev-parse "refs/tags/v${VERSION}^{commit}")"
+            head_commit="$(git rev-parse HEAD)"
+            if [ "$tag_commit" != "$head_commit" ]; then
+              echo "PHP package tag v${VERSION} already points to a different snapshot" >&2
+              exit 1
+            fi
+          else
+            git tag -a "v${VERSION}" -m "Crawlora {{DISPLAY_NAME}} PHP package ${VERSION}"
+            git push origin "refs/tags/v${VERSION}"
+          fi
+
+  publish-packagist:
+    needs: [validate, verify-release-version, sync-php-package-repository]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -566,7 +612,7 @@ jobs:
           python-version: "3.12"
       - name: Refresh the Packagist package from this tag
         env:
-          PACKAGE_URL: "https://github.com/Crawlora-org/crawlora-{{PLATFORM}}"
+          PACKAGE_URL: "https://github.com/Crawlora-org/crawlora-{{PLATFORM}}-php"
           USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
           API_TOKEN: ${{ secrets.PACKAGIST_API_TOKEN }}
         run: |

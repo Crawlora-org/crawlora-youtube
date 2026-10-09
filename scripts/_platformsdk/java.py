@@ -137,6 +137,7 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     values["class_name"] = "Client"
     values["default_base_url"] = "https://api.crawlora.net/api/v1"
     values["scm_url"] = config["repository"].removesuffix(".git")
+    values["scm_browse_url"] = values["scm_url"].rstrip("/") + "/blob/main/java/README.md"
     values["homepage_url"] = escape(crawlora_url(source="maven-central", platform=platform, surface="java", destination="homepage"))
     values["organization_url"] = escape(crawlora_url(source="maven-central", platform=platform, surface="java", destination="organization-homepage"))
     values["repository_name"] = values["scm_url"].rstrip("/").rsplit("/", 1)[-1]
@@ -158,8 +159,21 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         ),
         next((op_id, method) for group in model.groups.values() for method, op_id in group.items()),
     )
+    if config.get("platform") == "bbb" and "bbb-search" in model.meta:
+        usage_operation = "bbb-search"
+        usage_method = next(
+            method
+            for group in model.groups.values()
+            for method, operation_id in group.items()
+            if operation_id == usage_operation
+        )
     values["usage_method"] = usage_method
-    values["usage_params"] = _sample_param_map(model.meta[usage_operation]["params"])
+    if config.get("platform") == "bbb" and usage_operation == "bbb-search":
+        values["usage_params"] = (
+            'Map.ofEntries(Map.entry("query", "coffee"), Map.entry("location", "New York, NY"))'
+        )
+    else:
+        values["usage_params"] = _sample_param_map(model.meta[usage_operation]["params"])
     text_operation = next(
         (op_id for op_id, operation in model.operations.items() if "text/plain" in operation.get("produces", [])),
         next(iter(model.operations)),

@@ -165,7 +165,10 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertIsNotNone(ruby_docs)
                 self.assertIsNotNone(ruby_source)
                 assert_utm(ruby_homepage.group(1), source="rubygems", platform=platform, surface="ruby", destination="homepage")
-                assert_utm(ruby_docs.group(1), source="rubygems", platform=platform, surface="ruby", destination="api-docs", path="/docs")
+                self.assertEqual(
+                    ruby_docs.group(1),
+                    f"https://github.com/Crawlora-org/crawlora-{platform}/blob/main/ruby/README.md",
+                )
                 self.assertEqual(ruby_source.group(1), f"https://github.com/Crawlora-org/crawlora-{platform}")
 
                 pom = ET.parse(root / "java/pom.xml").getroot()
@@ -178,13 +181,16 @@ class ContractSyncTests(unittest.TestCase):
                 self.assertEqual(pom.findtext(f"{namespace}description"), expected_description)
                 assert_utm(pom.findtext(f"{namespace}url"), source="maven-central", platform=platform, surface="java", destination="homepage")
                 assert_utm(pom.findtext(f"{namespace}developers/{namespace}developer/{namespace}organizationUrl"), source="maven-central", platform=platform, surface="java", destination="organization-homepage")
-                self.assertEqual(pom.findtext(f"{namespace}scm/{namespace}url"), f"https://github.com/Crawlora-org/crawlora-{platform}")
+                self.assertEqual(
+                    pom.findtext(f"{namespace}scm/{namespace}url"),
+                    f"https://github.com/Crawlora-org/crawlora-{platform}/blob/main/java/README.md",
+                )
 
                 for relative in ("composer.json", "php/composer.json"):
                     composer = json.loads((root / relative).read_text(encoding="utf-8"))
                     assert_utm(composer["homepage"], source="packagist", platform=platform, surface="php", destination="homepage")
                     assert_utm(composer["support"]["docs"], source="packagist", platform=platform, surface="php", destination="api-docs", path="/docs")
-                    self.assertEqual(composer["support"]["source"], f"https://github.com/Crawlora-org/crawlora-{platform}")
+                    self.assertEqual(composer["support"]["source"], f"https://github.com/Crawlora-org/crawlora-{platform}-php")
 
     def test_raw_header_normalization_matches_selected_public_contract(self) -> None:
         for platform in PLATFORMS:

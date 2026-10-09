@@ -3,6 +3,7 @@ package {{package_name}}
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -109,4 +110,22 @@ func TestGeneratedClientErrorsAndTimeout(t *testing.T) {
 			t.Fatal("expected request timeout")
 		}
 	})
+}
+
+func ExampleClient_Call() {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	}))
+	defer server.Close()
+
+	client := NewClient("your-crawlora-api-key")
+	client.BaseURL = server.URL + "/api/v1"
+	client.HTTPClient = server.Client()
+	result, err := client.Call(context.Background(), "{{sample_operation}}", {{sample_params}})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(result.(map[string]any)["ok"])
+	// Output: true
 }
