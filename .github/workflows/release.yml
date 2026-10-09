@@ -562,22 +562,49 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.verify-release-version.outputs.version }}
       - uses: actions/checkout@v4
         with:
           repository: Crawlora-org/crawlora-youtube-php
           ref: main
           token: ${{ secrets.PHP_REPOSITORY_SYNC_TOKEN }}
           path: .php-package
+      - name: Preserve a newer PHP package repository release
+        id: latest
+        working-directory: .php-package
+        env:
+          VERSION: ${{ needs.verify-release-version.outputs.version }}
+        run: |
+          git fetch --tags origin
+          latest_tag="$(git tag --list 'v[0-9]*' --sort=-version:refname | head -n 1)"
+          should_sync=true
+          if [ -n "$latest_tag" ]; then
+            latest_version="${latest_tag#v}"
+            newest_version="$(printf '%s\n' "$VERSION" "$latest_version" | sort -V | tail -n 1)"
+            if [ "$newest_version" != "$VERSION" ]; then
+              git rev-parse --verify "refs/tags/v${VERSION}^{commit}" >/dev/null 2>&1 || {
+                echo "PHP repository is newer but is missing release tag v${VERSION}" >&2
+                exit 1
+              }
+              should_sync=false
+              echo "Keeping PHP repository main at $latest_tag"
+            fi
+          fi
+          echo "should_sync=$should_sync" >> "$GITHUB_OUTPUT"
       - name: Export and validate the PHP-only Composer package
+        if: steps.latest.outputs.should_sync == 'true'
         run: python3 scripts/_platformsdk/packagist_mirror.py --source php --target .php-package
       - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
           tools: composer:v2
       - name: Validate and test the mirrored Composer package
+        if: steps.latest.outputs.should_sync == 'true'
         working-directory: .php-package
         run: composer validate --no-check-publish && composer test
       - name: Push the PHP package snapshot and immutable release tag
+        if: steps.latest.outputs.should_sync == 'true'
         working-directory: .php-package
         env:
           VERSION: ${{ needs.verify-release-version.outputs.version }}
@@ -648,11 +675,11 @@ jobs:
           import json, os, time, urllib.error, urllib.parse, urllib.request
           package = os.environ["PACKAGE"]
           url = "https://repo.packagist.org/p2/" + urllib.parse.quote(package, safe="/") + ".json"
-          deadline = time.monotonic() + 600
+          deadline = time.monotonic() + 1200
           while True:
               remaining = deadline - time.monotonic()
               if remaining <= 0:
-                  raise SystemExit("Packagist version is not visible after 10 minutes")
+                  raise SystemExit("Packagist version is not visible after 20 minutes")
               try:
                   with urllib.request.urlopen(url, timeout=min(20, remaining)) as response:
                       payload = json.load(response)
