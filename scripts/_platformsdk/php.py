@@ -48,7 +48,7 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     package_name = php.get("package_name", config.get("php_package_name", "crawlora/" + platform))
     version = php.get("version", config.get("php_version", config.get("version", "0.1.4")))
     repo = config.get("repository", "https://github.com/Crawlora-org/crawlora-" + platform)
-    php_repo = config.get("php_repository", repo.rstrip("/") + "-php")
+    php_repo = config.get("php_repository", repo)
     package = Path(root) / "php"
     src = package / "src" / "Crawlora" / class_name
     src.mkdir(parents=True, exist_ok=True)

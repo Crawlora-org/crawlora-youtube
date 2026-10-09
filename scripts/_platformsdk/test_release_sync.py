@@ -133,6 +133,7 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
         "golang_module_name": expected["go"],
         "ruby_gem_name": expected["ruby"],
         "php_package_name": expected["packagist"],
+        "php_repository": "https://github.com/" + expected["repository"],
         "maven_group_id": expected["maven_group"],
         "maven_artifact_id": expected["maven_artifact"],
         "version": VERSION,
@@ -171,7 +172,10 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
     )
     php_dir = root / "php"
     php_dir.mkdir()
-    composer = {"name": expected["packagist"]}
+    composer = {
+        "name": expected["packagist"],
+        "support": {"source": config["repository"]},
+    }
     (root / "composer.json").write_text(json.dumps(composer), encoding="utf-8")
     (php_dir / "composer.json").write_text(json.dumps(composer), encoding="utf-8")
     (root / "openapi").mkdir()
