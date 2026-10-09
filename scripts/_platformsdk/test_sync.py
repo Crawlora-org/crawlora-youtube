@@ -170,6 +170,12 @@ class ContractSyncTests(unittest.TestCase):
 
                 pom = ET.parse(root / "java/pom.xml").getroot()
                 namespace = "{http://maven.apache.org/POM/4.0.0}"
+                config = json.loads((root / "platform.json").read_text(encoding="utf-8"))
+                expected_description = config.get("java_description") or (
+                    f"Java client for Crawlora's hosted {config['display_name']} API, with direct methods for supported operations. "
+                    "Requires a Crawlora API key."
+                )
+                self.assertEqual(pom.findtext(f"{namespace}description"), expected_description)
                 assert_utm(pom.findtext(f"{namespace}url"), source="maven-central", platform=platform, surface="java", destination="homepage")
                 assert_utm(pom.findtext(f"{namespace}developers/{namespace}developer/{namespace}organizationUrl"), source="maven-central", platform=platform, surface="java", destination="organization-homepage")
                 self.assertEqual(pom.findtext(f"{namespace}scm/{namespace}url"), f"https://github.com/Crawlora-org/crawlora-{platform}")

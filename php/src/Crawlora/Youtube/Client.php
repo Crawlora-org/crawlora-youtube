@@ -26,7 +26,7 @@ final class Client
     private ?\Closure $transport;
 
     public const PLATFORM = 'youtube';
-    public const VERSION = '0.1.5';
+    public const VERSION = '0.1.6';
     public const OPERATION_COUNT = 14;
     public const OPERATION_IDS = ["youtube-captions", "youtube-channel-playlists", "youtube-channel-search", "youtube-channel-shorts", "youtube-channel-videos", "youtube-comments", "youtube-playlist", "youtube-profile", "youtube-search", "youtube-suggest", "youtube-tag", "youtube-transcript", "youtube-transcript-languages", "youtube-video"];
 
@@ -56,7 +56,7 @@ JSON, true, 512, JSON_THROW_ON_ERROR);
         $url = $this->buildUrl($operation, $params);
         $headers = [
             'x-api-key: ' . $this->apiKey,
-            'User-Agent: crawlora-youtube-php/0.1.5',
+            'User-Agent: crawlora-youtube-php/0.1.6',
             'Accept: ' . (in_array('text/plain', $operation['produces'], true) ? 'application/json, text/plain' : 'application/json'),
         ];
         try {

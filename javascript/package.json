@@ -1,6 +1,6 @@
 {
   "name": "@crawlora-org/youtube",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Typed JavaScript client for the Crawlora YouTube API",
   "homepage": "https://crawlora.net/?utm_source=npm&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-javascript-homepage",
   "bugs": { "url": "https://github.com/Crawlora-org/crawlora-youtube/issues" },
