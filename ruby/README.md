@@ -1,6 +1,6 @@
-# Crawlora YouTube Ruby client
+# Crawlora YouTube API client for Ruby (`crawlora-youtube`)
 
-This gem calls the Crawlora hosted API at `https://api.crawlora.net/api/v1`. It does not call or scrape YouTube directly. Requests require your Crawlora API key and use your account's service plan.
+This Ruby gem calls Crawlora's hosted YouTube API at `https://api.crawlora.net/api/v1`. It exposes 14 endpoints covering search, channels, videos, playlists, comments, captions, and transcripts; it does not call or scrape YouTube directly. Requests require your Crawlora API key and use your account's service plan.
 
 ## Install
 
@@ -15,7 +15,7 @@ require "json"
 require "crawlora/youtube"
 
 client = Crawlora::Youtube::Client.new
-result = client.request("youtube-channel-search", JSON.parse("{\"id\": \"sample-id\", \"q\": \"science explainers\"}"))
+result = client.request("youtube-search", JSON.parse("{\"q\": \"science explainers\"}"))
 puts result
 client.close
 ```
@@ -29,5 +29,26 @@ client.close
 ```
 
 Client options include `api_key`, `base_url`, and `timeout`. Ruby stdlib provides the HTTP and JSON support.
+
+## Supported YouTube API endpoints
+
+Browse every route included in this gem. The [endpoint reference](https://github.com/Crawlora-org/crawlora-youtube/blob/main/docs/usage.md) includes parameter and response details.
+
+| Method | Endpoint | API operation | Description |
+| --- | --- | --- | --- |
+| `GET` | `/youtube/captions/{id}` | `youtube-captions` | Retrieve auto-generated or human captions |
+| `GET` | `/youtube/channel/{id}/playlists` | `youtube-channel-playlists` | Retrieve the playlists tab for a YouTube channel |
+| `GET` | `/youtube/channel/{id}/search` | `youtube-channel-search` | Search within a YouTube channel |
+| `GET` | `/youtube/channel/{id}/shorts` | `youtube-channel-shorts` | Retrieve the shorts tab for a YouTube channel |
+| `GET` | `/youtube/channel/{id}/videos` | `youtube-channel-videos` | Retrieve the videos tab for a YouTube channel |
+| `GET` | `/youtube/comments/{id}` | `youtube-comments` | Retrieve video comments (top-level & replies) |
+| `GET` | `/youtube/playlist/{id}` | `youtube-playlist` | Retrieve playlist metadata and items |
+| `GET` | `/youtube/profile/{id}` | `youtube-profile` | Retrieve channel profile |
+| `GET` | `/youtube/search` | `youtube-search` | Search YouTube |
+| `GET` | `/youtube/suggest` | `youtube-suggest` | Suggest YouTube search queries |
+| `GET` | `/youtube/tag/{tag}` | `youtube-tag` | Retrieve YouTube videos by tag |
+| `GET` | `/youtube/transcript/{id}` | `youtube-transcript` | Retrieve transcript for a YouTube video |
+| `GET` | `/youtube/transcript/{id}/languages` | `youtube-transcript-languages` | List transcript languages for a YouTube video |
+| `GET` | `/youtube/video/{id}` | `youtube-video` | Retrieve video metadata & captions |
 
 See [Crawlora](https://crawlora.net/?utm_source=rubygems&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-ruby-homepage), the [API documentation](https://crawlora.net/docs?utm_source=rubygems&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-ruby-api-docs), and [the package repository](https://github.com/Crawlora-org/crawlora-youtube) for account setup, the API operation reference, and release history.

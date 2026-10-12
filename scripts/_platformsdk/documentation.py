@@ -115,6 +115,90 @@ def _operation_catalog(operations: list[dict[str, Any]]) -> str:
     return "\n".join(rows)
 
 
+def public_api_summary(config: dict[str, Any]) -> str:
+    """Return the curated endpoint-area phrase used by package landing pages."""
+    description = str(config.get("java_description") or "")
+    marker = " API, with "
+    if marker in description:
+        summary = description.split(marker, 1)[1]
+        summary = summary.split(". Requires a Crawlora API key.", 1)[0]
+        # Older descriptions read "with [direct] methods for <areas>"; keep only
+        # the areas so sentences built around the summary stay grammatical.
+        summary = re.sub(r"^(?:direct )?methods for ", "", summary.strip())
+        if summary.strip():
+            return summary.strip().rstrip(".")
+    display = str(config.get("display_name") or config.get("platform") or "platform")
+    return f"the supported {display} API endpoints"
+
+
+def seo_keywords(config: dict[str, Any]) -> list[str]:
+    """Build registry search keywords from the platform name and curated coverage.
+
+    Registry search matches keywords literally, so every coverage area is
+    qualified with the platform ("tiktok-comments", not "comments") and the
+    platform also gets the "-api", "-scraper" and "-data" forms people type.
+    """
+    platform = str(config.get("platform") or "platform").lower()
+    display = str(config.get("display_name") or platform).lower()
+    display_keyword = re.sub(r"[^a-z0-9]+", "-", display).strip("-")
+    names = [platform]
+    if display_keyword and display_keyword != platform:
+        names.append(display_keyword)
+
+    keywords = ["crawlora", "api-client", "sdk", "web-scraping", "scraping-api", *names]
+    for suffix in ("api", "scraper", "data"):
+        keywords.extend(f"{name}-{suffix}" for name in names)
+
+    ignored = {
+        "and", "for", "from", "the", "with", "of", "to", "by", "a", "an", "api", "direct", "methods", "method",
+    }
+    summary = public_api_summary(config)
+    for area in re.split(r"[,;]|\bplus\b", summary.lower()):
+        words = [word for word in re.findall(r"[a-z0-9]+", area) if word not in ignored]
+        if not words or len(words) > 3:
+            continue
+        if platform not in words:
+            words.insert(0, platform)
+        keyword = "-".join(words)
+        if keyword not in keywords:
+            keywords.append(keyword)
+    return list(dict.fromkeys(keywords))[:20]
+
+
+def _endpoint_table(operations: list[dict[str, Any]]) -> str:
+    rows = ["| Method | Endpoint | API operation | Description |", "| --- | --- | --- | --- |"]
+    for operation in sorted(operations, key=lambda op: (str(op["path"]).casefold(), str(op["verb"]))):
+        summary = str(operation.get("summary") or operation.get("id") or "").split("\n", 1)[0]
+        summary = summary.replace("|", "\\|").replace("`", "\\`").replace("\r", " ")
+        rows.append(
+            f"| `{operation['verb']}` | `{operation['path']}` | `{operation['id']}` | {summary} |"
+        )
+    return "\n".join(rows)
+
+
+def endpoint_table_from_spec(spec: dict[str, Any], platform: str) -> str:
+    """Render the complete, parameter-free endpoint list for package READMEs."""
+    operations: list[dict[str, str]] = []
+    for path, path_item in (spec.get("paths") or {}).items():
+        if not isinstance(path_item, dict):
+            continue
+        for verb, operation in path_item.items():
+            if verb.lower() not in _METHODS or not isinstance(operation, dict):
+                continue
+            operation_id = str(operation.get("operationId") or "")
+            tags = [str(tag).strip().lower() for tag in operation.get("tags", [])]
+            belongs = platform.lower() in tags or operation_id.lower().startswith(platform.lower() + "-")
+            if not operation_id or not belongs:
+                continue
+            operations.append({
+                "verb": verb.upper(),
+                "path": str(path),
+                "id": operation_id,
+                "summary": str(operation.get("summary") or operation.get("description") or operation_id),
+            })
+    return _endpoint_table(operations)
+
+
 def _example_values(platform: str, operations: list[dict[str, Any]]) -> list[tuple[dict[str, Any], dict[str, Any]]]:
     """Choose useful calls using only methods and parameter names in this spec."""
     by_id = {op["id"].lower(): op for op in operations}
@@ -156,6 +240,34 @@ def _example_values(platform: str, operations: list[dict[str, Any]]) -> list[tup
     elif platform == "imdb":
         add("imdb-search", {"query": "Inception"})
         add("imdb-charts", {})
+    elif platform == "google":
+        add("google-news", {"q": "artificial intelligence"})
+        add("google-map-search", {"mapSearchOption": {"keyword": "coffee shops in Seattle", "country": "us", "language": "en"}})
+        add("google-trends-trending", {"geo": "US"})
+    elif platform == "bing":
+        add("bing-search", {"q": "open source web crawler"})
+        add("bing-news", {"q": "technology"})
+    elif platform == "brave":
+        add("brave-search", {"q": "open source web crawler"})
+        add("brave-suggest", {"q": "open source"})
+    elif platform == "duckduckgo":
+        add("duckduckgo-search", {"q": "open source web crawler"})
+        add("duckduckgo-news", {"q": "technology"})
+    elif platform == "ebay":
+        add("ebay-seller", {"seller": "musicmagpie"})
+        add("ebay-search", {"option": {"keyword": "vintage camera"}})
+    elif platform == "googleplay":
+        add("googleplay-search", {"term": "podcast player"})
+        add("googleplay-app", {"app_id": "com.spotify.music"})
+    elif platform == "appstore":
+        add("appstore-search", {"term": "podcast player"})
+        add("appstore-app", {"id": "324684580"})
+    elif platform == "airbnb":
+        add("airbnb-search", {"location": "Lisbon, Portugal"})
+        add("airbnb-room", {"id": "7743405"})
+    elif platform == "spotify":
+        add("spotify-search", {"q": "daft punk"})
+        add("spotify-track", {"id": "4cOdK2wGLETKBW3PvgPWqT"})
     return selected
 
 
@@ -344,6 +456,15 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "tiktok": "17 4 * * *",
         "amazon": "27 4 * * *",
         "imdb": "37 4 * * *",
+        "google": "47 4 * * *",
+        "bing": "57 4 * * *",
+        "brave": "07 5 * * *",
+        "duckduckgo": "17 5 * * *",
+        "ebay": "27 5 * * *",
+        "googleplay": "37 5 * * *",
+        "appstore": "47 5 * * *",
+        "airbnb": "57 5 * * *",
+        "spotify": "07 6 * * *",
     }
     try:
         sync_cron = sync_schedules[platform]
@@ -371,6 +492,9 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "VERSION": version,
         "CONTRACT_REVISION": str(config.get("contract_revision") or version),
         "OPERATION_COUNT": str(len(operations)),
+        "SEO_SUMMARY": public_api_summary(config),
+        "SEO_KEYWORDS_JSON": json.dumps(seo_keywords(config), ensure_ascii=False),
+        "ENDPOINT_TABLE": _endpoint_table(operations),
         "OPERATION_CATALOG": catalog,
         "JS_EXAMPLE": js_example.rstrip(),
         "PYTHON_EXAMPLE": py_example.rstrip(),

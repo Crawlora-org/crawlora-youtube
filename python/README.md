@@ -1,7 +1,6 @@
-# crawlora-youtube
+# crawlora-youtube — YouTube API client for Python
 
-Python client for Crawlora's hosted YouTube API. It calls Crawlora's
-service at [Crawlora](https://crawlora.net/?utm_source=pypi&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-python-homepage); it does not run a browser or scrape
+Python client for Crawlora's hosted YouTube API. It exposes 14 API endpoints covering search, channels, videos, playlists, comments, captions, and transcripts. Requests go to [Crawlora](https://crawlora.net/?utm_source=pypi&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-python-homepage); the package does not run a browser or scrape
 YouTube locally. A Crawlora account and `CRAWLORA_API_KEY` are required,
 and API use is billed under your Crawlora account. Crawlora is independent from and not endorsed by
 YouTube or its owners.
@@ -69,6 +68,27 @@ asyncio.run(main())
 ```
 
 See the [runnable example](https://github.com/Crawlora-org/crawlora-youtube/blob/main/examples/python.py) for a complete usage example.
+
+## Supported YouTube API endpoints
+
+This package exposes every route below through direct snake_case methods and the `youtube` group. See the [endpoint and parameter reference](https://github.com/Crawlora-org/crawlora-youtube/blob/main/docs/usage.md) for complete input details.
+
+| Method | Endpoint | API operation | Description |
+| --- | --- | --- | --- |
+| `GET` | `/youtube/captions/{id}` | `youtube-captions` | Retrieve auto-generated or human captions |
+| `GET` | `/youtube/channel/{id}/playlists` | `youtube-channel-playlists` | Retrieve the playlists tab for a YouTube channel |
+| `GET` | `/youtube/channel/{id}/search` | `youtube-channel-search` | Search within a YouTube channel |
+| `GET` | `/youtube/channel/{id}/shorts` | `youtube-channel-shorts` | Retrieve the shorts tab for a YouTube channel |
+| `GET` | `/youtube/channel/{id}/videos` | `youtube-channel-videos` | Retrieve the videos tab for a YouTube channel |
+| `GET` | `/youtube/comments/{id}` | `youtube-comments` | Retrieve video comments (top-level & replies) |
+| `GET` | `/youtube/playlist/{id}` | `youtube-playlist` | Retrieve playlist metadata and items |
+| `GET` | `/youtube/profile/{id}` | `youtube-profile` | Retrieve channel profile |
+| `GET` | `/youtube/search` | `youtube-search` | Search YouTube |
+| `GET` | `/youtube/suggest` | `youtube-suggest` | Suggest YouTube search queries |
+| `GET` | `/youtube/tag/{tag}` | `youtube-tag` | Retrieve YouTube videos by tag |
+| `GET` | `/youtube/transcript/{id}` | `youtube-transcript` | Retrieve transcript for a YouTube video |
+| `GET` | `/youtube/transcript/{id}/languages` | `youtube-transcript-languages` | List transcript languages for a YouTube video |
+| `GET` | `/youtube/video/{id}` | `youtube-video` | Retrieve video metadata & captions |
 
 ## Configuration
 

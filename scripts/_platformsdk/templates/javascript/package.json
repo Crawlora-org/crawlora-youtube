@@ -1,10 +1,10 @@
 {
   "name": "{{npm_name}}",
   "version": "{{version}}",
-  "description": "Typed JavaScript client for the Crawlora {{display_name}} API",
+  "description": "Crawlora {{display_name}} API client with {{operation_count}} endpoints for {{seo_summary}}",
   "homepage": "{{homepage}}",
   "bugs": { "url": "{{bugs_url}}" },
-  "keywords": ["crawlora", "api-client", "web-scraping", "{{platform}}", "typescript"],
+  "keywords": {{seo_keywords_json}},
   "type": "module",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",

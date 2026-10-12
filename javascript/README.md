@@ -1,7 +1,7 @@
-# @crawlora-org/youtube
+# @crawlora-org/youtube — YouTube API client for JavaScript and TypeScript
 
 JavaScript and TypeScript client for Crawlora's hosted YouTube API.
-It calls [Crawlora](https://crawlora.net/?utm_source=npm&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-javascript-homepage); it does not run a browser or scrape YouTube locally. A Crawlora account and `CRAWLORA_API_KEY` are required, and API use is billed under your Crawlora account. Crawlora is independent from and not endorsed by YouTube or its owners.
+It exposes 14 API endpoints for search, channels, videos, playlists, comments, captions, and transcripts through [Crawlora](https://crawlora.net/?utm_source=npm&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-javascript-homepage). It does not run a browser or scrape YouTube locally. A Crawlora account and `CRAWLORA_API_KEY` are required, and API use is billed under your Crawlora account. Crawlora is independent from and not endorsed by YouTube or its owners.
 
 ## Install
 
@@ -42,6 +42,26 @@ group. See the full method and parameter list in the [online reference](https://
 
 Methods return promises and can be awaited. See the [runnable example](https://github.com/Crawlora-org/crawlora-youtube/blob/main/examples/javascript.mjs) for a complete usage example.
 
+## Supported YouTube API endpoints
+
+This package exposes each route below as a direct method and through the `youtube` group. See the [endpoint and parameter reference](https://github.com/Crawlora-org/crawlora-youtube/blob/main/docs/usage.md) for complete input details.
+
+| Method | Endpoint | API operation | Description |
+| --- | --- | --- | --- |
+| `GET` | `/youtube/captions/{id}` | `youtube-captions` | Retrieve auto-generated or human captions |
+| `GET` | `/youtube/channel/{id}/playlists` | `youtube-channel-playlists` | Retrieve the playlists tab for a YouTube channel |
+| `GET` | `/youtube/channel/{id}/search` | `youtube-channel-search` | Search within a YouTube channel |
+| `GET` | `/youtube/channel/{id}/shorts` | `youtube-channel-shorts` | Retrieve the shorts tab for a YouTube channel |
+| `GET` | `/youtube/channel/{id}/videos` | `youtube-channel-videos` | Retrieve the videos tab for a YouTube channel |
+| `GET` | `/youtube/comments/{id}` | `youtube-comments` | Retrieve video comments (top-level & replies) |
+| `GET` | `/youtube/playlist/{id}` | `youtube-playlist` | Retrieve playlist metadata and items |
+| `GET` | `/youtube/profile/{id}` | `youtube-profile` | Retrieve channel profile |
+| `GET` | `/youtube/search` | `youtube-search` | Search YouTube |
+| `GET` | `/youtube/suggest` | `youtube-suggest` | Suggest YouTube search queries |
+| `GET` | `/youtube/tag/{tag}` | `youtube-tag` | Retrieve YouTube videos by tag |
+| `GET` | `/youtube/transcript/{id}` | `youtube-transcript` | Retrieve transcript for a YouTube video |
+| `GET` | `/youtube/transcript/{id}/languages` | `youtube-transcript-languages` | List transcript languages for a YouTube video |
+| `GET` | `/youtube/video/{id}` | `youtube-video` | Retrieve video metadata & captions |
 
 ## Configuration
 

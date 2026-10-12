@@ -16,15 +16,38 @@ PLATFORMS = {
     "tiktok": ("TikTok", "TikTokClient"),
     "amazon": ("Amazon", "AmazonClient"),
     "imdb": ("IMDb", "IMDbClient"),
+    "google": ("Google", "GoogleClient"),
+    "bing": ("Bing", "BingClient"),
+    "brave": ("Brave Search", "BraveClient"),
+    "duckduckgo": ("DuckDuckGo", "DuckDuckGoClient"),
+    "ebay": ("eBay", "EbayClient"),
+    "googleplay": ("Google Play", "GooglePlayClient"),
+    "appstore": ("App Store", "AppStoreClient"),
+    "airbnb": ("Airbnb", "AirbnbClient"),
+    "spotify": ("Spotify", "SpotifyClient"),
 }
 # TikTok's public API uses product-area tags for several operation groups. Keep
 # those in the TikTok package while excluding neighboring products that share
 # an operation-ID prefix (for example Amazon Jobs).
 PLATFORM_TAG_ALIASES = {
     "tiktok": frozenset({"tiktok", "tiktok creative center", "tiktok popular trend", "tiktok top ads"}),
+    "duckduckgo": frozenset({"duckduckgo", "duckduckgo search"}),
+    "spotify": frozenset({"spotify", "spotifypodcasts"}),
 }
 PLATFORM_EXCLUDED_TAGS = {
     "amazon": frozenset({"amazon jobs"}),
+    "google": frozenset({"google jobs"}),
+}
+# Spotify Podcasts is served from a sibling path family and belongs in the
+# Spotify package. Other platforms own exactly "/<platform>/".
+PLATFORM_PATH_PREFIXES = {
+    "spotify": ("/spotify/", "/spotify-podcasts/"),
+}
+# Operations kept out of a package even if the public contract lists them
+# again later. Google web search has no dependable upstream path, so the
+# Google package must never pick it up through the daily contract sync.
+PLATFORM_EXCLUDED_OPERATIONS = {
+    "google": frozenset({"google-search"}),
 }
 JAVA_DESCRIPTIONS = {
     "sofascore": (
@@ -62,6 +85,42 @@ JAVA_DESCRIPTIONS = {
     "imdb": (
         "Java client for Crawlora's hosted IMDb API, with title and name search, charts, ratings, credits, awards, "
         "episodes, reviews, images, and title metadata. Requires a Crawlora API key."
+    ),
+    "google": (
+        "Java client for Crawlora's hosted Google API, with Maps search, places, reviews and photos; News; Trends; "
+        "Finance quotes and markets; suggestions; videos; and jobs. Requires a Crawlora API key."
+    ),
+    "bing": (
+        "Java client for Crawlora's hosted Bing API, with web, news, image, and video search plus query suggestions. "
+        "Requires a Crawlora API key."
+    ),
+    "brave": (
+        "Java client for Crawlora's hosted Brave Search API, with web, news, image, and video search plus query "
+        "suggestions. Requires a Crawlora API key."
+    ),
+    "duckduckgo": (
+        "Java client for Crawlora's hosted DuckDuckGo API, with web, news, image, video, and shopping search plus "
+        "query suggestions. Requires a Crawlora API key."
+    ),
+    "ebay": (
+        "Java client for Crawlora's hosted eBay API, with listing search, item details, seller profiles, feedback and "
+        "shops, and eBay Live streams. Requires a Crawlora API key."
+    ),
+    "googleplay": (
+        "Java client for Crawlora's hosted Google Play API, with app search, details, reviews, ratings, permissions, "
+        "data safety, charts, similar apps, and developers. Requires a Crawlora API key."
+    ),
+    "appstore": (
+        "Java client for Crawlora's hosted App Store API, with app search, details, reviews, ratings, privacy labels, "
+        "version history, charts, editorial collections, and developers. Requires a Crawlora API key."
+    ),
+    "airbnb": (
+        "Java client for Crawlora's hosted Airbnb API, with listing search, room details, calendars and reviews, and "
+        "host profiles, listings and reviews. Requires a Crawlora API key."
+    ),
+    "spotify": (
+        "Java client for Crawlora's hosted Spotify API, with search, tracks, albums, artists, playlists, profiles, "
+        "audiobooks, charts, and podcast shows and episodes. Requires a Crawlora API key."
     ),
 }
 HTTP_METHODS = frozenset({"get", "put", "post", "delete", "options", "head", "patch"})
@@ -138,7 +197,10 @@ def select(spec: dict, platform: str) -> dict:
             allowed_tags = PLATFORM_TAG_ALIASES.get(platform, frozenset({platform}))
             if tags.intersection(PLATFORM_EXCLUDED_TAGS.get(platform, frozenset())):
                 continue
-            path_matches = path.startswith("/" + platform + "/")
+            if identifier in PLATFORM_EXCLUDED_OPERATIONS.get(platform, frozenset()):
+                continue
+            prefixes = PLATFORM_PATH_PREFIXES.get(platform, ("/" + platform + "/",))
+            path_matches = path.startswith(prefixes)
             tag_matches = bool(tags.intersection(allowed_tags))
             if not isinstance(identifier, str) or not identifier.startswith(platform + "-"):
                 if path_matches or tag_matches:
@@ -146,7 +208,7 @@ def select(spec: dict, platform: str) -> dict:
                         f"unexpected operation ID for {platform} operation at {path}: {identifier!r}"
                     )
                 continue
-            if not path.startswith("/" + platform + "/"):
+            if not path_matches:
                 raise ValueError(f"unexpected path for {identifier}: {path}")
             if tags and tags.isdisjoint(allowed_tags):
                 raise ValueError(f"unexpected tag for {identifier}: {sorted(tags)}")

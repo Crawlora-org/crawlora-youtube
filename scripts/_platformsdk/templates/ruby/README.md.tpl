@@ -1,6 +1,6 @@
-# Crawlora {{DISPLAY_NAME}} Ruby client
+# Crawlora {{DISPLAY_NAME}} API client for Ruby (`{{GEM_NAME}}`)
 
-This gem calls the Crawlora hosted API at `https://api.crawlora.net/api/v1`. It does not call or scrape {{DISPLAY_NAME}} directly. Requests require your Crawlora API key and use your account's service plan.
+This Ruby gem calls Crawlora's hosted {{DISPLAY_NAME}} API at `https://api.crawlora.net/api/v1`. It exposes {{OPERATION_COUNT}} endpoints covering {{SEO_SUMMARY}}; it does not call or scrape {{DISPLAY_NAME}} directly. Requests require your Crawlora API key and use your account's service plan.
 
 ## Install
 
@@ -29,5 +29,11 @@ client.close
 ```
 
 Client options include `api_key`, `base_url`, and `timeout`. Ruby stdlib provides the HTTP and JSON support.
+
+## Supported {{DISPLAY_NAME}} API endpoints
+
+Browse every route included in this gem. The [endpoint reference]({{REPOSITORY}}/blob/main/docs/usage.md) includes parameter and response details.
+
+{{ENDPOINT_TABLE}}
 
 See [Crawlora](https://crawlora.net/?utm_source=rubygems&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-ruby-homepage), the [API documentation](https://crawlora.net/docs?utm_source=rubygems&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-ruby-api-docs), and [the package repository]({{REPOSITORY}}) for account setup, the API operation reference, and release history.

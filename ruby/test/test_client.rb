@@ -15,7 +15,7 @@ class PlatformClientTest < Minitest::Test
       transport: transport
     )
 
-    result = client.request("youtube-channel-search", JSON.parse("{\"id\": \"sample-id\", \"q\": \"science explainers\"}"))
+    result = client.request("youtube-search", JSON.parse("{\"q\": \"science explainers\"}"))
     assert_equal({ "ok" => true }, result)
     assert_equal 1, calls.length
     assert_includes calls.first[0], "/youtube/"

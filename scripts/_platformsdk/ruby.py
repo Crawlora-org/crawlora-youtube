@@ -22,8 +22,16 @@ def _replace(template: str, values: dict[str, str]) -> str:
 
 def _example_call(platform: str, model: Any) -> tuple[str, dict[str, Any]]:
     """Choose a contract-backed searchable operation and representative params."""
-    operation_ids = list(model.meta)
-    operation_id = next((item for item in operation_ids if item.endswith("-search")), operation_ids[0])
+    # README and generated-test calls use GET operations.
+    operation_ids = [item for item in model.meta if model.operations[item]["method"] == "GET"]
+    if not operation_ids:
+        raise ValueError("focused client needs at least one GET operation")
+    # Prefer the platform's own search over a sub-family search that lives under
+    # another path prefix (spotify-podcasts-search), which the generated tests reject.
+    operation_id = next(
+        (item for item in operation_ids if item == platform + "-search"),
+        next((item for item in operation_ids if item.endswith("-search")), operation_ids[0]),
+    )
     preferred = {
         "sofascore": "Liverpool",
         "flashscore": "football",
@@ -73,8 +81,10 @@ def _operations(spec: dict[str, Any], model: Any) -> tuple[dict[str, Any], list[
     if len(names) != len(set(names)):
         raise ValueError("platform operation aliases must be unique")
     for operation_id, parsed in model.operations.items():
-        if parsed["method"] != "GET":
-            raise ValueError(f"focused client supports GET operations only: {operation_id}")
+        if parsed["method"] != "GET" and (
+            parsed["method"] != "POST" or not parsed.get("bodyParam") or parsed.get("formParams")
+        ):
+            raise ValueError(f"focused client supports GET and JSON-body POST only: {operation_id}")
         raw = source[operation_id]
         params = model.meta[operation_id]["params"]
         operations[operation_id] = {
@@ -83,6 +93,8 @@ def _operations(spec: dict[str, Any], model: Any) -> tuple[dict[str, Any], list[
             "path": parsed["path"],
             "pathParams": parsed.get("pathParams", []),
             "queryParams": parsed.get("queryParams", []),
+            "bodyParam": parsed.get("bodyParam") or None,
+            "bodyRequired": bool(parsed.get("bodyRequired")),
             "params": params,
             "produces": raw.get("produces", []),
             "security": parsed.get("security", []),
@@ -120,6 +132,8 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     package = Path(root) / "ruby"
     lib = package / "lib" / "crawlora" / platform
     lib.mkdir(parents=True, exist_ok=True)
+    from .documentation import endpoint_table_from_spec, public_api_summary
+
     template_root = Path(__file__).resolve().parent / "templates" / "ruby"
     values = {
         "PLATFORM": platform,
@@ -134,6 +148,8 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
         "OPERATION_JSON": json.dumps(operations, ensure_ascii=False, sort_keys=True),
         "OPERATION_IDS_JSON": json.dumps(sorted(operations)),
         "OPERATION_COUNT": str(len(operations)),
+        "SEO_SUMMARY": public_api_summary(config),
+        "ENDPOINT_TABLE": endpoint_table_from_spec(spec, platform),
         "DEPENDENCIES": dependency_lines,
         "DIRECT_METHODS": "\n".join(
             f"      define_method({method!r}) do |**params|\n"

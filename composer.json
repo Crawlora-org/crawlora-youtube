@@ -1,6 +1,24 @@
 {
   "name": "crawlora/youtube",
-  "description": "YouTube client for the Crawlora hosted API",
+  "description": "Crawlora YouTube API client with 14 endpoints for search, channels, videos, playlists, comments, captions, and transcripts",
+  "keywords": [
+    "crawlora",
+    "api-client",
+    "sdk",
+    "web-scraping",
+    "scraping-api",
+    "youtube",
+    "youtube-api",
+    "youtube-scraper",
+    "youtube-data",
+    "youtube-search",
+    "youtube-channels",
+    "youtube-videos",
+    "youtube-playlists",
+    "youtube-comments",
+    "youtube-captions",
+    "youtube-transcripts"
+  ],
   "type": "library",
   "license": "MIT",
   "require": {

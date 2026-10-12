@@ -4,4 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 /** Immutable metadata for one operation in this platform client. */
-public record Operation(String id, String method, String path, Map<String, Param> params, List<String> produces) {}
+public record Operation(String id, String method, String path, Map<String, Param> params, List<String> produces, String bodyParam) {
+    /** Operation without a request body. */
+    public Operation(String id, String method, String path, Map<String, Param> params, List<String> produces) {
+        this(id, method, path, params, produces, "");
+    }
+}

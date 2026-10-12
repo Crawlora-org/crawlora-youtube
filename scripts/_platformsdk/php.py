@@ -52,6 +52,8 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     package = Path(root) / "php"
     src = package / "src" / "Crawlora" / class_name
     src.mkdir(parents=True, exist_ok=True)
+    from .documentation import endpoint_table_from_spec, public_api_summary, seo_keywords
+
     templates = Path(__file__).resolve().parent / "templates" / "php"
     values = {
         "PLATFORM": platform,
@@ -67,6 +69,9 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
         "OPERATION_JSON": json.dumps(operations, ensure_ascii=False, sort_keys=True),
         "OPERATION_IDS_JSON": json.dumps(sorted(operations)),
         "OPERATION_COUNT": str(len(operations)),
+        "SEO_SUMMARY": public_api_summary(config),
+        "SEO_KEYWORDS_JSON": json.dumps(seo_keywords(config), ensure_ascii=False),
+        "ENDPOINT_TABLE": endpoint_table_from_spec(spec, platform),
         "OPERATION_IDS_PHP": "[" + ", ".join(json.dumps(item) for item in sorted(operations)) + "]",
         "DIRECT_METHODS": "\n".join(
             "    public function " + method + "(mixed ...$params): mixed\n    {\n"

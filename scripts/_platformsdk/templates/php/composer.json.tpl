@@ -1,6 +1,7 @@
 {
   "name": "{{PACKAGE_NAME}}",
-  "description": "{{DISPLAY_NAME}} client for the Crawlora hosted API",
+  "description": "Crawlora {{DISPLAY_NAME}} API client with {{OPERATION_COUNT}} endpoints for {{SEO_SUMMARY}}",
+  "keywords": {{SEO_KEYWORDS_JSON}},
   "type": "library",
   "license": "MIT",
   "require": {

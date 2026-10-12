@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import pprint
 import shutil
 import sys
@@ -396,9 +397,14 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     )
     (package / "py.typed").write_text("", encoding="utf-8")
 
+    from .documentation import public_api_summary, seo_keywords
+
     pyproject = (template_root / "pyproject.toml.tpl").read_text(encoding="utf-8")
     template_values = {
         **config,
+        "SEO_SUMMARY": public_api_summary(config),
+        "SEO_KEYWORDS_JSON": json.dumps(seo_keywords(config), ensure_ascii=False),
+        "OPERATION_COUNT": str(model.operation_count),
         "homepage_url": crawlora_url(source="pypi", platform=config["platform"], surface="python", destination="homepage"),
         "documentation_url": crawlora_url(source="pypi", platform=config["platform"], surface="python", destination="api-docs", path="/docs"),
     }

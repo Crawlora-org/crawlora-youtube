@@ -55,12 +55,30 @@ def _raw_spec(platform: str, *, extra: bool = False) -> dict:
         "tiktok": [("search", "search"), ("trending", "trending")],
         "amazon": [("search", "search"), ("product", "product")],
         "imdb": [("search", "search"), ("charts", "charts")],
+        "google": [("news", "news"), ("suggest", "suggest")],
+        "bing": [("search", "search"), ("news", "news")],
+        "brave": [("search", "search"), ("suggest", "suggest")],
+        "duckduckgo": [("search", "search"), ("news", "news")],
+        "ebay": [("seller", "seller"), ("live-streams", "live/streams")],
+        "googleplay": [("search", "search"), ("app", "app")],
+        "appstore": [("search", "search"), ("app", "app")],
+        "airbnb": [("search", "search"), ("room", "room")],
+        "spotify": [("search", "search"), ("track", "track")],
     }[platform]
     paths = {}
     for suffix, path_suffix in operation_ids:
         operation = _operation(platform, suffix)
+        if (platform, suffix) == ("ebay", "seller"):
+            operation["parameters"][0]["name"] = "seller"
+        if (platform, suffix) in {("google", "news"), ("ebay", "seller")}:
+            # These packages have no "<platform>-search" operation; their first
+            # operation carries the raw header parameter instead.
+            operation["parameters"].append({"name": "X-API-Key", "in": "header", "type": "string"})
         if suffix == "search":
-            query_name = {"tiktok": "keyword", "amazon": "k", "imdb": "query"}.get(platform)
+            query_name = {
+                "tiktok": "keyword", "amazon": "k", "imdb": "query",
+                "googleplay": "term", "appstore": "term", "airbnb": "location",
+            }.get(platform)
             if query_name:
                 operation["parameters"][0]["name"] = query_name
             operation["parameters"].append({"name": "X-API-Key", "in": "header", "type": "string"})
@@ -218,14 +236,17 @@ class ContractSyncTests(unittest.TestCase):
                 normalized = sync.normalize_public_spec(source, platform)
                 prepared = copy.deepcopy(source)
                 prepared["securityDefinitions"] = copy.deepcopy(sync._AUTH_DEFINITIONS)
-                search = next(op["get"] for path, op in prepared["paths"].items() if op["get"]["operationId"] == f"{platform}-search")
+                search = next(
+                    op["get"] for path, op in prepared["paths"].items()
+                    if any(p.get("in") == "header" for p in op["get"]["parameters"])
+                )
                 search["parameters"] = [p for p in search["parameters"] if p.get("in") != "header"]
                 search["security"] = [{"ApiKeyAuth": []}]
                 expected = select(prepared, platform)
                 self.assertEqual(normalized, expected)
                 self.assertEqual(set(normalized["definitions"]), {"Envelope", "Item"})
 
-    def test_discovers_and_generates_new_operation_for_all_nine_clients(self) -> None:
+    def test_discovers_and_generates_new_operation_for_all_clients(self) -> None:
         for platform in PLATFORMS:
             with self.subTest(platform=platform), tempfile.TemporaryDirectory(prefix="platform-sync-") as temp:
                 root = Path(temp)

@@ -45,15 +45,24 @@ module Crawlora
         raise Errors::ClientError.new("unknown operation: #{operation_id}", operation_id: operation_id) unless operation
         raise Errors::ClientError.new("Crawlora API key is required", operation_id: operation_id) if @api_key.nil? || @api_key.to_s.empty?
         normalized = params.each_with_object({}) { |(key, value), out| out[key.to_s] = value }
+        payload = request_body(operation, normalized)
         url = build_url(operation, normalized)
         uri = URI.parse(url)
-        request = Net::HTTP::Get.new(uri)
+        request = operation["method"] == "POST" ? Net::HTTP::Post.new(uri) : Net::HTTP::Get.new(uri)
+        unless payload.nil?
+          request.body = payload
+          request["Content-Type"] = "application/json"
+        end
         request["x-api-key"] = @api_key
         request["User-Agent"] = @user_agent
         request["Accept"] = operation["produces"].include?("text/plain") ? "application/json, text/plain" : "application/json"
         begin
           if @transport
-            response = @transport.call(url, request.to_hash, @timeout)
+            response = if operation["method"] == "POST"
+              @transport.call(url, request.to_hash, @timeout, "POST", payload)
+            else
+              @transport.call(url, request.to_hash, @timeout)
+            end
             status = Integer(response.fetch(:status) { response.fetch("status") })
             body = response.fetch(:body) { response.fetch("body", "") }
             headers = response.fetch(:headers) { response.fetch("headers", {}) }
@@ -109,8 +118,21 @@ module Crawlora
 
       private
 
+      # POST operations take their JSON body under the body parameter name or "body".
+      def request_body(operation, params)
+        name = operation["bodyParam"]
+        return nil if name.nil?
+        value = params.key?(name) ? params[name] : params["body"]
+        if value.nil?
+          raise Errors::ClientError.new("missing request body: #{name}", operation_id: operation["id"]) if operation["bodyRequired"]
+          return nil
+        end
+        value.is_a?(String) ? value : JSON.generate(value)
+      end
+
       def build_url(operation, params)
         known = operation["params"].map { |param| param["name"] }
+        known << "body" if operation["bodyParam"]
         unknown = params.keys - known
         raise Errors::ClientError.new("unknown parameters: #{unknown.join(', ')}", operation_id: operation["id"]) unless unknown.empty?
         path = operation["path"].dup

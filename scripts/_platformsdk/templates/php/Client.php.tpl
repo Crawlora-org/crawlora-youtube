@@ -53,14 +53,18 @@ JSON, true, 512, JSON_THROW_ON_ERROR);
         if ($this->apiKey === '') {
             throw new ClientException('Crawlora API key is required', null, $operationId);
         }
+        $payload = $this->requestBody($operation, $params);
         $url = $this->buildUrl($operation, $params);
         $headers = [
             'x-api-key: ' . $this->apiKey,
             'User-Agent: crawlora-{{PLATFORM}}-php/{{VERSION}}',
             'Accept: ' . (in_array('text/plain', $operation['produces'], true) ? 'application/json, text/plain' : 'application/json'),
         ];
+        if ($payload !== null) {
+            $headers[] = 'Content-Type: application/json';
+        }
         try {
-            [$status, $contentType, $body] = $this->send($url, $headers, $operationId);
+            [$status, $contentType, $body] = $this->send($url, $headers, $operationId, $operation['method'], $payload);
         } catch (CrawloraException $exception) {
             throw $exception;
         } catch (\Throwable $exception) {
@@ -100,9 +104,29 @@ JSON, true, 512, JSON_THROW_ON_ERROR);
 
 {{DIRECT_METHODS}}
 
+    /** POST operations take their JSON body under the body parameter name or "body". */
+    private function requestBody(array $operation, array $params): ?string
+    {
+        $name = $operation['bodyParam'] ?? null;
+        if ($name === null) {
+            return null;
+        }
+        $value = $params[$name] ?? ($params['body'] ?? null);
+        if ($value === null) {
+            if ($operation['bodyRequired'] ?? false) {
+                throw new ClientException('Missing request body: ' . $name, null, $operation['id']);
+            }
+            return null;
+        }
+        return is_string($value) ? $value : json_encode($value, JSON_THROW_ON_ERROR);
+    }
+
     private function buildUrl(array $operation, array $params): string
     {
         $known = array_column($operation['params'], 'name');
+        if (($operation['bodyParam'] ?? null) !== null) {
+            $known[] = 'body';
+        }
         $unknown = array_diff(array_keys($params), $known, ['response_type', '_response_type']);
         if ($unknown !== []) {
             throw new ClientException('Unknown parameters: ' . implode(', ', $unknown), null, $operation['id']);
@@ -169,17 +193,26 @@ JSON, true, 512, JSON_THROW_ON_ERROR);
         return (string) $value;
     }
 
-    private function send(string $url, array $headers, string $operationId): array
+    private function send(string $url, array $headers, string $operationId, string $method = 'GET', ?string $payload = null): array
     {
         if ($this->transport !== null) {
-            $result = ($this->transport)($url, $headers, $this->timeout);
+            $result = $method === 'POST'
+                ? ($this->transport)($url, $headers, $this->timeout, $method, $payload)
+                : ($this->transport)($url, $headers, $this->timeout);
             return [(int) $result['status'], (string) ($result['content_type'] ?? ''), (string) ($result['body'] ?? '')];
         }
         $handle = curl_init($url);
         if ($handle === false) {
             throw new NetworkException('Could not initialize cURL', null, $operationId);
         }
-        curl_setopt_array($handle, [
+        curl_setopt_array($handle, $method === 'POST' ? [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload ?? '',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT_MS => (int) ($this->timeout * 1000),
+            CURLOPT_CONNECTTIMEOUT_MS => (int) ($this->timeout * 1000),
+        ] : [
             CURLOPT_HTTPGET => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => $headers,
