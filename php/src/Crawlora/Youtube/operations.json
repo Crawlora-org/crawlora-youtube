@@ -48,6 +48,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "YouTube video ID (11-character code)",
@@ -86,6 +88,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
@@ -129,6 +133,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
@@ -168,6 +174,8 @@
         "id"
       ],
       "queryParams": [],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
@@ -199,6 +207,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "Channel ID, @handle, /c path, /user path, or full YouTube channel URL",
@@ -236,6 +246,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "YouTube video ID (11-character code)",
@@ -273,6 +285,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "YouTube playlist ID or full playlist URL",
@@ -304,6 +318,8 @@
         "id"
       ],
       "queryParams": [],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "Channel ID, @handle, /c path, /user path, bare username, or full YouTube channel URL",
@@ -415,6 +431,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "Search query",
@@ -555,6 +573,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "Search query prefix",
@@ -618,6 +638,8 @@
           "type": "string"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "Tag to filter videos",
@@ -687,6 +709,8 @@
           "type": "boolean"
         }
       ],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "YouTube video ID (11-character code)",
@@ -746,6 +770,8 @@
         "id"
       ],
       "queryParams": [],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "YouTube video ID (11-character code)",
@@ -771,6 +797,8 @@
         "id"
       ],
       "queryParams": [],
+      "bodyParam": null,
+      "bodyRequired": false,
       "params": [
         {
           "description": "YouTube video ID (11-char code)",

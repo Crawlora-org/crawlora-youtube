@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.9 — 2026-10-12
+
+- List every supported endpoint in the repository and package READMEs.
+- Add platform-specific search keywords to the npm, PyPI, and Composer package metadata.
+
 ## 0.1.8 — 2026-10-09
 
 - Keep the platform README as a language-package index without cross-language installation commands or code examples; pkg.go.dev now shows only its Go example.

@@ -4,9 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "crawlora-youtube"
-version = "0.1.8"
-description = "Typed YouTube client for the Crawlora hosted API"
+version = "0.1.9"
+description = "Crawlora YouTube API client with 14 endpoints for search, channels, videos, playlists, comments, captions, and transcripts"
 readme = "README.md"
+keywords = ["crawlora", "api-client", "sdk", "web-scraping", "scraping-api", "youtube", "youtube-api", "youtube-scraper", "youtube-data", "youtube-search", "youtube-channels", "youtube-videos", "youtube-playlists", "youtube-comments", "youtube-captions", "youtube-transcripts"]
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]

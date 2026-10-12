@@ -95,6 +95,8 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     for directory in (src_dir, test_dir, docs_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
+    from .documentation import public_api_summary, seo_keywords
+
     platform = config["platform"]
     values = {
         "platform": platform,
@@ -102,6 +104,9 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         "class_name": config["class_name"],
         "npm_name": config["npm_name"],
         "version": config["version"],
+        "operation_count": str(model.operation_count),
+        "seo_summary": public_api_summary(config),
+        "seo_keywords_json": json.dumps(seo_keywords(config), ensure_ascii=False),
         "user_agent": f"crawlora-{platform}-js/{config['version']}",
         "repository": config["repository"],
         "homepage": crawlora_url(source="npm", platform=platform, surface="javascript", destination="homepage"),

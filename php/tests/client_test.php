@@ -13,7 +13,7 @@ $client = new Crawlora\Youtube\Client(
     baseUrl: 'https://api.example.test/api/v1',
     transport: $transport,
 );
-$result = $client->request("youtube-channel-search", ['id' => 'sample-id', 'q' => 'science explainers']);
+$result = $client->request("youtube-search", ['q' => 'science explainers']);
 if ($result !== ['ok' => true]) {
     throw new RuntimeException('Expected the mocked JSON response.');
 }
@@ -35,7 +35,7 @@ $defaultClient = new Crawlora\Youtube\Client(
         return ['status' => 200, 'content_type' => 'application/json', 'body' => '{"ok":true}'];
     },
 );
-$defaultClient->request("youtube-channel-search", ['id' => 'sample-id', 'q' => 'science explainers']);
+$defaultClient->request("youtube-search", ['q' => 'science explainers']);
 try {
     $client->request('unlisted-operation');
     throw new RuntimeException('An unlisted operation was accepted.');

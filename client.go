@@ -1,8 +1,9 @@
-// Package youtube is a focused Go client for Crawlora's YouTube endpoints.
+// Package youtube is Crawlora's YouTube API client for 14 endpoints, covering search, channels, videos, playlists, comments, captions, and transcripts.
 // API documentation: https://crawlora.net/docs?utm_source=pkg.go.dev&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-go-api-docs
 package youtube
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -17,7 +18,7 @@ import (
 
 const (
 	DefaultBaseURL = "https://api.crawlora.net/api/v1"
-	Version        = "0.1.8"
+	Version        = "0.1.9"
 )
 
 // Params maps the exact OpenAPI parameter names expected by this platform client.
@@ -62,11 +63,30 @@ func (c *Client) Call(ctx context.Context, operationID string, params Params) (a
 	if !ok {
 		return nil, fmt.Errorf("unknown YouTube operation: %s", operationID)
 	}
-	if operation.Method != http.MethodGet {
+	if operation.Method != http.MethodGet && operation.Method != http.MethodPost {
 		return nil, fmt.Errorf("unsupported HTTP method %s for %s", operation.Method, operationID)
 	}
 	if params == nil {
 		params = Params{}
+	}
+	var payload io.Reader
+	if operation.BodyParam != "" {
+		// The JSON body is passed under the operation's body parameter name or "body".
+		value, ok := params[operation.BodyParam]
+		if !ok || value == nil {
+			value, ok = params["body"]
+		}
+		if !ok || value == nil {
+			if operation.BodyRequired {
+				return nil, fmt.Errorf("missing required request body: %s", operation.BodyParam)
+			}
+		} else {
+			encoded, err := json.Marshal(value)
+			if err != nil {
+				return nil, fmt.Errorf("encode request body: %w", err)
+			}
+			payload = bytes.NewReader(encoded)
+		}
 	}
 	requestURL, err := buildURL(c.BaseURL, operation, params)
 	if err != nil {
@@ -77,11 +97,14 @@ func (c *Client) Call(ctx context.Context, operationID string, params Params) (a
 		ctx, cancel = context.WithTimeout(ctx, c.Timeout)
 		defer cancel()
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	request, err := http.NewRequestWithContext(ctx, operation.Method, requestURL, payload)
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Set("User-Agent", "crawlora-youtube-go/0.1.8")
+	if payload != nil {
+		request.Header.Set("Content-Type", "application/json")
+	}
+	request.Header.Set("User-Agent", "crawlora-youtube-go/0.1.9")
 	for _, security := range operation.Security {
 		if security == "ApiKeyAuth" && c.APIKey != "" {
 			request.Header.Set("x-api-key", c.APIKey)

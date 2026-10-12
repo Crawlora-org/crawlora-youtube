@@ -3,8 +3,8 @@ require_relative "lib/crawlora/youtube/version"
 Gem::Specification.new do |spec|
   spec.name = "crawlora-youtube"
   spec.version = Crawlora::Youtube::VERSION
-  spec.summary = "YouTube client for the Crawlora hosted API"
-  spec.description = "Credential-free YouTube API access through Crawlora's hosted service."
+  spec.summary = "YouTube API client for Crawlora (14 endpoints)"
+  spec.description = "Ruby client for Crawlora's hosted YouTube API. Covers search, channels, videos, playlists, comments, captions, and transcripts across 14 endpoints."
   spec.authors = ["Crawlora"]
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.6"

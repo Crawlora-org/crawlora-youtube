@@ -5,8 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "{{PYTHON_NAME}}"
 version = "{{VERSION}}"
-description = "Typed {{DISPLAY_NAME}} client for the Crawlora hosted API"
+description = "Crawlora {{DISPLAY_NAME}} API client with {{OPERATION_COUNT}} endpoints for {{SEO_SUMMARY}}"
 readme = "README.md"
+keywords = {{SEO_KEYWORDS_JSON}}
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]

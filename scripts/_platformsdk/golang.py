@@ -111,7 +111,20 @@ def _operation_literal(operation: dict[str, Any]) -> str:
         f"Produces: {_go_string_slice([str(value) for value in operation.get('produces', [])])}",
         f"Security: {_go_string_slice([str(value) for value in operation.get('security', [])])}",
     ]
+    if operation.get("bodyParam"):
+        literals.append(f"BodyParam: {_go_string(str(operation['bodyParam']))}")
+        if operation.get("bodyRequired"):
+            literals.append("BodyRequired: true")
     return "operationDefinition{" + ", ".join(literals) + "}"
+
+
+def _check_supported(operation_id: str, definition: dict[str, Any]) -> None:
+    """Platform clients send GET requests and POST requests with a JSON body."""
+    method = definition["method"]
+    if method == "GET":
+        return
+    if method != "POST" or not definition.get("bodyParam") or definition.get("formParams"):
+        raise ValueError(f"Go platform clients support GET and JSON-body POST only: {operation_id}")
 
 
 def _module_name(config: dict[str, Any]) -> str:
@@ -136,6 +149,15 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         raise ValueError(f"invalid Go package name for platform: {package_name!r}")
     module_path = _module_name(config)
     version = str(config.get("golang_version", config.get("version", "0.1.4")))
+    # Generated tests and README samples exercise GET operations.
+    get_meta = {
+        operation_id: meta for operation_id, meta in model.meta.items()
+        if model.operations[operation_id]["method"] == "GET"
+    }
+    if not get_meta:
+        raise ValueError("the sliced specification contains no GET operations")
+    from .documentation import public_api_summary
+
     values = {
         "platform": platform,
         "package_name": package_name,
@@ -145,19 +167,19 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         "repository": str(config.get("repository", f"https://github.com/Crawlora-org/crawlora-{platform}")),
         "docs_url": crawlora_url(source="pkg.go.dev", platform=platform, surface="go", destination="api-docs", path="/docs"),
         "operation_count": str(model.operation_count),
+        "seo_summary": public_api_summary(config),
         "user_agent": f"crawlora-{platform}-go/{version}",
         "version_json": _go_string(version),
         "user_agent_json": _go_string(f"crawlora-{platform}-go/{version}"),
-        "sample_operation": next(iter(model.meta)),
-        "sample_params": _sample_params(model.meta[next(iter(model.meta))]["params"]),
+        "sample_operation": next(iter(get_meta)),
+        "sample_params": _sample_params(get_meta[next(iter(get_meta))]["params"]),
     }
 
     operations = []
     methods = []
     reserved = {"Call", "Close", "OperationIDs", "OperationCount", "NewClient"}
     for operation_id, definition in model.operations.items():
-        if definition["method"] != "GET":
-            raise ValueError(f"Go platform clients currently support GET only: {operation_id}")
+        _check_supported(operation_id, definition)
         operations.append(f"\t{_go_string(operation_id)}: {_operation_literal(definition)},")
         method = next((name for group in model.groups.values() for name, op_id in group.items() if op_id == operation_id), None)
         if method and method not in reserved:
@@ -172,19 +194,19 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     values["operation_entries"] = "\n".join(operations)
     values["method_declarations"] = "\n\n".join(methods)
     test_operation_id = next(
-        (operation_id for operation_id in model.meta if operation_id.endswith("-search")),
-        next(iter(model.meta)),
+        (operation_id for operation_id in get_meta if operation_id.endswith("-search")),
+        next(iter(get_meta)),
     )
-    if not any(param.get("in") == "path" for param in model.meta[test_operation_id]["params"]) or not any(
-        param.get("in") == "query" for param in model.meta[test_operation_id]["params"]
+    if not any(param.get("in") == "path" for param in get_meta[test_operation_id]["params"]) or not any(
+        param.get("in") == "query" for param in get_meta[test_operation_id]["params"]
     ):
         test_operation_id = next(
-            (operation_id for operation_id, meta in model.meta.items()
+            (operation_id for operation_id, meta in get_meta.items()
              if any(param.get("in") == "path" for param in meta["params"])
              and any(param.get("in") == "query" for param in meta["params"])),
             test_operation_id,
         )
-    test_meta = model.meta[test_operation_id]
+    test_meta = get_meta[test_operation_id]
     test_params = []
     invalid_enum_params = []
     path_values = {}

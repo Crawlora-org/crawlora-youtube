@@ -18,6 +18,15 @@ _JAVA_EXAMPLE_CALLS = {
     "tiktok": ("tiktok-search", {"keyword": "science"}),
     "amazon": ("amazon-search", {"k": "wireless headphones"}),
     "imdb": ("imdb-search", {"query": "Inception"}),
+    "google": ("google-news", {"q": "artificial intelligence"}),
+    "bing": ("bing-search", {"q": "open source web crawler"}),
+    "brave": ("brave-search", {"q": "open source web crawler"}),
+    "duckduckgo": ("duckduckgo-search", {"q": "open source web crawler"}),
+    "ebay": ("ebay-seller", {"seller": "musicmagpie"}),
+    "googleplay": ("googleplay-search", {"term": "podcast player"}),
+    "appstore": ("appstore-search", {"term": "podcast player"}),
+    "airbnb": ("airbnb-search", {"location": "Lisbon, Portugal"}),
+    "spotify": ("spotify-search", {"q": "daft punk"}),
 }
 
 
@@ -90,7 +99,9 @@ def _operation_source(operation_id: str, operation: dict[str, Any], source_param
     return (
         f"        operations.put({_quote(operation_id)}, new Operation({_quote(operation_id)}, "
         f"{_quote(operation['method'].upper())}, {_quote(operation['path'])}, "
-        f"{param_map}, List.of({produces})));"
+        f"{param_map}, List.of({produces})"
+        + (f", {_quote(str(operation['bodyParam']))}" if operation.get("bodyParam") else "")
+        + "));"
     )
 
 
@@ -114,18 +125,25 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     if not model.meta:
         raise ValueError("the sliced specification contains no operations")
     for op_id, operation in model.operations.items():
-        if operation["method"] != "GET":
-            raise ValueError(f"platform Java client supports GET only: {op_id}")
+        if operation["method"] != "GET" and (
+            operation["method"] != "POST" or not operation.get("bodyParam") or operation.get("formParams")
+        ):
+            raise ValueError(f"platform Java client supports GET and JSON-body POST only: {op_id}")
+
+    from .documentation import endpoint_table_from_spec, public_api_summary
 
     platform = config["platform"]
+    base_description = config.get("java_description") or (
+        f"Java client for Crawlora's hosted {config['display_name']} API, with direct methods for supported operations. "
+        "Requires a Crawlora API key."
+    )
     package_name = f"net.crawlora.{platform}"
     values = {
         "platform": platform,
         "display_name": config["display_name"],
-        "java_description": config.get("java_description") or (
-            f"Java client for Crawlora's hosted {config['display_name']} API, with direct methods for supported operations. "
-            "Requires a Crawlora API key."
-        ),
+        "java_description": base_description,
+        "seo_summary": public_api_summary(config),
+        "endpoint_table": endpoint_table_from_spec(spec, platform),
         "package_name": package_name,
         "version": config["version"],
         "repository": config["repository"],
@@ -205,7 +223,7 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         values["usage_params"] = usage_params
     text_operation = next(
         (op_id for op_id, operation in model.operations.items() if "text/plain" in operation.get("produces", [])),
-        next(iter(model.operations)),
+        next(op_id for op_id, operation in model.operations.items() if operation["method"] == "GET"),
     )
     values["text_operation_id"] = _quote(text_operation)
     values["text_params"] = _sample_param_map(model.meta[text_operation]["params"])
@@ -288,6 +306,8 @@ def _test_operation(model: Any) -> tuple[str, str, str]:
     candidates = []
     aliases = {operation_id: method for group in model.groups.values() for method, operation_id in group.items()}
     for operation_id, meta in model.meta.items():
+        if model.operations[operation_id]["method"] != "GET":
+            continue
         params = meta["params"]
         has_query = any(p.get("in") == "query" and p.get("name", "").lower() != "x-api-key" for p in params)
         has_string_query = any(
@@ -301,6 +321,8 @@ def _test_operation(model: Any) -> tuple[str, str, str]:
 
 def _enum_assertion(model: Any) -> str:
     for operation_id, meta in model.meta.items():
+        if model.operations[operation_id]["method"] != "GET":
+            continue
         params = meta["params"]
         enum = next((p for p in params if p.get("in") in {"path", "query"} and p.get("enum")
                      and p.get("name", "").lower() != "x-api-key"), None)

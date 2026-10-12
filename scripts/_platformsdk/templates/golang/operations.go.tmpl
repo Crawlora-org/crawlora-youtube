@@ -23,6 +23,9 @@ type operationDefinition struct {
 	QueryParams []parameterDefinition
 	Produces   []string
 	Security   []string
+	// BodyParam names the JSON request body parameter of a POST operation.
+	BodyParam    string
+	BodyRequired bool
 }
 
 var operations = map[string]operationDefinition{
