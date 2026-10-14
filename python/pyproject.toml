@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "crawlora-youtube"
-version = "0.1.9"
+version = "0.2.0"
 description = "Crawlora YouTube API client with 14 endpoints for search, channels, videos, playlists, comments, captions, and transcripts"
 readme = "README.md"
 keywords = ["crawlora", "api-client", "sdk", "web-scraping", "scraping-api", "youtube", "youtube-api", "youtube-scraper", "youtube-data", "youtube-search", "youtube-channels", "youtube-videos", "youtube-playlists", "youtube-comments", "youtube-captions", "youtube-transcripts"]

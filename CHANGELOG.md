@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0 — 2026-10-14
+
+- Updated operation contracts: youtube-captions, youtube-channel-playlists, youtube-channel-search, youtube-channel-shorts, youtube-channel-videos, youtube-comments, youtube-playlist, youtube-profile, youtube-search, youtube-tag, youtube-transcript, youtube-transcript-languages, youtube-video.
+
 ## 0.1.9 — 2026-10-12
 
 - List every supported endpoint in the repository and package READMEs.

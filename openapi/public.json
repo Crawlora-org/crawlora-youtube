@@ -48,12 +48,15 @@
     "youtube.Caption": {
       "properties": {
         "duration": {
+          "description": "Length of the caption cue, in seconds.",
           "type": "number"
         },
         "start": {
+          "description": "Time the caption cue starts, in seconds from the start of the video.",
           "type": "number"
         },
         "text": {
+          "description": "Caption text shown for this cue.",
           "type": "string"
         }
       },
@@ -62,36 +65,44 @@
     "youtube.ChannelFeedResponse": {
       "properties": {
         "channel_id": {
+          "description": "YouTube channel ID, starting with `UC`.",
           "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
           "type": "string"
         },
         "channel_title": {
+          "description": "Channel name as shown on YouTube.",
           "example": "OpenAI",
           "type": "string"
         },
         "channel_url": {
+          "description": "Link to the channel on YouTube.",
           "example": "https://www.youtube.com/@OpenAI",
           "type": "string"
         },
         "continuation_token": {
+          "description": "Token to pass in the next request to get the following page. Omitted on the last page.",
           "example": "NEXT_TOKEN",
           "type": "string"
         },
         "handle": {
+          "description": "Channel handle, starting with `@`.",
           "example": "@OpenAI",
           "type": "string"
         },
         "items": {
+          "description": "Videos or other items from the channel, in the order YouTube lists them.",
           "items": {
             "$ref": "#/definitions/youtube.SearchItem"
           },
           "type": "array"
         },
         "query": {
+          "description": "Search text used to look inside the channel. Omitted when no search was run.",
           "example": "gpt",
           "type": "string"
         },
         "thumbnail": {
+          "description": "URL of the channel's avatar image.",
           "example": "https://yt3.googleusercontent.com/example=s176-c-k-c0x00ffffff-no-rj",
           "type": "string"
         }
@@ -101,26 +112,32 @@
     "youtube.ChannelShort": {
       "properties": {
         "position": {
+          "description": "Position of the Short in the channel's Shorts list, starting at 1.",
           "example": 1,
           "type": "integer"
         },
         "thumbnail": {
+          "description": "URL of the Short's thumbnail image.",
           "example": "https://i.ytimg.com/vi/abc123xyz89/oar2.jpg",
           "type": "string"
         },
         "title": {
+          "description": "Title of the Short.",
           "example": "OpenAI demo clip",
           "type": "string"
         },
         "url": {
+          "description": "Link to the Short on YouTube.",
           "example": "https://www.youtube.com/shorts/abc123xyz89",
           "type": "string"
         },
         "video_id": {
+          "description": "YouTube video ID of the Short.",
           "example": "abc123xyz89",
           "type": "string"
         },
         "view_count": {
+          "description": "View count as YouTube displays it, such as `1.2M views`.",
           "example": "1.2M views",
           "type": "string"
         }
@@ -130,28 +147,34 @@
     "youtube.ChannelShortsResponse": {
       "properties": {
         "channel_id": {
+          "description": "YouTube channel ID, starting with `UC`.",
           "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
           "type": "string"
         },
         "channel_title": {
+          "description": "Channel name as shown on YouTube.",
           "example": "OpenAI",
           "type": "string"
         },
         "channel_url": {
+          "description": "Link to the channel on YouTube.",
           "example": "https://www.youtube.com/@OpenAI",
           "type": "string"
         },
         "handle": {
+          "description": "Channel handle, starting with `@`.",
           "example": "@OpenAI",
           "type": "string"
         },
         "shorts": {
+          "description": "YouTube Shorts published by the channel.",
           "items": {
             "$ref": "#/definitions/youtube.ChannelShort"
           },
           "type": "array"
         },
         "thumbnail": {
+          "description": "URL of the channel's avatar image.",
           "example": "https://yt3.googleusercontent.com/example=s176-c-k-c0x00ffffff-no-rj",
           "type": "string"
         }
@@ -161,27 +184,35 @@
     "youtube.Comment": {
       "properties": {
         "channel_id": {
+          "description": "YouTube channel ID of the commenter.",
           "type": "string"
         },
         "comment_id": {
+          "description": "YouTube ID of the comment.",
           "type": "string"
         },
         "content": {
+          "description": "Text of the comment.",
           "type": "string"
         },
         "continuation_token": {
+          "description": "Token for loading the replies to this comment. Omitted when none is available.",
           "type": "string"
         },
         "likes_count": {
+          "description": "Number of likes on the comment.",
           "type": "integer"
         },
         "published_time": {
+          "description": "Approximate time the comment was posted, in UTC (RFC 3339).",
           "type": "string"
         },
         "reply_count": {
+          "description": "Number of replies to the comment.",
           "type": "integer"
         },
         "user_name": {
+          "description": "Display name of the commenter, such as `@handle`.",
           "type": "string"
         }
       },
@@ -190,12 +221,14 @@
     "youtube.CommentResponse": {
       "properties": {
         "comments": {
+          "description": "Comments on this page of the video.",
           "items": {
             "$ref": "#/definitions/youtube.Comment"
           },
           "type": "array"
         },
         "continuation_token": {
+          "description": "Token to pass in the next request to get the following page.",
           "type": "string"
         }
       },
@@ -204,40 +237,49 @@
     "youtube.PlaylistResponse": {
       "properties": {
         "channel_id": {
+          "description": "YouTube channel ID of the playlist owner.",
           "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
           "type": "string"
         },
         "channel_title": {
+          "description": "Name of the channel that owns the playlist.",
           "example": "OpenAI",
           "type": "string"
         },
         "continuation_token": {
+          "description": "Token to pass in the next request to get the following page. Omitted on the last page.",
           "example": "NEXT_TOKEN",
           "type": "string"
         },
         "items": {
+          "description": "Videos in the playlist, in playlist order.",
           "items": {
             "$ref": "#/definitions/youtube.SearchItem"
           },
           "type": "array"
         },
         "playlist_id": {
+          "description": "YouTube playlist ID.",
           "example": "PL1234567890abcdef",
           "type": "string"
         },
         "thumbnail": {
+          "description": "URL of the playlist's thumbnail image.",
           "example": "https://i.ytimg.com/vi/abc123xyz89/hqdefault.jpg",
           "type": "string"
         },
         "title": {
+          "description": "Playlist title as shown on YouTube.",
           "example": "OpenAI Podcast",
           "type": "string"
         },
         "url": {
+          "description": "Link to the playlist on YouTube.",
           "example": "https://www.youtube.com/playlist?list=PL1234567890abcdef",
           "type": "string"
         },
         "video_count": {
+          "description": "Number of videos in the playlist as YouTube displays it, such as `12 videos`.",
           "example": "12 videos",
           "type": "string"
         }
@@ -323,6 +365,7 @@
     "youtube.SearchItem": {
       "properties": {
         "badges": {
+          "description": "Badge labels shown on the video, such as `HD` or `CC`.",
           "example": [
             "HD",
             "CC"
@@ -333,87 +376,109 @@
           "type": "array"
         },
         "channel_id": {
+          "description": "YouTube channel ID, starting with `UC`.",
           "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
           "type": "string"
         },
         "channel_thumbnail": {
+          "description": "URL of the publishing channel's avatar image.",
           "example": "https://yt3.ggpht.com/example=s68-c-k-c0x00ffffff-no-rj",
           "type": "string"
         },
         "channel_title": {
+          "description": "Name of the channel that published the video or playlist.",
           "example": "OpenAI",
           "type": "string"
         },
         "description_snippet": {
+          "description": "Short excerpt of the video or channel description shown in the results.",
           "example": "A concise walkthrough of GPT features.",
           "type": "string"
         },
         "duration": {
+          "description": "Video length as YouTube displays it, such as `12:34`.",
           "example": "12:34",
           "type": "string"
         },
         "duration_seconds": {
+          "description": "Video length in seconds.",
           "example": 754,
           "type": "integer"
         },
         "handle": {
+          "description": "Channel handle, starting with `@`. Set for channel results.",
           "example": "@OpenAI",
           "type": "string"
         },
         "is_live": {
+          "description": "Whether the video is a live stream.",
           "type": "boolean"
         },
         "is_short": {
+          "description": "Whether the video is a YouTube Short.",
           "type": "boolean"
         },
         "is_verified": {
+          "description": "Whether the channel carries a verified badge.",
           "type": "boolean"
         },
         "playlist_id": {
+          "description": "YouTube playlist ID. Set for playlist results.",
           "example": "PL1234567890abcdef",
           "type": "string"
         },
         "position": {
+          "description": "Position of the item on this page of results, starting at 1.",
           "example": 1,
           "type": "integer"
         },
         "published_text": {
+          "description": "Upload time as YouTube displays it, such as `2 days ago`.",
           "example": "2 days ago",
           "type": "string"
         },
         "short_view_count": {
+          "description": "Abbreviated view count as YouTube displays it, such as `123K views`.",
           "example": "123K views",
           "type": "string"
         },
         "subscriber_count": {
+          "description": "Subscriber count as YouTube displays it, such as `1.93M subscribers`.",
           "example": "1.93M subscribers",
           "type": "string"
         },
         "thumbnail": {
+          "description": "URL of the item's thumbnail image.",
           "example": "https://i.ytimg.com/vi/abc123/hq720.jpg",
           "type": "string"
         },
         "title": {
+          "description": "Video or playlist title, or channel name.",
           "example": "ChatGPT Explained",
           "type": "string"
         },
         "type": {
+          "description": "Kind of result: `video`, `channel` or `playlist`.",
           "example": "video",
           "type": "string"
         },
         "url": {
+          "description": "Link to the video, channel or playlist on YouTube.",
           "example": "https://www.youtube.com/watch?v=abc123",
           "type": "string"
         },
         "video_count": {
+          "description": "Number of videos as YouTube displays it, such as `12 videos`. Set for channel and playlist results.",
           "example": "9 lessons",
           "type": "string"
         },
         "video_id": {
+          "description": "YouTube video ID. Set for video results.",
           "example": "abc123xyz89",
           "type": "string"
         },
         "view_count": {
+          "description": "View count as YouTube displays it, such as `123,456 views`.",
           "example": "123,456 views",
           "type": "string"
         }
@@ -423,20 +488,24 @@
     "youtube.SearchResponse": {
       "properties": {
         "continuation_token": {
+          "description": "Token to pass in the next request to get the following page. Omitted on the last page.",
           "example": "NEXT_TOKEN",
           "type": "string"
         },
         "estimated_results": {
+          "description": "Approximate number of results YouTube reports for the search.",
           "example": 9895225,
           "type": "integer"
         },
         "items": {
+          "description": "Videos, channels and playlists on this page of results.",
           "items": {
             "$ref": "#/definitions/youtube.SearchItem"
           },
           "type": "array"
         },
         "query": {
+          "description": "Search text that was run.",
           "example": "gpt",
           "type": "string"
         }
@@ -446,12 +515,19 @@
     "youtube.TagResp": {
       "properties": {
         "continuation_token": {
+          "description": "Token to pass in the next request to get the following page.",
           "type": "string"
         },
         "meta": {
-          "$ref": "#/definitions/youtube.tagMeta"
+          "allOf": [
+            {
+              "$ref": "#/definitions/youtube.tagMeta"
+            }
+          ],
+          "description": "Totals shown on the hashtag page. Present on the first page only."
         },
         "videos": {
+          "description": "Videos posted under the hashtag.",
           "items": {
             "$ref": "#/definitions/youtube.VideoDetail"
           },
@@ -463,16 +539,20 @@
     "youtube.TranscriptLanguage": {
       "properties": {
         "is_generated": {
+          "description": "Whether the transcript is auto-generated rather than written by a person.",
           "type": "boolean"
         },
         "is_translatable": {
+          "description": "Whether YouTube offers translations of this transcript.",
           "type": "boolean"
         },
         "language": {
+          "description": "Language name, such as `English`.",
           "example": "English",
           "type": "string"
         },
         "language_code": {
+          "description": "Language code of the transcript, such as `en`.",
           "example": "en",
           "type": "string"
         }
@@ -482,31 +562,38 @@
     "youtube.TranscriptResponse": {
       "properties": {
         "is_generated": {
+          "description": "Whether the transcript is auto-generated rather than written by a person.",
           "type": "boolean"
         },
         "language": {
+          "description": "Language name of the transcript, such as `English`.",
           "example": "English",
           "type": "string"
         },
         "language_code": {
+          "description": "Language code of the transcript, such as `en`.",
           "example": "en",
           "type": "string"
         },
         "segments": {
+          "description": "Transcript split into timed segments.",
           "items": {
             "$ref": "#/definitions/youtube.TranscriptSegment"
           },
           "type": "array"
         },
         "text": {
+          "description": "Full transcript as one block of text.",
           "example": "Never gonna give you up",
           "type": "string"
         },
         "translation_language": {
+          "description": "Language code the transcript was translated into. Omitted when no translation was requested.",
           "example": "es",
           "type": "string"
         },
         "video_id": {
+          "description": "YouTube video ID the transcript belongs to.",
           "example": "dQw4w9WgXcQ",
           "type": "string"
         }
@@ -516,12 +603,15 @@
     "youtube.TranscriptSegment": {
       "properties": {
         "duration": {
+          "description": "Length of the segment, in seconds.",
           "type": "number"
         },
         "start": {
+          "description": "Time the segment starts, in seconds from the start of the video.",
           "type": "number"
         },
         "text": {
+          "description": "Transcript text spoken in this segment.",
           "type": "string"
         }
       },
@@ -530,18 +620,22 @@
     "youtube.VideoDetail": {
       "properties": {
         "channel_id": {
+          "description": "YouTube channel ID of the uploader.",
           "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
           "type": "string"
         },
         "channel_title": {
+          "description": "Name of the channel that uploaded the video.",
           "example": "OpenAI",
           "type": "string"
         },
         "comments_count": {
+          "description": "Number of comments on the video; may be rounded when YouTube shows an abbreviated count. Omitted when unavailable.",
           "example": 1400,
           "type": "integer"
         },
         "description": {
+          "description": "Full video description.",
           "example": "On the first episode of the OpenAI Podcast...",
           "type": "string"
         },
@@ -556,22 +650,27 @@
           "type": "number"
         },
         "id": {
+          "description": "YouTube video ID.",
           "example": "YbJOTdZBX1g",
           "type": "string"
         },
         "likes_count": {
+          "description": "Number of likes on the video; may be rounded when YouTube shows an abbreviated count. Omitted when unavailable.",
           "example": 11000,
           "type": "integer"
         },
         "published_at": {
+          "description": "Time the video was published, in RFC 3339.",
           "example": "2025-06-18T07:59:20-07:00",
           "type": "string"
         },
         "title": {
+          "description": "Video title as shown on YouTube.",
           "example": "Sam Altman on AGI, GPT-5, and what’s next — the OpenAI Podcast Ep. 1",
           "type": "string"
         },
         "views_count": {
+          "description": "Number of views of the video. Omitted when unavailable.",
           "example": 460176,
           "type": "integer"
         }
@@ -616,36 +715,44 @@
     "youtube.channelSearchResponseDataDoc": {
       "properties": {
         "channel_id": {
+          "description": "YouTube channel ID, starting with `UC`.",
           "example": "UCXZCJLdBC09xxGZ6gcdrc6A",
           "type": "string"
         },
         "channel_title": {
+          "description": "Channel name as shown on YouTube.",
           "example": "OpenAI",
           "type": "string"
         },
         "channel_url": {
+          "description": "Link to the channel on YouTube.",
           "example": "https://www.youtube.com/@OpenAI",
           "type": "string"
         },
         "continuation_token": {
+          "description": "Token to pass in the next request to get the following page. Omitted on the last page.",
           "example": "NEXT_TOKEN",
           "type": "string"
         },
         "handle": {
+          "description": "Channel handle, starting with `@`.",
           "example": "@OpenAI",
           "type": "string"
         },
         "items": {
+          "description": "Videos from the channel that match the search text.",
           "items": {
             "$ref": "#/definitions/youtube.SearchItem"
           },
           "type": "array"
         },
         "query": {
+          "description": "Search text that was run inside the channel.",
           "example": "gpt",
           "type": "string"
         },
         "thumbnail": {
+          "description": "URL of the channel's avatar image.",
           "example": "https://yt3.googleusercontent.com/example=s176-c-k-c0x00ffffff-no-rj",
           "type": "string"
         }
@@ -767,10 +874,12 @@
     "youtube.tagMeta": {
       "properties": {
         "channelsCount": {
+          "description": "Number of channels using the hashtag, as shown on the hashtag page.",
           "format": "int64",
           "type": "integer"
         },
         "videosCount": {
+          "description": "Number of videos using the hashtag, as shown on the hashtag page.",
           "format": "int64",
           "type": "integer"
         }
@@ -872,7 +981,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns the caption cues for a specific YouTube video.",
+        "description": "Returns the caption cues for a YouTube video by its 11-character video id, in the language given by `lang` (ISO 639-1, default `en`). Each cue has its text, start time and duration. Works for both auto-generated and human-written captions.",
         "operationId": "youtube-captions",
         "parameters": [
           {
@@ -936,7 +1045,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns normalized playlist items from a channel's Playlists tab and an optional continuation token.",
+        "description": "Lists the playlists on a YouTube channel's Playlists tab. `id` accepts a channel id, `@handle`, `/c` or `/user` path, or a full channel URL. Each item has its playlist id, title, video count, thumbnail and URL. Pass the returned `continuation_token` back as `continuation_token` to get the next page.",
         "operationId": "youtube-channel-playlists",
         "parameters": [
           {
@@ -999,7 +1108,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns normalized video search items scoped to a specific channel, including the resolved top-level `query`.",
+        "description": "Searches the videos of one YouTube channel for the required `q`. `id` accepts a channel id, `@handle`, `/c` or `/user` path, or a full channel URL. Items carry the video id, title, URL, duration, view count, published text and thumbnail, and the response echoes the resolved `query`. Page with `continuation_token`.",
         "operationId": "youtube-channel-search",
         "parameters": [
           {
@@ -1070,7 +1179,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns normalized short-form video entries from a channel's Shorts tab.",
+        "description": "Returns the first page of Shorts from a YouTube channel's Shorts tab. `id` accepts a channel id, `@handle`, `/c` or `/user` path, or a full channel URL. Each short has its position, video id, title, URL, thumbnail and view count text.",
         "operationId": "youtube-channel-shorts",
         "parameters": [
           {
@@ -1127,7 +1236,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns normalized video items from a channel's Videos tab and an optional continuation token.",
+        "description": "Lists the videos on a YouTube channel's Videos tab. `id` accepts a channel id, `@handle`, `/c` or `/user` path, or a full channel URL. Each item has its video id, title, URL, duration, view count, published text, thumbnail, badges and live flag. Pass the returned `continuation_token` to fetch the next page.",
         "operationId": "youtube-channel-videos",
         "parameters": [
           {
@@ -1190,7 +1299,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns a page of comments for a specific YouTube video.",
+        "description": "Returns one page of comments for a YouTube video by its 11-character `id`. Each comment has its id, content, author `user_name` and `channel_id`, `likes_count`, `reply_count` and `published_time`. Pass the previous response's `continuation_token` to get the next page; leave it empty for the first.",
         "operationId": "youtube-comments",
         "parameters": [
           {
@@ -1253,7 +1362,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns playlist metadata, normalized video items, and an optional continuation token for pagination.",
+        "description": "Returns a YouTube playlist by playlist id or full playlist URL: title, URL, owning channel, video count and thumbnail, plus its videos with position, title, video id, duration, channel and view count. Pass the returned `continuation_token` to page through longer playlists.",
         "operationId": "youtube-playlist",
         "parameters": [
           {
@@ -1316,7 +1425,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns full profile details for a YouTube channel.",
+        "description": "Returns the profile of a YouTube channel by `id`, which can be a channel id, `@handle`, `/c` or `/user` path, bare username or full channel URL. The profile has channel id, name and URL, bio, join date, region, profile picture, links, and `stats` with `followers_count`, `videos_count` and `views_count`.",
         "operationId": "youtube-profile",
         "parameters": [
           {
@@ -1782,7 +1891,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns the transcript languages exposed by YouTube for a specific video.",
+        "description": "Lists the transcript languages available for a YouTube video by its 11-character video id. Each entry has the language name and code, whether the track is auto-generated, and whether it can be translated. Use it to pick a language before requesting a transcript.",
         "operationId": "youtube-transcript-languages",
         "parameters": [
           {
@@ -1839,7 +1948,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns title, description, stats, and captions for a YouTube video ID.",
+        "description": "Returns the metadata of a YouTube video by its 11-character `id`: title, description, channel id and title, publication time, duration in seconds, and view, like and comment counts. Some fields are best-effort.",
         "operationId": "youtube-video",
         "parameters": [
           {

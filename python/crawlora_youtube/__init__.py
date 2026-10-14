@@ -6,10 +6,10 @@ from .operations import OPERATION_COUNT, OPERATION_IDS, PLATFORM
 
 Client = YouTubeClient
 AsyncClient = AsyncYouTubeClient
-__version__ = '0.1.9'
+__version__ = '0.2.0'
 DISPLAY_NAME = 'YouTube'
 PLATFORM = 'youtube'
-CONTRACT_REVISION = 'sha256:677d4bc412f42cf0083135b32bf36b478ab37efbea5f35fc5e8b6e86caaf6a68'
+CONTRACT_REVISION = 'sha256:894a214e317ae02c6f1135c7b5834d15a22799212b199e8de55b1acf3b315f71'
 
 __all__ = [
     "YouTubeClient", "AsyncYouTubeClient", "Client", "AsyncClient",
