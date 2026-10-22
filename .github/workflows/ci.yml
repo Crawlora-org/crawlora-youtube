@@ -222,7 +222,7 @@ jobs:
       - run: cargo test --locked
       - run: cargo check --examples --locked
       - run: cargo package --list --locked
-      - run: cargo publish --manifest-path rust/Cargo.toml --locked --dry-run
+      - run: cargo publish --locked --dry-run
 
   generated-contract-and-artifacts:
     runs-on: ubuntu-latest
@@ -248,12 +248,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
       - name: Capture candidate before regeneration
         run: |
           git add -A
           git diff --cached --binary > "$RUNNER_TEMP/before-generation.patch"
       - run: python -m unittest discover -s scripts -p 'test_*sync.py'
       - run: python scripts/generate.py
+      - name: Format generated Rust source before snapshot verification
+        run: cargo fmt --manifest-path rust/Cargo.toml --all
       - name: Verify regeneration preserved the candidate snapshot
         run: |
           git add -A
