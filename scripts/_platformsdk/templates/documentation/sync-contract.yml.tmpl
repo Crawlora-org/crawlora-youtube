@@ -36,6 +36,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
       - id: base
         name: Require a clean main checkout
         run: |
@@ -55,6 +58,8 @@ jobs:
           python scripts/sync_contract.py --root . --apply
           --report "$RUNNER_TEMP/sync-report.json"
           --github-output "$GITHUB_OUTPUT"
+      - name: Format generated Rust source
+        run: cargo fmt --manifest-path rust/Cargo.toml --all
       - name: Summarize sync result
         env:
           REPORT: ${{ runner.temp }}/sync-report.json
@@ -74,6 +79,7 @@ jobs:
           tar \
             --exclude=.git \
             --exclude=node_modules \
+            --exclude=rust/target \
             --exclude=.venv \
             --exclude=venv \
             --exclude=.pytest_cache \

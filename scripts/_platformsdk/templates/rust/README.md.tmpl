@@ -1,0 +1,68 @@
+# Crawlora {{DISPLAY_NAME}} Rust SDK
+
+[![Crates.io](https://img.shields.io/crates/v/{{RUST_CRATE_NAME}}.svg)](https://crates.io/crates/{{RUST_CRATE_NAME}})
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+Official async Rust client for Crawlora's hosted {{DISPLAY_NAME}} API. It exposes
+typed request parameters and response handling for {{OPERATION_COUNT}} public
+operations. It calls Crawlora's hosted service; it does not scrape {{DISPLAY_NAME}}
+locally. Requests use your Crawlora account and follow its billing plan. Crawlora
+is independent from and not affiliated with or endorsed by {{DISPLAY_NAME}} or
+its owners.
+
+[Crawlora](https://crawlora.net?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-rust-homepage) ·
+[API documentation](https://crawlora.net/docs?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-rust-api-docs) ·
+[Pricing](https://crawlora.net/pricing?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-rust-pricing) ·
+[Create an account](https://crawlora.net/signup?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-rust-signup)
+
+- **Rust:** 1.88 or newer
+- **Async runtime:** Tokio
+- **Authentication:** Crawlora API key (`x-api-key`)
+- **Operations:** [Rust reference](docs/operations.md) · [all endpoints and parameters](https://github.com/Crawlora-org/crawlora-{{PLATFORM}}/blob/main/docs/usage.md)
+
+## Install
+
+```sh
+cargo add {{RUST_CRATE_NAME}}
+```
+
+To pin a release directly in `Cargo.toml`:
+
+```toml
+[dependencies]
+{{RUST_CRATE_NAME}} = "{{VERSION}}"
+```
+
+Create an account at [crawlora.net](https://crawlora.net/signup?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-rust-signup), then [create an API key](https://crawlora.net/app/api-keys?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content={{PLATFORM}}-rust-api-keys). Keep the key out of source control and load it from the environment:
+
+```sh
+export CRAWLORA_API_KEY="your-crawlora-api-key"
+```
+
+## Quick start
+
+```rust,no_run
+{{RUST_EXAMPLE}}
+```
+
+Endpoint methods return the complete HTTP response. Use `into_json()` to decode
+JSON into `serde_json::Value` or a generated response model. The response also
+preserves headers and status; text and byte response modes are available through
+`RequestOptions`.
+
+## Configuration and errors
+
+`CrawloraClient::builder()` supports a custom API base URL, timeout, retry limit,
+default headers, JWT authentication, and a custom HTTP client. Retry behavior is
+bounded and honors `Retry-After`. API failures are returned as `Error::Api` with
+the HTTP status, response body, and request ID when provided.
+
+## More resources
+
+- Read the [generated Rust operation reference](docs/operations.md).
+- Browse the [complete endpoint and parameter reference](https://github.com/Crawlora-org/crawlora-{{PLATFORM}}/blob/main/docs/usage.md).
+- Review the [hosted API documentation]({{DOCS_URL}}) and [pricing]({{PRICING_URL}}).
+
+## License
+
+MIT. See [LICENSE](LICENSE).

@@ -29,6 +29,7 @@ RUBYGEMS_API = "https://rubygems.org/api/v2/rubygems"
 MAVEN_CENTRAL = "https://repo.maven.apache.org/maven2"
 PACKAGIST_P2 = "https://repo.packagist.org/p2"
 GO_PROXY = "https://proxy.golang.org"
+CRATES_IO_API = "https://crates.io/api/v1/crates"
 GITHUB_PACKAGES_API = f"{GITHUB_API}/orgs/Crawlora-org/packages"
 TIMEOUT_SECONDS = 20
 SUPPORTED = {
@@ -213,12 +214,14 @@ SUPPORTED = {
         "packagist": "crawlora/spotify",
     },
 }
+for _platform, _packages in SUPPORTED.items():
+    _packages["rust"] = f"crawlora-{_platform}"
 _VERSION = re.compile(
     r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
     r"(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?"
     r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
 )
-_ARTIFACT_PATHS = ("javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "composer.json", "README.md", "openapi/public.json")
+_ARTIFACT_PATHS = ("javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "rust", "composer.json", "README.md", "openapi/public.json")
 
 
 class ReleaseSyncError(RuntimeError):
@@ -317,6 +320,8 @@ def _registry_url(registry: str, name: str, version: str) -> str:
     if registry == "go":
         escaped = "".join("!" + char.lower() if char.isupper() else char for char in name)
         return f"{GO_PROXY}/{quote(escaped, safe='/!')}/@v/v{quote(version, safe='.-+')}.info"
+    if registry == "crates.io":
+        return f"{CRATES_IO_API}/{quote(name, safe='')}/{quote(version, safe='.-+')}"
     raise ReleaseSyncError(f"unsupported package registry: {registry}")
 
 
@@ -365,6 +370,9 @@ def _published(registry: str, name: str, version: str, *, opener: Callable[..., 
         found = payload.get("Version")
         if found == "v" + version:
             return True
+    elif registry == "crates.io":
+        crate_version = payload.get("version")
+        found = crate_version.get("num") if isinstance(crate_version, dict) else None
     if found != version:
         raise ReleaseSyncError(
             f"{registry} returned version {found!r} for exact version lookup {name}@{version}"
@@ -514,6 +522,7 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
         java_pom = ET.parse(root / "java" / "pom.xml").getroot()
         composer = json.loads((root / "composer.json").read_text(encoding="utf-8"))
         php_composer = json.loads((root / "php" / "composer.json").read_text(encoding="utf-8"))
+        rust_toml = (root / "rust" / "Cargo.toml").read_text(encoding="utf-8")
     except (OSError, json.JSONDecodeError, ET.ParseError) as exc:
         raise ReleaseSyncError(f"cannot read the platform release manifest: {exc}") from exc
     if not isinstance(config, dict) or not isinstance(npm_package, dict):
@@ -534,6 +543,13 @@ def _read_manifest(root: Path) -> tuple[dict[str, Any], dict[str, str]]:
         raise ReleaseSyncError(f"platform.json npm_name must be {expected['npm']!r}")
     if config.get("python_name") != expected["pypi"]:
         raise ReleaseSyncError(f"platform.json python_name must be {expected['pypi']!r}")
+    if config.get("rust_crate_name") != expected["rust"]:
+        raise ReleaseSyncError(f"platform.json rust_crate_name must be {expected['rust']!r}")
+    package_section = re.search(r"(?ms)^\[package\]\s*$([^\[]*)", rust_toml)
+    rust_name = re.search(r'(?m)^name\s*=\s*["\']([^"\']+)["\']\s*$', package_section.group(1)) if package_section else None
+    rust_version = re.search(r'(?m)^version\s*=\s*["\']([^"\']+)["\']\s*$', package_section.group(1)) if package_section else None
+    if not rust_name or rust_name.group(1) != expected["rust"] or not rust_version or rust_version.group(1) != version:
+        raise ReleaseSyncError("rust/Cargo.toml package name/version do not match the platform manifest")
     for field, key in (
         ("golang_module_name", "go"),
         ("ruby_gem_name", "ruby"),
@@ -604,7 +620,7 @@ def _validate_git_root(
     if not re.fullmatch(r"[0-9a-fA-F]{40,64}", head):
         raise ReleaseSyncError(f"git returned an invalid HEAD SHA: {head!r}")
     status = _run(
-        ["git", "status", "--porcelain", "--untracked-files=all", "--", "platform.json", "README.md", "composer.json", "javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "openapi/public.json"],
+        ["git", "status", "--porcelain", "--untracked-files=all", "--", "platform.json", "README.md", "composer.json", "javascript", "python", "go.mod", "client.go", "operations.go", "ruby", "java", "php", "rust", "openapi/public.json"],
         root=root,
         runner=runner,
         env=env,
@@ -824,6 +840,7 @@ def sync_release(
     published = {
         "npm": _published("npm", manifest["npm"], manifest["version"], opener=opener),
         "pypi": _published("pypi", manifest["pypi"], manifest["version"], opener=opener),
+        "crates_io": _published("crates.io", manifest["rust"], manifest["version"], opener=opener),
         "go": _published("go", manifest["go"], manifest["version"], opener=opener),
         "ruby": _published("ruby", manifest["ruby"], manifest["version"], opener=opener),
         "maven": _published("maven", manifest["maven_artifact"], manifest["version"], opener=opener),

@@ -43,6 +43,8 @@ jobs:
           npm = json.loads(pathlib.Path("javascript/package.json").read_text())["version"]
           pyproject = tomllib.loads(pathlib.Path("python/pyproject.toml").read_text())
           python_version = pyproject["project"]["version"]
+          rust_manifest = tomllib.loads(pathlib.Path("rust/Cargo.toml").read_text())
+          rust_package = rust_manifest["package"]
           if event == "push":
               version = tag[1:]
           elif re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", tag):
@@ -61,6 +63,7 @@ jobs:
               "platform.json": config.get("version") == version,
               "npm": npm == version,
               "PyPI": python_version == version,
+              "Rust": rust_package.get("name") == config.get("rust_crate_name") and rust_package.get("version") == version,
               "Go module": re.search(r"(?m)^module\s+" + re.escape(config["golang_module_name"]) + r"\s*$", go_module) is not None and re.search(r'(?m)^\s*Version\s*=\s*"' + re.escape(version) + r'"', go_client) is not None,
               "RubyGems": config.get("ruby_gem_name") in gemspec and re.search(r'(?m)^\s*VERSION\s*=\s*["\']' + re.escape(version) + r'["\']', ruby_version) is not None,
               "Maven Central": (pom.findtext("m:groupId", namespaces=ns), pom.findtext("m:artifactId", namespaces=ns), pom.findtext("m:version", namespaces=ns)) == (config.get("maven_group_id"), config.get("maven_artifact_id"), version),
@@ -259,6 +262,86 @@ jobs:
                   time.sleep(min(10, remaining))
               except urllib.error.URLError as error:
                   raise SystemExit(f"Go proxy verification failed: {error.reason}")
+          PY
+
+  publish-crates-io:
+    needs: [validate, verify-release-version]
+    runs-on: ubuntu-latest
+    environment: crates-io
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - name: Check exact version on crates.io
+        id: registry
+        env:
+          PACKAGE: "{{RUST_CRATE_NAME}}"
+          VERSION: ${{ needs.verify-release-version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import json, os, urllib.error, urllib.request
+          url = f"https://crates.io/api/v1/crates/{os.environ['PACKAGE']}/{os.environ['VERSION']}"
+          request = urllib.request.Request(url, headers={"User-Agent": "Crawlora-platform-sdk-release"})
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  payload = json.load(response)
+                  crate = payload.get("version") if isinstance(payload, dict) else None
+                  if response.status != 200 or not isinstance(crate, dict) or crate.get("num") != os.environ["VERSION"]:
+                      raise SystemExit("crates.io returned a mismatched version")
+                  exists = "true"
+          except urllib.error.HTTPError as error:
+              if error.code == 404:
+                  exists = "false"
+              else:
+                  raise SystemExit(f"crates.io check failed with HTTP {error.code}")
+          except urllib.error.URLError as error:
+              raise SystemExit(f"crates.io check failed: {error.reason}")
+          print(f"exists={exists}", file=open(os.environ["GITHUB_OUTPUT"], "a"))
+          PY
+      - name: Validate the crate package
+        if: steps.registry.outputs.exists == 'false'
+        run: cargo publish --manifest-path rust/Cargo.toml --locked --dry-run
+      - uses: rust-lang/crates-io-auth-action@v1
+        if: steps.registry.outputs.exists == 'false'
+        id: auth
+      - name: Publish the exact crate version
+        if: steps.registry.outputs.exists == 'false'
+        run: cargo publish --manifest-path rust/Cargo.toml --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+      - name: Confirm crates.io version is available
+        env:
+          PACKAGE: "{{RUST_CRATE_NAME}}"
+          VERSION: ${{ needs.verify-release-version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import json, os, time, urllib.error, urllib.request
+          url = f"https://crates.io/api/v1/crates/{os.environ['PACKAGE']}/{os.environ['VERSION']}"
+          request = urllib.request.Request(url, headers={"User-Agent": "Crawlora-platform-sdk-release"})
+          deadline = time.monotonic() + 300
+          while True:
+              remaining = deadline - time.monotonic()
+              if remaining <= 0:
+                  raise SystemExit("crates.io version is not visible after 5 minutes")
+              try:
+                  with urllib.request.urlopen(request, timeout=min(20, remaining)) as response:
+                      payload = json.load(response)
+                      crate = payload.get("version") if isinstance(payload, dict) else None
+                      if response.status == 200 and isinstance(crate, dict) and crate.get("num") == os.environ["VERSION"]:
+                          print("crates.io version is available")
+                          break
+                      raise SystemExit("crates.io returned a mismatched version")
+              except urllib.error.HTTPError as error:
+                  if error.code != 404:
+                      raise SystemExit(f"crates.io verification failed with HTTP {error.code}")
+                  time.sleep(min(10, remaining))
+              except urllib.error.URLError as error:
+                  raise SystemExit(f"crates.io verification failed: {error.reason}")
           PY
 
   publish-rubygems:

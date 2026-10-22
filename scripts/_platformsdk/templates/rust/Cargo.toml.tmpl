@@ -1,0 +1,26 @@
+[package]
+name = "{{RUST_CRATE_NAME}}"
+version = "{{VERSION}}"
+edition = "2021"
+rust-version = "1.88"
+description = "{{DESCRIPTION}}"
+license = "MIT"
+homepage = "{{HOME_URL}}"
+repository = "{{REPOSITORY}}"
+documentation = "{{DOCS_URL}}"
+readme = "README.md"
+keywords = {{KEYWORDS_JSON}}
+categories = ["api-bindings", "web-programming"]
+include = ["Cargo.toml", "README.md", "CHANGELOG.md", "LICENSE", "src/**", "docs/**", "examples/**"]
+
+[dependencies]
+percent-encoding = "2.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "multipart"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+url = "2"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]

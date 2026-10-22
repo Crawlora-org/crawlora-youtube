@@ -35,6 +35,7 @@ def _canonical_method_names(spec: dict[str, Any], assets: Path) -> dict[str, dic
         for label, filename in (
             ("javascript", "typescript_generator.py"),
             ("python", "python_generator.py"),
+            ("rust", "rust/generate.py"),
         ):
             module_name = f"_platformsdk_docs_{label}_generator"
             module_spec = importlib.util.spec_from_file_location(module_name, vendor / filename)
@@ -50,11 +51,18 @@ def _canonical_method_names(spec: dict[str, Any], assets: Path) -> dict[str, dic
     result: dict[str, dict[str, str]] = {}
     for language, generator in loaded.items():
         model = generator.core.build_model(spec, generator.POLICY)
-        result[language] = {
-            operation_id: method_name
-            for methods in model.groups.values()
-            for method_name, operation_id in methods.items()
-        }
+        if language == "rust":
+            result[language] = {
+                operation_id: f"{group}.{method_name}"
+                for group, methods in model.groups.items()
+                for method_name, operation_id in methods.items()
+            }
+        else:
+            result[language] = {
+                operation_id: method_name
+                for methods in model.groups.values()
+                for method_name, operation_id in methods.items()
+            }
     return result
 
 
@@ -85,6 +93,7 @@ def _operations(spec: dict[str, Any], platform: str, method_names: dict[str, dic
                     "id": operation_id,
                     "js": js_name,
                     "py": py_name,
+                    "rust": method_names["rust"][operation_id],
                     "verb": verb.upper(),
                     "path": str(path),
                     "summary": str(operation.get("summary") or operation.get("description") or operation_id).split("\n", 1)[0],
@@ -107,11 +116,11 @@ def _param_label(param: dict[str, Any]) -> str:
 
 
 def _operation_catalog(operations: list[dict[str, Any]]) -> str:
-    rows = ["| Method | Endpoint | Parameters | Description |", "| --- | --- | --- | --- |"]
+    rows = ["| JavaScript | Python | Rust | Endpoint | Parameters | Description |", "| --- | --- | --- | --- | --- | --- |"]
     for op in operations:
         params = ", ".join(_param_label(param) for param in op["params"]) or "—"
         summary = op["summary"].replace("|", "\\|").replace("\n", " ")
-        rows.append(f"| `{op['js']}` / `{op['py']}` | `{op['verb']} {op['path']}` | {params} | {summary} |")
+        rows.append(f"| `{op['js']}` | `{op['py']}` | `{op['rust']}` | `{op['verb']} {op['path']}` | {params} | {summary} |")
     return "\n".join(rows)
 
 
@@ -440,7 +449,7 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
     elif platform == "youtube":
         formats = ", ".join(f"`{item}`" for item in transcript_formats)
         special_notes = (
-            f"YouTube clients include all {len(operations)} contract operations; transcript calls can request "
+            f"YouTube clients include all {len(operations)} operations from the contract; transcript calls can request "
             f"plain text with `format=\"text\"` (Python) or `format: \"text\"` (JavaScript). "
             f"The contract lists these transcript formats: {formats}."
         )
@@ -483,6 +492,9 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "GO_MODULE": go_module,
         "GEM_NAME": gem_name,
         "COMPOSER_NAME": composer_name,
+        "RUST_CRATE_NAME": str(config.get("rust_crate_name", f"crawlora-{platform}")),
+        "RUST_MODULE_NAME": str(config.get("rust_module_name", f"crawlora_{platform}")),
+        "RUST_EXAMPLE_URL": f"{repo}/blob/main/rust/examples/quick_start.rs",
         "MAVEN_COORDINATE": f"{maven_group}:{maven_artifact}:{version}",
         "MAVEN_ARTIFACT": maven_artifact,
         "REPOSITORY": repo,
