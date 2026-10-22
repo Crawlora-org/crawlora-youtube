@@ -143,6 +143,8 @@ def config_for(platform: str, *, version: str = "0.1.0", revision: str = "") -> 
         "golang_version": version,
         "ruby_gem_name": "crawlora-" + platform,
         "php_package_name": "crawlora/" + platform,
+        "rust_crate_name": "crawlora-" + platform,
+        "rust_module_name": "crawlora_" + platform.replace("-", "_"),
         "maven_group_id": "net.crawlora",
         "maven_artifact_id": "crawlora-" + platform,
         "java_description": JAVA_DESCRIPTIONS.get(

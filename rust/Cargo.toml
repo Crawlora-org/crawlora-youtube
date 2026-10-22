@@ -1,0 +1,26 @@
+[package]
+name = "crawlora-youtube"
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.88"
+description = "Typed Rust client for Crawlora's hosted YouTube API. Requires a Crawlora API key."
+license = "MIT"
+homepage = "https://crawlora.net/?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-rust-homepage"
+repository = "https://github.com/Crawlora-org/crawlora-youtube"
+documentation = "https://crawlora.net/docs?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-rust-api-docs"
+readme = "README.md"
+keywords = ["crawlora", "youtube", "api-client", "web-scraping"]
+categories = ["api-bindings", "web-programming"]
+include = ["Cargo.toml", "README.md", "CHANGELOG.md", "LICENSE", "src/**", "docs/**", "examples/**"]
+
+[dependencies]
+percent-encoding = "2.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "multipart"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+url = "2"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]

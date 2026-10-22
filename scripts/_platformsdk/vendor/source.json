@@ -1,4 +1,5 @@
 {
   "crawlora-typescript-sdk": "851c2ca06edb440a99e78b2f6544603b7cb7e01a",
-  "crawlora-python-sdk": "8d12a97731b6e1fadacebb8e848abeff20270da1"
+  "crawlora-python-sdk": "8d12a97731b6e1fadacebb8e848abeff20270da1",
+  "crawlora-rust-sdk": "b25ef28d80e77b2ff4cc77086a854a9e86ca26d6"
 }

@@ -38,12 +38,22 @@ def refresh_embedded_tooling(root: Path) -> None:
 def regenerate(root: Path) -> None:
     config = json.loads((root / "platform.json").read_text())
     spec = json.loads((root / "openapi/public.json").read_text())
+    metadata_changed = False
+    for field, value in (
+        ("rust_crate_name", "crawlora-" + str(config["platform"])),
+        ("rust_module_name", "crawlora_" + str(config["platform"]).replace("-", "_")),
+    ):
+        if config.get(field) != value:
+            config[field] = value
+            metadata_changed = True
+    if metadata_changed:
+        (root / "platform.json").write_text(dumps(config))
     refresh_embedded_tooling(root)
     # Re-selection validates the complete scope and schema closure even when
     # running generation from an already-selected public repository.
     spec = select(spec, config["platform"])
     assets = Path(__file__).resolve().parent / "vendor"
-    for name in ["javascript", "python", "golang", "java", "ruby", "php", "documentation"]:
+    for name in ["javascript", "python", "golang", "java", "ruby", "php", "documentation", "rust"]:
         emitter = importlib.import_module("." + name, __package__)
         emitter.emit(root, config, spec, assets)
 

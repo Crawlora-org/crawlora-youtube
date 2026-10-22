@@ -136,13 +136,16 @@ class ContractSyncTests(unittest.TestCase):
             "ruby/README.md": ("rubygems", "ruby"),
             "java/README.md": ("maven-central", "java"),
             "php/README.md": ("packagist", "php"),
+            "rust/README.md": ("crates.io", "rust"),
         }
         destinations = {
             "": "homepage",
             "/": "homepage",
             "/signup": "signup",
             "/app": "console",
+            "/app/api-keys": "api-keys",
             "/docs": "api-docs",
+            "/pricing": "pricing",
         }
         for platform in PLATFORMS:
             with self.subTest(platform=platform), tempfile.TemporaryDirectory(prefix="platform-utm-") as temp:
@@ -228,6 +231,15 @@ class ContractSyncTests(unittest.TestCase):
                     assert_utm(composer["homepage"], source="packagist", platform=platform, surface="php", destination="homepage")
                     assert_utm(composer["support"]["docs"], source="packagist", platform=platform, surface="php", destination="api-docs", path="/docs")
                     self.assertEqual(composer["support"]["source"], f"https://github.com/Crawlora-org/crawlora-{platform}")
+
+                cargo = (root / "rust/Cargo.toml").read_text(encoding="utf-8")
+                cargo_values = {
+                    key: value
+                    for key, value in re.findall(r'(?m)^(homepage|documentation|repository) = "([^"]+)"$', cargo)
+                }
+                assert_utm(cargo_values["homepage"], source="crates.io", platform=platform, surface="rust", destination="homepage")
+                assert_utm(cargo_values["documentation"], source="crates.io", platform=platform, surface="rust", destination="api-docs", path="/docs")
+                self.assertEqual(cargo_values["repository"], f"https://github.com/Crawlora-org/crawlora-{platform}")
 
     def test_raw_header_normalization_matches_selected_public_contract(self) -> None:
         for platform in PLATFORMS:
@@ -317,12 +329,15 @@ class ContractSyncTests(unittest.TestCase):
                     root / "ruby/lib/crawlora" / platform / "operations.json",
                     root / "java/src/main/java/net/crawlora" / platform / "Client.java",
                     root / "php/src/Crawlora" / platform.capitalize() / "operations.json",
+                    root / "rust/src/services_generated.rs",
                 )
                 for generated_file in generated_operation_files:
                     with self.subTest(platform=platform, generated_file=str(generated_file)):
                         self.assertIn(f"{platform}-new-feed", generated_file.read_text())
                 self.assertIn('VERSION = "1.3.0"', (root / "ruby/lib/crawlora" / platform / "version.rb").read_text())
                 self.assertIn("<version>1.3.0</version>", (root / "java/pom.xml").read_text())
+                self.assertIn('version = "1.3.0"', (root / "rust/Cargo.toml").read_text())
+                self.assertIn('version = "1.3.0"', (root / "rust/Cargo.lock").read_text())
                 self.assertEqual(json.loads((root / "php/composer.json").read_text())["name"], f"crawlora/{platform}")
                 self.assertIn(f"github.com/Crawlora-org/crawlora-{platform}", (root / "README.md").read_text())
 

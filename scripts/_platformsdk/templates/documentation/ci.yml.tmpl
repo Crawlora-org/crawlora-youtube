@@ -191,6 +191,39 @@ jobs:
       - run: composer validate --no-check-publish
       - run: composer test
 
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Download generated candidate
+        if: ${{ inputs.candidate_artifact != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.candidate_artifact }}
+          path: ${{ runner.temp }}/candidate
+      - name: Apply generated candidate
+        if: ${{ inputs.candidate_artifact != '' }}
+        run: |
+          mkdir -p "${{ runner.temp }}/candidate/tree"
+          tar -xzf "${{ runner.temp }}/candidate/source.tar.gz" -C "${{ runner.temp }}/candidate/tree"
+          rsync -a --delete --exclude=.git "${{ runner.temp }}/candidate/tree/" "$GITHUB_WORKSPACE/"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - run: cargo fmt --all -- --check
+      - run: cargo test --locked
+      - run: cargo check --examples --locked
+      - run: cargo package --list --locked
+      - run: cargo publish --locked --dry-run
+
   generated-contract-and-artifacts:
     runs-on: ubuntu-latest
     steps:
@@ -215,12 +248,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
       - name: Capture candidate before regeneration
         run: |
           git add -A
           git diff --cached --binary > "$RUNNER_TEMP/before-generation.patch"
       - run: python -m unittest discover -s scripts -p 'test_*sync.py'
       - run: python scripts/generate.py
+      - name: Format generated Rust source before snapshot verification
+        run: cargo fmt --manifest-path rust/Cargo.toml --all
       - name: Verify regeneration preserved the candidate snapshot
         run: |
           git add -A

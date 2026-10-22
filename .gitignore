@@ -6,6 +6,7 @@ __pycache__/
 build/
 dist/
 node_modules/
+rust/target/
 .pytest_cache/
 .mypy_cache/
 *.tgz

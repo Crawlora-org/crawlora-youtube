@@ -103,6 +103,8 @@
   ],
   "repository": "https://github.com/Crawlora-org/crawlora-youtube",
   "ruby_gem_name": "crawlora-youtube",
+  "rust_crate_name": "crawlora-youtube",
+  "rust_module_name": "crawlora_youtube",
   "source_contract_sha256": "58a42b604ca03b9d6cf27355e0e56f34719985b905a61df2f9f2a8c55f651f74",
   "version": "0.2.0"
 }

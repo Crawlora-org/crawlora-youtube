@@ -25,6 +25,7 @@ from .release_sync import (
     GITHUB_PACKAGES_API,
     SUPPORTED,
     ReleaseSyncError,
+    _published,
     _registry_url,
     sync_release,
 )
@@ -133,6 +134,7 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
         "golang_module_name": expected["go"],
         "ruby_gem_name": expected["ruby"],
         "php_package_name": expected["packagist"],
+        "rust_crate_name": expected["rust"],
         "php_repository": "https://github.com/" + expected["repository"],
         "maven_group_id": expected["maven_group"],
         "maven_artifact_id": expected["maven_artifact"],
@@ -172,6 +174,11 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
     )
     php_dir = root / "php"
     php_dir.mkdir()
+    rust_dir = root / "rust"
+    rust_dir.mkdir()
+    (rust_dir / "Cargo.toml").write_text(
+        f'[package]\nname = "{expected["rust"]}"\nversion = "{VERSION}"\n', encoding="utf-8"
+    )
     composer = {
         "name": expected["packagist"],
         "support": {"source": config["repository"]},
@@ -185,10 +192,12 @@ def write_repo(root: Path, platform: str = "sofascore") -> dict:
 
 def http_fixture(platform: str = "sofascore", *, npm: int = 404, pypi: int = 404,
                  go: int = 404, ruby: int = 404, maven: int = 404, packagist: int = 404,
+                 rust: int = 404,
                  github_packages: bool = False,
                  release_status: int = 200, release_payload: dict | None = None) -> FakeHTTP:
     names = SUPPORTED[platform]
-    statuses = {"npm": npm, "pypi": pypi, "go": go, "ruby": ruby, "maven": maven, "packagist": packagist}
+    statuses = {"npm": npm, "pypi": pypi, "go": go, "ruby": ruby, "maven": maven, "packagist": packagist,
+                "crates.io": rust}
     payloads = {
         "npm": {"version": VERSION},
         "pypi": {"info": {"version": VERSION}},
@@ -199,13 +208,15 @@ def http_fixture(platform: str = "sofascore", *, npm: int = 404, pypi: int = 404
             f'<artifactId>{names["maven_artifact"]}</artifactId><version>{VERSION}</version></project>'
         ),
         "packagist": {"packages": {names["packagist"]: [{"version": "v" + VERSION}]}},
+        "crates.io": {"crate": {"id": names["rust"]}, "version": {"num": VERSION}},
     }
     answers = {
         _registry_url(registry, names[name_key] if name_key in names else names["maven_artifact"], VERSION): (
             statuses[registry], (payloads[registry].encode() if registry == "maven" else json.dumps(payloads[registry]).encode()) if statuses[registry] == 200 else b"{}"
         )
         for registry, name_key in (("npm", "npm"), ("pypi", "pypi"), ("go", "go"), ("ruby", "ruby"),
-                                   ("maven", "maven_artifact"), ("packagist", "packagist"))
+                                   ("maven", "maven_artifact"), ("packagist", "packagist"),
+                                   ("crates.io", "rust"))
     }
     answers.update({
         f"{GITHUB_PACKAGES_API}?package_type=maven&per_page=100": (
@@ -275,16 +286,17 @@ class ReleaseSyncTests(unittest.TestCase):
 
     def test_all_registries_published_is_a_noop(self):
         def run(root, config):
-            http = http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200, github_packages=True)
+            http = http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200, rust=200, github_packages=True)
             runner = FakeRunner(config)
             report = self.sync(root, config, http, runner)
             self.assertEqual(report["published"], {
                 "npm": True, "pypi": True, "go": True, "ruby": True, "maven": True, "packagist": True,
+                "crates_io": True,
                 "github_packages": True,
             })
             self.assertFalse(report["needs_release"])
             self.assertEqual(runner.commands, [])
-            self.assertEqual(len(http.requests), 8)
+            self.assertEqual(len(http.requests), 9)
         self.with_repo(run)
 
     def test_npm_git_plus_https_repository_url_is_accepted(self):
@@ -293,7 +305,7 @@ class ReleaseSyncTests(unittest.TestCase):
             package = json.loads(package_path.read_text())
             package["repository"]["url"] = "git+https://github.com/" + SUPPORTED[config["platform"]]["repository"] + ".git"
             package_path.write_text(json.dumps(package))
-            report = self.sync(root, config, http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200, github_packages=True), FakeRunner(config))
+            report = self.sync(root, config, http_fixture(npm=200, pypi=200, go=200, ruby=200, maven=200, packagist=200, rust=200, github_packages=True), FakeRunner(config))
             self.assertFalse(report["needs_release"])
         self.with_repo(run)
 
@@ -327,6 +339,7 @@ class ReleaseSyncTests(unittest.TestCase):
             report = self.sync(root, config, http, runner, check_only=True)
             self.assertEqual(report["published"], {
                 "npm": False, "pypi": False, "go": False, "ruby": False, "maven": False, "packagist": False,
+                "crates_io": False,
                 "github_packages": False,
             })
             npm_request = next(request for url, request, _ in http.requests if url.startswith(NPM_REGISTRY))
@@ -351,6 +364,14 @@ class ReleaseSyncTests(unittest.TestCase):
         url = _registry_url("go", "github.com/Crawlora-org/crawlora-sofascore", VERSION)
         self.assertIn("github.com/!crawlora-org/crawlora-sofascore/@v/v0.1.0.info", url)
         self.assertNotIn("%21", url)
+
+    def test_crates_io_exact_version_uses_the_version_record(self):
+        url = _registry_url("crates.io", "crawlora-sofascore", VERSION)
+        self.assertEqual(url, "https://crates.io/api/v1/crates/crawlora-sofascore/0.1.0")
+        http = http_fixture(platform="sofascore", rust=200)
+        self.assertTrue(_published("crates.io", "crawlora-sofascore", VERSION, opener=http))
+        absent = http_fixture(platform="sofascore")
+        self.assertFalse(_published("crates.io", "crawlora-sofascore", VERSION, opener=absent))
 
     def test_wrong_version_malformed_json_and_forbidden_registry_fail_before_git_or_release_writes(self):
         def run(root, config):
