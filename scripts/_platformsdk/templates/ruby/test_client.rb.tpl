@@ -18,7 +18,7 @@ class PlatformClientTest < Minitest::Test
     result = client.request({{EXAMPLE_OPERATION_JSON}}, JSON.parse({{EXAMPLE_PARAMS_JSON}}))
     assert_equal({ "ok" => true }, result)
     assert_equal 1, calls.length
-    assert_includes calls.first[0], "/{{PLATFORM}}/"
+    assert_includes calls.first[0], "{{API_PATH_PREFIX}}"
     assert_equal ["test-key"], calls.first[1]["x-api-key"]
     assert_equal {{OPERATION_COUNT}}, Crawlora::{{CLASS_NAME}}::Client.operation_count
     default_client = Crawlora::{{CLASS_NAME}}::Client.new(api_key: "test-key", transport: transport)

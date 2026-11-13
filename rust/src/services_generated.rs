@@ -50,6 +50,8 @@ pub struct YoutubeChannelSearchParams {
 pub struct YoutubeChannelShortsParams {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
+    #[serde(rename = "continuation_token", skip_serializing_if = "Option::is_none")]
+    pub continuation_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -62,6 +64,14 @@ pub struct YoutubeChannelVideosParams {
 
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct YoutubeCommentsParams {
+    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(rename = "continuation_token", skip_serializing_if = "Option::is_none")]
+    pub continuation_token: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize)]
+pub struct YoutubeCommentRepliesParams {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(rename = "continuation_token", skip_serializing_if = "Option::is_none")]
@@ -211,6 +221,19 @@ impl YoutubeApi {
     pub async fn comments(&self, params: YoutubeCommentsParams) -> Result<ApiResponse, Error> {
         self.inner
             .call("youtube-comments", &params, RequestOptions::default())
+            .await
+    }
+
+    pub async fn comment_replies(
+        &self,
+        params: YoutubeCommentRepliesParams,
+    ) -> Result<ApiResponse, Error> {
+        self.inner
+            .call(
+                "youtube-comment-replies",
+                &params,
+                RequestOptions::default(),
+            )
             .await
     }
 

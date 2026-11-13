@@ -1,6 +1,6 @@
 # Crawlora YouTube API client for Ruby (`crawlora-youtube`)
 
-This Ruby gem calls Crawlora's hosted YouTube API at `https://api.crawlora.net/api/v1`. It exposes 14 endpoints covering search, channels, videos, playlists, comments, captions, and transcripts; it does not call or scrape YouTube directly. Requests require your Crawlora API key and use your account's service plan.
+This Ruby gem calls Crawlora's hosted YouTube API at `https://api.crawlora.net/api/v1`. It exposes 15 endpoints covering search, channels, videos, playlists, comments, captions, and transcripts; it does not call or scrape YouTube directly. Requests require your Crawlora API key and use your account's service plan.
 
 ## Install
 
@@ -20,7 +20,7 @@ puts result
 client.close
 ```
 
-Use an operation-specific method for normal calls. `request(operation_id, params = {}, response_type: :auto)` is available for every operation. `response_type: :text` returns raw response text. This gem includes 14 API operations.
+Use an operation-specific method for normal calls. `request(operation_id, params = {}, response_type: :auto)` is available for every operation. `response_type: :text` returns raw response text. This gem includes 15 API operations.
 
 ```ruby
 client = Crawlora::Youtube::Client.new(api_key: ENV.fetch("CRAWLORA_API_KEY"), timeout: 30)
@@ -41,7 +41,8 @@ Browse every route included in this gem. The [endpoint reference](https://github
 | `GET` | `/youtube/channel/{id}/search` | `youtube-channel-search` | Search within a YouTube channel |
 | `GET` | `/youtube/channel/{id}/shorts` | `youtube-channel-shorts` | Retrieve the shorts tab for a YouTube channel |
 | `GET` | `/youtube/channel/{id}/videos` | `youtube-channel-videos` | Retrieve the videos tab for a YouTube channel |
-| `GET` | `/youtube/comments/{id}` | `youtube-comments` | Retrieve video comments (top-level & replies) |
+| `GET` | `/youtube/comments/{id}` | `youtube-comments` | Retrieve top-level video comments |
+| `GET` | `/youtube/comments/{id}/replies` | `youtube-comment-replies` | Retrieve replies to one YouTube comment |
 | `GET` | `/youtube/playlist/{id}` | `youtube-playlist` | Retrieve playlist metadata and items |
 | `GET` | `/youtube/profile/{id}` | `youtube-profile` | Retrieve channel profile |
 | `GET` | `/youtube/search` | `youtube-search` | Search YouTube |

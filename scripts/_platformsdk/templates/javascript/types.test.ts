@@ -13,5 +13,4 @@ void rawText;
 {{transcript_type_test}}
 {{transcript_stream_type_test}}
 {{optional_method_test}}
-// @ts-expect-error The selected operation requires its documented params.
-void client.{{first_method}}();
+{{invalid_params_test}}

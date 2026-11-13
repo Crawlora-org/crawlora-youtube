@@ -103,7 +103,13 @@ export const operations = {
     "produces": [
       "application/json"
     ],
-    "queryParams": [],
+    "queryParams": [
+      {
+        "in": "query",
+        "name": "continuation_token",
+        "type": "string"
+      }
+    ],
     "security": [
       "ApiKeyAuth"
     ]
@@ -128,6 +134,34 @@ export const operations = {
       {
         "in": "query",
         "name": "continuation_token",
+        "type": "string"
+      }
+    ],
+    "security": [
+      "ApiKeyAuth"
+    ]
+  },
+  "youtube-comment-replies": {
+    "bodyParam": null,
+    "bodyRequired": false,
+    "consumes": [
+      "application/json"
+    ],
+    "formParams": [],
+    "id": "youtube-comment-replies",
+    "method": "GET",
+    "path": "/youtube/comments/{id}/replies",
+    "pathParams": [
+      "id"
+    ],
+    "produces": [
+      "application/json"
+    ],
+    "queryParams": [
+      {
+        "in": "query",
+        "name": "continuation_token",
+        "required": true,
         "type": "string"
       }
     ],
@@ -494,6 +528,7 @@ export const groups = {
     "channelSearch": "youtube-channel-search",
     "channelShorts": "youtube-channel-shorts",
     "channelVideos": "youtube-channel-videos",
+    "commentReplies": "youtube-comment-replies",
     "comments": "youtube-comments",
     "playlist": "youtube-playlist",
     "profile": "youtube-profile",
@@ -506,7 +541,7 @@ export const groups = {
   }
 };
 
-export const operationCount = 14;
+export const operationCount = 15;
 
 export const OperationIds = Object.freeze({
   "YoutubeCaptions": "youtube-captions",
@@ -514,6 +549,7 @@ export const OperationIds = Object.freeze({
   "YoutubeChannelSearch": "youtube-channel-search",
   "YoutubeChannelShorts": "youtube-channel-shorts",
   "YoutubeChannelVideos": "youtube-channel-videos",
+  "YoutubeCommentReplies": "youtube-comment-replies",
   "YoutubeComments": "youtube-comments",
   "YoutubePlaylist": "youtube-playlist",
   "YoutubeProfile": "youtube-profile",

@@ -243,6 +243,60 @@ def _example_values(platform: str, operations: list[dict[str, Any]]) -> list[tup
     elif platform == "tiktok":
         add("tiktok-search", {"keyword": "science"})
         add("tiktok-trending", {})
+    elif platform == "tiktok-mobile":
+        add("tiktok-mobile-feed", {})
+        add("tiktok-mobile-search-sug", {"keyword": "science"})
+    elif platform == "xiaohongshu":
+        add("xiaohongshu-explore", {})
+        add("xiaohongshu-search-suggest", {"keyword": "coffee"})
+    elif platform == "rednote":
+        add("rednote-explore", {})
+        add("rednote-search-suggest", {"keyword": "coffee"})
+    elif platform == "kick":
+        add("kick-categories", {})
+        add("kick-livestreams", {})
+    elif platform == "wattpad":
+        add("wattpad-search", {"query": "romance"})
+        add("wattpad-categories", {})
+    elif platform == "reelshort":
+        add("reelshort-home", {})
+        add("reelshort-search", {"keywords": "romance"})
+    elif platform == "dramabox":
+        add("dramabox-home", {})
+        add("dramabox-search", {"keyword": "romance"})
+    elif platform == "wallapop":
+        add("wallapop-filters", {"q": "bicycle"})
+        add("wallapop-categories", {})
+    elif platform == "jumia":
+        add("jumia-countries", {})
+        add("jumia-search", {"country": "ng", "q": "phone"})
+    elif platform == "cardmarket":
+        add("cardmarket-games", {})
+        add("cardmarket-catalog", {"q": "blue eyes"})
+    elif platform == "fanduel":
+        add("fanduel-casino-categories", {})
+        add("fanduel-racing-tracks", {})
+    elif platform == "fussballde":
+        add("fussballde-club-search", {"text": "Bayern"})
+        add("fussballde-national-top-scorers", {})
+    elif platform == "opendota":
+        add("opendota-heroes", {})
+        add("opendota-pro-matches", {})
+    elif platform == "cricbuzz":
+        add("cricbuzz-matches", {})
+        add("cricbuzz-schedule", {})
+    elif platform == "gosugamers":
+        add("gosugamers-games", {})
+        add("gosugamers-matches", {})
+    elif platform == "lolesports":
+        add("lolesports-schedule", {"hl": "en-US"})
+        add("lolesports-leagues", {})
+    elif platform == "vlr":
+        add("vlr-matches", {})
+        add("vlr-events", {})
+    elif platform == "bo3":
+        add("bo3-match-history", {})
+        add("bo3-economy-baseline", {})
     elif platform == "amazon":
         add("amazon-search", {"k": "wireless headphones"})
         add("amazon-suggest", {"keyword": "wireless headphones"})
@@ -474,6 +528,24 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
         "appstore": "47 5 * * *",
         "airbnb": "57 5 * * *",
         "spotify": "07 6 * * *",
+        "tiktok-mobile": "17 6 * * *",
+        "xiaohongshu": "22 6 * * *",
+        "rednote": "27 6 * * *",
+        "kick": "32 6 * * *",
+        "wattpad": "37 6 * * *",
+        "reelshort": "42 6 * * *",
+        "dramabox": "47 6 * * *",
+        "wallapop": "52 6 * * *",
+        "jumia": "57 6 * * *",
+        "cardmarket": "02 7 * * *",
+        "fanduel": "07 7 * * *",
+        "fussballde": "12 7 * * *",
+        "opendota": "17 7 * * *",
+        "cricbuzz": "22 7 * * *",
+        "gosugamers": "27 7 * * *",
+        "lolesports": "32 7 * * *",
+        "vlr": "37 7 * * *",
+        "bo3": "42 7 * * *",
     }
     try:
         sync_cron = sync_schedules[platform]
@@ -484,6 +556,7 @@ def _values(config: dict[str, Any], operations: list[dict[str, Any]]) -> dict[st
     return {
         "PLATFORM": platform,
         "DISPLAY_NAME": display,
+        "API_PATH_PREFIX": str(config.get("api_path_prefix", "/" + platform + "/")),
         "CLASS_NAME": cls,
         "ASYNC_CLASS_NAME": async_cls,
         "NPM_NAME": npm,

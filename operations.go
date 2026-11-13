@@ -32,9 +32,10 @@ var operations = map[string]operationDefinition{
 	"youtube-captions":             operationDefinition{Method: "GET", Path: "/youtube/captions/{id}", PathParams: []string{"id"}, QueryParams: []parameterDefinition{parameterDefinition{Name: "lang", In: "query", Type: "string"}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
 	"youtube-channel-playlists":    operationDefinition{Method: "GET", Path: "/youtube/channel/{id}/playlists", PathParams: []string{"id"}, QueryParams: []parameterDefinition{parameterDefinition{Name: "continuation_token", In: "query", Type: "string"}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
 	"youtube-channel-search":       operationDefinition{Method: "GET", Path: "/youtube/channel/{id}/search", PathParams: []string{"id"}, QueryParams: []parameterDefinition{parameterDefinition{Name: "q", In: "query", Type: "string", Required: true}, parameterDefinition{Name: "continuation_token", In: "query", Type: "string"}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
-	"youtube-channel-shorts":       operationDefinition{Method: "GET", Path: "/youtube/channel/{id}/shorts", PathParams: []string{"id"}, QueryParams: nil, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
+	"youtube-channel-shorts":       operationDefinition{Method: "GET", Path: "/youtube/channel/{id}/shorts", PathParams: []string{"id"}, QueryParams: []parameterDefinition{parameterDefinition{Name: "continuation_token", In: "query", Type: "string"}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
 	"youtube-channel-videos":       operationDefinition{Method: "GET", Path: "/youtube/channel/{id}/videos", PathParams: []string{"id"}, QueryParams: []parameterDefinition{parameterDefinition{Name: "continuation_token", In: "query", Type: "string"}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
 	"youtube-comments":             operationDefinition{Method: "GET", Path: "/youtube/comments/{id}", PathParams: []string{"id"}, QueryParams: []parameterDefinition{parameterDefinition{Name: "continuation_token", In: "query", Type: "string"}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
+	"youtube-comment-replies":      operationDefinition{Method: "GET", Path: "/youtube/comments/{id}/replies", PathParams: []string{"id"}, QueryParams: []parameterDefinition{parameterDefinition{Name: "continuation_token", In: "query", Type: "string", Required: true}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
 	"youtube-playlist":             operationDefinition{Method: "GET", Path: "/youtube/playlist/{id}", PathParams: []string{"id"}, QueryParams: []parameterDefinition{parameterDefinition{Name: "continuation_token", In: "query", Type: "string"}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
 	"youtube-profile":              operationDefinition{Method: "GET", Path: "/youtube/profile/{id}", PathParams: []string{"id"}, QueryParams: nil, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
 	"youtube-search":               operationDefinition{Method: "GET", Path: "/youtube/search", PathParams: nil, QueryParams: []parameterDefinition{parameterDefinition{Name: "q", In: "query", Type: "string"}, parameterDefinition{Name: "search_query", In: "query", Type: "string"}, parameterDefinition{Name: "continuation_token", In: "query", Type: "string"}, parameterDefinition{Name: "type", In: "query", Type: "string", Enum: []string{"video", "shorts", "channel", "playlist", "movie"}}, parameterDefinition{Name: "sort_by", In: "query", Type: "string", Enum: []string{"relevance", "upload_date", "view_count", "popularity", "rating"}}, parameterDefinition{Name: "upload_date", In: "query", Type: "string", Enum: []string{"last_hour", "today", "this_week", "this_month", "this_year"}}, parameterDefinition{Name: "duration", In: "query", Type: "string", Enum: []string{"under_3_minutes", "three_to_20_minutes", "over_20_minutes", "under_3", "three_to_20", "over_20", "short", "medium", "long"}}, parameterDefinition{Name: "features", In: "query", Type: "string"}, parameterDefinition{Name: "hl", In: "query", Type: "string"}, parameterDefinition{Name: "gl", In: "query", Type: "string"}, parameterDefinition{Name: "params", In: "query", Type: "string"}}, Produces: []string{"application/json"}, Security: []string{"ApiKeyAuth"}},
@@ -46,7 +47,7 @@ var operations = map[string]operationDefinition{
 }
 
 // OperationCount reports how many selected-platform operations this module exposes.
-const OperationCount = 14
+const OperationCount = 15
 
 // OperationIDs returns the selected operation IDs in stable sorted order.
 func OperationIDs() []string {
@@ -86,6 +87,11 @@ func (c *Client) ChannelVideos(ctx context.Context, params Params) (any, error) 
 // Comments calls the youtube-comments operation.
 func (c *Client) Comments(ctx context.Context, params Params) (any, error) {
 	return c.Call(ctx, "youtube-comments", params)
+}
+
+// CommentReplies calls the youtube-comment-replies operation.
+func (c *Client) CommentReplies(ctx context.Context, params Params) (any, error) {
+	return c.Call(ctx, "youtube-comment-replies", params)
 }
 
 // Playlist calls the youtube-playlist operation.

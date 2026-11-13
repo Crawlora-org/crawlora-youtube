@@ -35,10 +35,15 @@ else:
 
 
 def _operation(platform: str, suffix: str, *, description: str = "A fixture operation") -> dict:
+    tag = {
+        "tiktok-mobile": "TikTok",
+        "fussballde": "Fussball.de",
+        "lolesports": "LoL Esports",
+    }.get(platform, platform.title())
     return {
         "operationId": f"{platform}-{suffix}",
         "summary": description,
-        "tags": [platform.title()],
+        "tags": [tag],
         "parameters": [{"name": "q", "in": "query", "type": "string", "required": True}],
         "responses": {"200": {"description": "OK", "schema": {"$ref": "#/definitions/Envelope"}}},
     }
@@ -53,6 +58,24 @@ def _raw_spec(platform: str, *, extra: bool = False) -> dict:
         "bbb": [("search", "search"), ("business", "business"), ("scamtracker-search", "scamtracker/search")],
         "reddit": [("search", "search"), ("subreddit-posts", "subreddit/posts")],
         "tiktok": [("search", "search"), ("trending", "trending")],
+        "tiktok-mobile": [("feed", "feed"), ("search-sug", "search/sug")],
+        "xiaohongshu": [("explore", "explore"), ("search-suggest", "search-suggest")],
+        "rednote": [("explore", "explore"), ("search-suggest", "search-suggest")],
+        "kick": [("categories", "categories"), ("livestreams", "livestreams")],
+        "wattpad": [("search", "search"), ("categories", "categories")],
+        "reelshort": [("home", "home"), ("search", "search")],
+        "dramabox": [("home", "home"), ("categories", "categories"), ("search", "search")],
+        "wallapop": [("filters", "filters"), ("categories", "categories")],
+        "jumia": [("countries", "countries"), ("search", "search")],
+        "cardmarket": [("games", "games"), ("catalog", "catalog")],
+        "fanduel": [("casino-categories", "casino/categories"), ("racing-tracks", "racing/tracks")],
+        "fussballde": [("club-search", "club-search"), ("federation", "federation")],
+        "opendota": [("heroes", "heroes"), ("pro-matches", "pro-matches")],
+        "cricbuzz": [("matches", "matches"), ("schedule", "schedule")],
+        "gosugamers": [("games", "games"), ("matches", "matches")],
+        "lolesports": [("leagues", "leagues"), ("schedule", "schedule")],
+        "vlr": [("matches", "matches"), ("events", "events")],
+        "bo3": [("economy-baseline", "economy-baseline"), ("match-history", "match-history")],
         "amazon": [("search", "search"), ("product", "product")],
         "imdb": [("search", "search"), ("charts", "charts")],
         "google": [("news", "news"), ("suggest", "suggest")],
@@ -66,8 +89,21 @@ def _raw_spec(platform: str, *, extra: bool = False) -> dict:
         "spotify": [("search", "search"), ("track", "track")],
     }[platform]
     paths = {}
+    path_prefix = "/tiktok/mobile/" if platform == "tiktok-mobile" else f"/{platform}/"
     for suffix, path_suffix in operation_ids:
         operation = _operation(platform, suffix)
+        if platform in {
+            "tiktok-mobile", "xiaohongshu", "rednote", "kick", "wattpad", "reelshort",
+            "dramabox", "wallapop", "jumia", "cardmarket", "fanduel", "fussballde",
+            "opendota", "cricbuzz", "gosugamers", "lolesports", "vlr", "bo3",
+        }:
+            operation["parameters"] = [
+                {"name": "q", "in": "query", "type": "string", "required": False},
+            ]
+            if platform == "fussballde" and suffix == "club-search":
+                operation["parameters"].append({
+                    "name": "text", "in": "query", "type": "string", "required": False,
+                })
         if (platform, suffix) == ("ebay", "seller"):
             operation["parameters"][0]["name"] = "seller"
         if (platform, suffix) in {("google", "news"), ("ebay", "seller")}:
@@ -82,15 +118,23 @@ def _raw_spec(platform: str, *, extra: bool = False) -> dict:
             if query_name:
                 operation["parameters"][0]["name"] = query_name
             operation["parameters"].append({"name": "X-API-Key", "in": "header", "type": "string"})
-        paths[f"/{platform}/{path_suffix}"] = {"get": operation}
-    search = paths[f"/{platform}/{operation_ids[0][1]}"]["get"]
+        paths[f"{path_prefix}{path_suffix}"] = {"get": operation}
+    search = paths[f"{path_prefix}{operation_ids[0][1]}"]["get"]
+    if not any(
+        param.get("in") == "header" and param.get("name", "").lower() == "x-api-key"
+        for methods in paths.values()
+        for operation in methods.values()
+        for param in operation.get("parameters", [])
+    ):
+        search["parameters"].append({"name": "X-API-Key", "in": "header", "type": "string"})
     if extra:
         extra_op = _operation(platform, "new-feed", description="A useful new feed")
         extra_op["parameters"] = [
             {"name": "id", "in": "path", "type": "string", "required": True},
             {"name": "X-API-Key", "in": "header", "type": "string"},
         ]
-        paths[f"/{platform}/feeds/{{id}}"] = {"get": extra_op}
+        extra_path = "/tiktok/mobile/feeds/{id}" if platform == "tiktok-mobile" else f"/{platform}/feeds/{{id}}"
+        paths[extra_path] = {"get": extra_op}
     return {
         "swagger": "2.0",
         "info": {"title": "Crawlora API", "version": "2026.10", "description": "fixture"},
@@ -252,7 +296,11 @@ class ContractSyncTests(unittest.TestCase):
                     op["get"] for path, op in prepared["paths"].items()
                     if any(p.get("in") == "header" for p in op["get"]["parameters"])
                 )
-                search["parameters"] = [p for p in search["parameters"] if p.get("in") != "header"]
+                filtered = [p for p in search["parameters"] if p.get("in") != "header"]
+                if filtered:
+                    search["parameters"] = filtered
+                else:
+                    search.pop("parameters", None)
                 search["security"] = [{"ApiKeyAuth": []}]
                 expected = select(prepared, platform)
                 self.assertEqual(normalized, expected)
@@ -267,6 +315,9 @@ class ContractSyncTests(unittest.TestCase):
                 new_path = f"/{platform}/feeds/{{id}}"
                 if platform == "tiktok":
                     source["paths"][new_path]["get"]["tags"] = ["TikTok Creative Center"]
+                if platform == "tiktok-mobile":
+                    new_path = "/tiktok/mobile/feeds/{id}"
+                    source["paths"][new_path]["get"]["tags"] = ["TikTok"]
                 if platform == "amazon":
                     source["paths"]["/amazon-jobs/search"] = {
                         "get": {
@@ -327,8 +378,8 @@ class ContractSyncTests(unittest.TestCase):
                     root / "python" / config["module_name"] / "operations.py",
                     root / "operations.go",
                     root / "ruby/lib/crawlora" / platform / "operations.json",
-                    root / "java/src/main/java/net/crawlora" / platform / "Client.java",
-                    root / "php/src/Crawlora" / platform.capitalize() / "operations.json",
+                    root / "java/src/main/java/net/crawlora" / platform.replace("-", "_") / "Client.java",
+                    root / "php/src/Crawlora" / "".join(part.capitalize() for part in platform.split("-")) / "operations.json",
                     root / "rust/src/services_generated.rs",
                 )
                 for generated_file in generated_operation_files:

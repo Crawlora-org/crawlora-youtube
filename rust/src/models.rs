@@ -131,6 +131,12 @@ pub struct ModelYoutubeChannelShortsResponse {
         skip_serializing_if = "Option::is_none"
     )]
     pub channel_url: Option<String>,
+    #[serde(
+        rename = "continuation_token",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub continuation_token: Option<String>,
     #[serde(rename = "handle", default, skip_serializing_if = "Option::is_none")]
     pub handle: Option<String>,
     #[serde(rename = "shorts", default, skip_serializing_if = "Option::is_none")]

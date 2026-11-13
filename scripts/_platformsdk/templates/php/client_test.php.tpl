@@ -17,7 +17,7 @@ $result = $client->request({{EXAMPLE_OPERATION_JSON}}, {{EXAMPLE_PARAMS_PHP}});
 if ($result !== ['ok' => true]) {
     throw new RuntimeException('Expected the mocked JSON response.');
 }
-if (count($calls) !== 1 || !str_contains($calls[0][0], '/{{PLATFORM}}/')) {
+if (count($calls) !== 1 || !str_contains($calls[0][0], '{{API_PATH_PREFIX}}')) {
     throw new RuntimeException('The generated operation did not use the platform API path.');
 }
 if (!in_array('x-api-key: test-key', $calls[0][1], true)) {
@@ -29,7 +29,7 @@ if ($client->operationCount() !== {{OPERATION_COUNT}}) {
 $defaultClient = new Crawlora\{{CLASS_NAME}}\Client(
     apiKey: 'test-key',
     transport: function ($url) {
-        if (!str_starts_with($url, 'https://api.crawlora.net/api/v1/{{PLATFORM}}/')) {
+        if (!str_starts_with($url, 'https://api.crawlora.net/api/v1{{API_PATH_PREFIX}}')) {
             throw new RuntimeException('The default API base URL did not include /api/v1.');
         }
         return ['status' => 200, 'content_type' => 'application/json', 'body' => '{"ok":true}'];

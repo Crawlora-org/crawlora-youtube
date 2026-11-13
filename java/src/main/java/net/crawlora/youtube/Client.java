@@ -22,13 +22,14 @@ import java.util.TreeSet;
 /** Client for the YouTube endpoints hosted by Crawlora. */
 public final class Client implements AutoCloseable {
     public static final String DEFAULT_BASE_URL = "https://api.crawlora.net/api/v1";
-    public static final int OPERATION_COUNT = 14;
+    public static final int OPERATION_COUNT = 15;
     public static final List<String> OPERATION_IDS = List.of(
             "youtube-captions",
             "youtube-channel-playlists",
             "youtube-channel-search",
             "youtube-channel-shorts",
             "youtube-channel-videos",
+            "youtube-comment-replies",
             "youtube-comments",
             "youtube-playlist",
             "youtube-profile",
@@ -46,9 +47,10 @@ public final class Client implements AutoCloseable {
         operations.put("youtube-captions", new Operation("youtube-captions", "GET", "/youtube/captions/{id}", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv")), Map.entry("lang", new Param("lang", "query", false, "string", List.of(), "csv"))), List.of("application/json")));
         operations.put("youtube-channel-playlists", new Operation("youtube-channel-playlists", "GET", "/youtube/channel/{id}/playlists", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv")), Map.entry("continuation_token", new Param("continuation_token", "query", false, "string", List.of(), "csv"))), List.of("application/json")));
         operations.put("youtube-channel-search", new Operation("youtube-channel-search", "GET", "/youtube/channel/{id}/search", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv")), Map.entry("q", new Param("q", "query", true, "string", List.of(), "csv")), Map.entry("continuation_token", new Param("continuation_token", "query", false, "string", List.of(), "csv"))), List.of("application/json")));
-        operations.put("youtube-channel-shorts", new Operation("youtube-channel-shorts", "GET", "/youtube/channel/{id}/shorts", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv"))), List.of("application/json")));
+        operations.put("youtube-channel-shorts", new Operation("youtube-channel-shorts", "GET", "/youtube/channel/{id}/shorts", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv")), Map.entry("continuation_token", new Param("continuation_token", "query", false, "string", List.of(), "csv"))), List.of("application/json")));
         operations.put("youtube-channel-videos", new Operation("youtube-channel-videos", "GET", "/youtube/channel/{id}/videos", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv")), Map.entry("continuation_token", new Param("continuation_token", "query", false, "string", List.of(), "csv"))), List.of("application/json")));
         operations.put("youtube-comments", new Operation("youtube-comments", "GET", "/youtube/comments/{id}", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv")), Map.entry("continuation_token", new Param("continuation_token", "query", false, "string", List.of(), "csv"))), List.of("application/json")));
+        operations.put("youtube-comment-replies", new Operation("youtube-comment-replies", "GET", "/youtube/comments/{id}/replies", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv")), Map.entry("continuation_token", new Param("continuation_token", "query", true, "string", List.of(), "csv"))), List.of("application/json")));
         operations.put("youtube-playlist", new Operation("youtube-playlist", "GET", "/youtube/playlist/{id}", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv")), Map.entry("continuation_token", new Param("continuation_token", "query", false, "string", List.of(), "csv"))), List.of("application/json")));
         operations.put("youtube-profile", new Operation("youtube-profile", "GET", "/youtube/profile/{id}", Map.ofEntries(Map.entry("id", new Param("id", "path", true, "string", List.of(), "csv"))), List.of("application/json")));
         operations.put("youtube-search", new Operation("youtube-search", "GET", "/youtube/search", Map.ofEntries(Map.entry("q", new Param("q", "query", false, "string", List.of(), "csv")), Map.entry("search_query", new Param("search_query", "query", false, "string", List.of(), "csv")), Map.entry("continuation_token", new Param("continuation_token", "query", false, "string", List.of(), "csv")), Map.entry("type", new Param("type", "query", false, "string", List.of("video", "shorts", "channel", "playlist", "movie"), "csv")), Map.entry("sort_by", new Param("sort_by", "query", false, "string", List.of("relevance", "upload_date", "view_count", "popularity", "rating"), "csv")), Map.entry("upload_date", new Param("upload_date", "query", false, "string", List.of("last_hour", "today", "this_week", "this_month", "this_year"), "csv")), Map.entry("duration", new Param("duration", "query", false, "string", List.of("under_3_minutes", "three_to_20_minutes", "over_20_minutes", "under_3", "three_to_20", "over_20", "short", "medium", "long"), "csv")), Map.entry("features", new Param("features", "query", false, "string", List.of(), "csv")), Map.entry("hl", new Param("hl", "query", false, "string", List.of(), "csv")), Map.entry("gl", new Param("gl", "query", false, "string", List.of(), "csv")), Map.entry("params", new Param("params", "query", false, "string", List.of(), "csv"))), List.of("application/json")));
@@ -169,6 +171,7 @@ public final class Client implements AutoCloseable {
     public Object channelShorts(Map<String, ?> params) { return request("youtube-channel-shorts", params); }
     public Object channelVideos(Map<String, ?> params) { return request("youtube-channel-videos", params); }
     public Object comments(Map<String, ?> params) { return request("youtube-comments", params); }
+    public Object commentReplies(Map<String, ?> params) { return request("youtube-comment-replies", params); }
     public Object playlist(Map<String, ?> params) { return request("youtube-playlist", params); }
     public Object profile(Map<String, ?> params) { return request("youtube-profile", params); }
     public Object search(Map<String, ?> params) { return request("youtube-search", params); }

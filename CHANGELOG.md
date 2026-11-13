@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 — 2026-11-13
+
+- Added operations: youtube-comment-replies.
+- Updated operation contracts: youtube-channel-shorts, youtube-comments.
+
 ## 0.2.0 — 2026-10-14
 
 - Updated operation contracts: youtube-captions, youtube-channel-playlists, youtube-channel-search, youtube-channel-shorts, youtube-channel-videos, youtube-comments, youtube-playlist, youtube-profile, youtube-search, youtube-tag, youtube-transcript, youtube-transcript-languages, youtube-video.

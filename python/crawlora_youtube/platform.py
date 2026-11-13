@@ -7,7 +7,7 @@ from .async_client import AsyncCrawloraClient
 class YouTubeClient(CrawloraClient):
     """Synchronous YouTube API client."""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        kwargs.setdefault('user_agent', 'crawlora-youtube-python/0.2.0')
+        kwargs.setdefault('user_agent', 'crawlora-youtube-python/0.3.0')
         super().__init__(*args, **kwargs)
 
     def captions(self, **params: Any) -> Any:
@@ -45,6 +45,12 @@ class YouTubeClient(CrawloraClient):
         timeout = params.pop('_timeout', None)
         headers = params.pop('_headers', None)
         return self.request('youtube-comments', params, response_type=response_type, timeout=timeout, headers=headers)
+
+    def comment_replies(self, **params: Any) -> Any:
+        response_type = params.pop('_response_type', 'auto')
+        timeout = params.pop('_timeout', None)
+        headers = params.pop('_headers', None)
+        return self.request('youtube-comment-replies', params, response_type=response_type, timeout=timeout, headers=headers)
 
     def playlist(self, **params: Any) -> Any:
         response_type = params.pop('_response_type', 'auto')
@@ -97,7 +103,7 @@ class YouTubeClient(CrawloraClient):
 class AsyncYouTubeClient(AsyncCrawloraClient):
     """Asynchronous YouTube API client."""
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        kwargs.setdefault('user_agent', 'crawlora-youtube-python/0.2.0')
+        kwargs.setdefault('user_agent', 'crawlora-youtube-python/0.3.0')
         super().__init__(*args, **kwargs)
 
     async def captions(self, **params: Any) -> Any:
@@ -135,6 +141,12 @@ class AsyncYouTubeClient(AsyncCrawloraClient):
         timeout = params.pop('_timeout', None)
         headers = params.pop('_headers', None)
         return await self.request('youtube-comments', params, response_type=response_type, timeout=timeout, headers=headers)
+
+    async def comment_replies(self, **params: Any) -> Any:
+        response_type = params.pop('_response_type', 'auto')
+        timeout = params.pop('_timeout', None)
+        headers = params.pop('_headers', None)
+        return await self.request('youtube-comment-replies', params, response_type=response_type, timeout=timeout, headers=headers)
 
     async def playlist(self, **params: Any) -> Any:
         response_type = params.pop('_response_type', 'auto')

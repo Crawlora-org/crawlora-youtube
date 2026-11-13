@@ -1,6 +1,6 @@
 {
   "name": "crawlora/youtube",
-  "description": "Crawlora YouTube API client with 14 endpoints for search, channels, videos, playlists, comments, captions, and transcripts",
+  "description": "Crawlora YouTube API client with 15 endpoints for search, channels, videos, playlists, comments, captions, and transcripts",
   "keywords": [
     "crawlora",
     "api-client",

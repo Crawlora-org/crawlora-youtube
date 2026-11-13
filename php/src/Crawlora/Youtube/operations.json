@@ -1,12 +1,13 @@
 {
   "platform": "youtube",
-  "operationCount": 14,
+  "operationCount": 15,
   "operationIds": [
     "youtube-captions",
     "youtube-channel-playlists",
     "youtube-channel-search",
     "youtube-channel-shorts",
     "youtube-channel-videos",
+    "youtube-comment-replies",
     "youtube-comments",
     "youtube-playlist",
     "youtube-profile",
@@ -24,6 +25,7 @@
     "channel_shorts": "youtube-channel-shorts",
     "channel_videos": "youtube-channel-videos",
     "comments": "youtube-comments",
+    "comment_replies": "youtube-comment-replies",
     "playlist": "youtube-playlist",
     "profile": "youtube-profile",
     "search": "youtube-search",
@@ -173,7 +175,13 @@
       "pathParams": [
         "id"
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string"
+        }
+      ],
       "bodyParam": null,
       "bodyRequired": false,
       "params": [
@@ -184,6 +192,12 @@
           "required": true,
           "type": "string",
           "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+        },
+        {
+          "description": "Opaque pagination token returned by the previous response",
+          "in": "query",
+          "name": "continuation_token",
+          "type": "string"
         }
       ],
       "produces": [
@@ -258,10 +272,52 @@
           "x-example": "YbJOTdZBX1g"
         },
         {
-          "description": "Pagination token returned by a previous request, first page if empty",
+          "description": "Opaque pagination token returned by a previous request; pass it for deterministic pagination",
           "in": "query",
           "name": "continuation_token",
           "type": "string"
+        }
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "security": [
+        "ApiKeyAuth"
+      ]
+    },
+    "youtube-comment-replies": {
+      "id": "youtube-comment-replies",
+      "method": "GET",
+      "path": "/youtube/comments/{id}/replies",
+      "pathParams": [
+        "id"
+      ],
+      "queryParams": [
+        {
+          "name": "continuation_token",
+          "in": "query",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "bodyParam": null,
+      "bodyRequired": false,
+      "params": [
+        {
+          "description": "YouTube video ID (11-character code)",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "x-example": "YbJOTdZBX1g"
+        },
+        {
+          "description": "Opaque per-comment reply token from a comment object",
+          "in": "query",
+          "name": "continuation_token",
+          "required": true,
+          "type": "string",
+          "x-example": "COMMENT_REPLIES_TOKEN"
         }
       ],
       "produces": [

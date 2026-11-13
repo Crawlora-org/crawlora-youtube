@@ -91,6 +91,7 @@ export class YouTubeClient extends CrawloraClient {
   channelShorts(params: OperationParamsMap["youtube-channel-shorts"], options: CrawloraRequestOptions & { responseType: "stream" }): Promise<Response>;
   channelVideos(params: OperationParamsMap["youtube-channel-videos"], options: CrawloraRequestOptions & { responseType: "stream" }): Promise<Response>;
   comments(params: OperationParamsMap["youtube-comments"], options: CrawloraRequestOptions & { responseType: "stream" }): Promise<Response>;
+  commentReplies(params: OperationParamsMap["youtube-comment-replies"], options: CrawloraRequestOptions & { responseType: "stream" }): Promise<Response>;
   playlist(params: OperationParamsMap["youtube-playlist"], options: CrawloraRequestOptions & { responseType: "stream" }): Promise<Response>;
   profile(params: OperationParamsMap["youtube-profile"], options: CrawloraRequestOptions & { responseType: "stream" }): Promise<Response>;
   search(params?: OperationParamsMap["youtube-search"], options?: CrawloraRequestOptions & { responseType: "stream" }): Promise<Response>;
@@ -107,6 +108,7 @@ export class YouTubeClient extends CrawloraClient {
   channelShorts(params: OperationParamsMap["youtube-channel-shorts"], options: CrawloraRequestOptions & { responseType: "text" }): Promise<string>;
   channelVideos(params: OperationParamsMap["youtube-channel-videos"], options: CrawloraRequestOptions & { responseType: "text" }): Promise<string>;
   comments(params: OperationParamsMap["youtube-comments"], options: CrawloraRequestOptions & { responseType: "text" }): Promise<string>;
+  commentReplies(params: OperationParamsMap["youtube-comment-replies"], options: CrawloraRequestOptions & { responseType: "text" }): Promise<string>;
   playlist(params: OperationParamsMap["youtube-playlist"], options: CrawloraRequestOptions & { responseType: "text" }): Promise<string>;
   profile(params: OperationParamsMap["youtube-profile"], options: CrawloraRequestOptions & { responseType: "text" }): Promise<string>;
   search(params?: OperationParamsMap["youtube-search"], options?: CrawloraRequestOptions & { responseType: "text" }): Promise<string>;
@@ -128,6 +130,7 @@ export class YouTubeClient extends CrawloraClient {
   channelShorts(...args: OperationRequestArgs<"youtube-channel-shorts">): Promise<OperationResponseMap["youtube-channel-shorts"]>;
   channelVideos(...args: OperationRequestArgs<"youtube-channel-videos">): Promise<OperationResponseMap["youtube-channel-videos"]>;
   comments(...args: OperationRequestArgs<"youtube-comments">): Promise<OperationResponseMap["youtube-comments"]>;
+  commentReplies(...args: OperationRequestArgs<"youtube-comment-replies">): Promise<OperationResponseMap["youtube-comment-replies"]>;
   playlist(...args: OperationRequestArgs<"youtube-playlist">): Promise<OperationResponseMap["youtube-playlist"]>;
   profile(...args: OperationRequestArgs<"youtube-profile">): Promise<OperationResponseMap["youtube-profile"]>;
   search(...args: OperationRequestArgs<"youtube-search">): Promise<OperationResponseMap["youtube-search"]>;

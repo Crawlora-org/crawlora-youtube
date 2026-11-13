@@ -16,6 +16,24 @@ from .utm import crawlora_url
 _JAVA_EXAMPLE_CALLS = {
     "reddit": ("reddit-search", {"q": "open source"}),
     "tiktok": ("tiktok-search", {"keyword": "science"}),
+    "tiktok-mobile": ("tiktok-mobile-feed", {}),
+    "xiaohongshu": ("xiaohongshu-explore", {}),
+    "rednote": ("rednote-explore", {}),
+    "kick": ("kick-categories", {}),
+    "wattpad": ("wattpad-categories", {}),
+    "reelshort": ("reelshort-home", {}),
+    "dramabox": ("dramabox-categories", {}),
+    "wallapop": ("wallapop-categories", {}),
+    "jumia": ("jumia-countries", {}),
+    "cardmarket": ("cardmarket-games", {}),
+    "fanduel": ("fanduel-casino-categories", {}),
+    "fussballde": ("fussballde-club-search", {"text": "Bayern"}),
+    "opendota": ("opendota-heroes", {}),
+    "cricbuzz": ("cricbuzz-matches", {}),
+    "gosugamers": ("gosugamers-games", {}),
+    "lolesports": ("lolesports-leagues", {}),
+    "vlr": ("vlr-matches", {}),
+    "bo3": ("bo3-economy-baseline", {}),
     "amazon": ("amazon-search", {"k": "wireless headphones"}),
     "imdb": ("imdb-search", {"query": "Inception"}),
     "google": ("google-news", {"q": "artificial intelligence"}),
@@ -137,7 +155,8 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         f"Java client for Crawlora's hosted {config['display_name']} API, with direct methods for supported operations. "
         "Requires a Crawlora API key."
     )
-    package_name = f"net.crawlora.{platform}"
+    package_slug = re.sub(r"[^a-z0-9_]", "_", platform.lower())
+    package_name = f"net.crawlora.{package_slug}"
     values = {
         "platform": platform,
         "display_name": config["display_name"],
@@ -158,7 +177,7 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
             f"    public Object {name}(Map<String, ?> params) {{ return request({_quote(op_id)}, params); }}"
             for name, op_id in _method_aliases(model)
         ),
-        "base_sdk_version": str(config.get("general_sdk_version", "1.46.0-sdk.1")),
+        "base_sdk_version": str(config.get("general_sdk_version", "1.50.0-sdk.1")),
     }
     values["class_name"] = "Client"
     values["default_base_url"] = "https://api.crawlora.net/api/v1"

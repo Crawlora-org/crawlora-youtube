@@ -1,6 +1,6 @@
 # Crawlora YouTube API client for Java
 
-The official Java client for Crawlora's hosted YouTube API. It exposes 14 endpoints covering search, channels, videos, playlists, comments, captions, and transcripts. Requests use your `x-api-key`; the client does not connect to the upstream site directly.
+The official Java client for Crawlora's hosted YouTube API. It exposes 15 endpoints covering search, channels, videos, playlists, comments, captions, and transcripts. Requests use your `x-api-key`; the client does not connect to the upstream site directly.
 
 ## Install
 
@@ -8,7 +8,7 @@ The official Java client for Crawlora's hosted YouTube API. It exposes 14 endpoi
 <dependency>
   <groupId>net.crawlora</groupId>
   <artifactId>crawlora-youtube</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
 </dependency>
 ```
 
@@ -42,7 +42,8 @@ Browse every route included in this Java package. The [endpoint reference](https
 | `GET` | `/youtube/channel/{id}/search` | `youtube-channel-search` | Search within a YouTube channel |
 | `GET` | `/youtube/channel/{id}/shorts` | `youtube-channel-shorts` | Retrieve the shorts tab for a YouTube channel |
 | `GET` | `/youtube/channel/{id}/videos` | `youtube-channel-videos` | Retrieve the videos tab for a YouTube channel |
-| `GET` | `/youtube/comments/{id}` | `youtube-comments` | Retrieve video comments (top-level & replies) |
+| `GET` | `/youtube/comments/{id}` | `youtube-comments` | Retrieve top-level video comments |
+| `GET` | `/youtube/comments/{id}/replies` | `youtube-comment-replies` | Retrieve replies to one YouTube comment |
 | `GET` | `/youtube/playlist/{id}` | `youtube-playlist` | Retrieve playlist metadata and items |
 | `GET` | `/youtube/profile/{id}` | `youtube-profile` | Retrieve channel profile |
 | `GET` | `/youtube/search` | `youtube-search` | Search YouTube |
