@@ -161,6 +161,11 @@
           "example": "https://www.youtube.com/@OpenAI",
           "type": "string"
         },
+        "continuation_token": {
+          "description": "Token to pass in the next request to get the following page. Omitted on the last page.",
+          "example": "NEXT_TOKEN",
+          "type": "string"
+        },
         "handle": {
           "description": "Channel handle, starting with `@`.",
           "example": "@OpenAI",
@@ -1179,7 +1184,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns the first page of Shorts from a YouTube channel's Shorts tab. `id` accepts a channel id, `@handle`, `/c` or `/user` path, or a full channel URL. Each short has its position, video id, title, URL, thumbnail and view count text.",
+        "description": "Returns one page of Shorts from a YouTube channel's Shorts tab. `id` accepts a channel id, `@handle`, `/c` or `/user` path, or a full channel URL. Each short has its position within this page, video id, title, URL, thumbnail and view count text. Pass `continuation_token` from the response to fetch the next page.",
         "operationId": "youtube-channel-shorts",
         "parameters": [
           {
@@ -1189,6 +1194,12 @@
             "required": true,
             "type": "string",
             "x-example": "UCXZCJLdBC09xxGZ6gcdrc6A"
+          },
+          {
+            "description": "Opaque pagination token returned by the previous response",
+            "in": "query",
+            "name": "continuation_token",
+            "type": "string"
           }
         ],
         "produces": [
@@ -1299,7 +1310,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Returns one page of comments for a YouTube video by its 11-character `id`. Each comment has its id, content, author `user_name` and `channel_id`, `likes_count`, `reply_count` and `published_time`. Pass the previous response's `continuation_token` to get the next page; leave it empty for the first.",
+        "description": "Returns one page of top-level comments for a YouTube video by its 11-character `id`. Each comment has its id, content, author `user_name` and `channel_id`, `likes_count`, `reply_count` and `published_time`. Comments with replies may include their own `continuation_token`; pass that token to `/youtube/comments/{id}/replies`. Pass the response-level `continuation_token` here for deterministic pagination. If omitted, the service discovers an initial cursor or may resume the most recently cached cursor for this video.",
         "operationId": "youtube-comments",
         "parameters": [
           {
@@ -1311,7 +1322,7 @@
             "x-example": "YbJOTdZBX1g"
           },
           {
-            "description": "Pagination token returned by a previous request, first page if empty",
+            "description": "Opaque pagination token returned by a previous request; pass it for deterministic pagination",
             "in": "query",
             "name": "continuation_token",
             "type": "string"
@@ -1351,7 +1362,72 @@
             "ApiKeyAuth": []
           }
         ],
-        "summary": "Retrieve video comments (top-level & replies)",
+        "summary": "Retrieve top-level video comments",
+        "tags": [
+          "youtube"
+        ]
+      }
+    },
+    "/youtube/comments/{id}/replies": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Returns one page of replies using the opaque `continuation_token` on a comment from `/youtube/comments/{id}`. The path `id` is the 11-character video ID that provides the YouTube watch-page context. Pass the response-level `continuation_token` to fetch another replies page.",
+        "operationId": "youtube-comment-replies",
+        "parameters": [
+          {
+            "description": "YouTube video ID (11-character code)",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "x-example": "YbJOTdZBX1g"
+          },
+          {
+            "description": "Opaque per-comment reply token from a comment object",
+            "in": "query",
+            "name": "continuation_token",
+            "required": true,
+            "type": "string",
+            "x-example": "COMMENT_REPLIES_TOKEN"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/youtube.commentsResponseDoc"
+            }
+          },
+          "400": {
+            "description": "Missing or invalid parameters",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/app.Response"
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Retrieve replies to one YouTube comment",
         "tags": [
           "youtube"
         ]

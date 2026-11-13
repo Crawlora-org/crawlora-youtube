@@ -25,12 +25,33 @@ PLATFORMS = {
     "appstore": ("App Store", "AppStoreClient"),
     "airbnb": ("Airbnb", "AirbnbClient"),
     "spotify": ("Spotify", "SpotifyClient"),
+    "tiktok-mobile": ("TikTok Mobile", "TikTokMobileClient"),
+    "xiaohongshu": ("Xiaohongshu", "XiaohongshuClient"),
+    "rednote": ("RedNote", "RednoteClient"),
+    "kick": ("Kick", "KickClient"),
+    "wattpad": ("Wattpad", "WattpadClient"),
+    "reelshort": ("ReelShort", "ReelShortClient"),
+    "dramabox": ("DramaBox", "DramaBoxClient"),
+    "wallapop": ("Wallapop", "WallapopClient"),
+    "jumia": ("Jumia", "JumiaClient"),
+    "cardmarket": ("Cardmarket", "CardmarketClient"),
+    "fanduel": ("FanDuel", "FanDuelClient"),
+    "fussballde": ("Fussball.de", "FussballdeClient"),
+    "opendota": ("OpenDota", "OpenDotaClient"),
+    "cricbuzz": ("Cricbuzz", "CricbuzzClient"),
+    "gosugamers": ("GosuGamers", "GosuGamersClient"),
+    "lolesports": ("LoL Esports", "LoLEsportsClient"),
+    "vlr": ("VLR.gg", "VLRClient"),
+    "bo3": ("BO3.gg", "BO3Client"),
 }
 # TikTok's public API uses product-area tags for several operation groups. Keep
 # those in the TikTok package while excluding neighboring products that share
 # an operation-ID prefix (for example Amazon Jobs).
 PLATFORM_TAG_ALIASES = {
     "tiktok": frozenset({"tiktok", "tiktok creative center", "tiktok popular trend", "tiktok top ads"}),
+    "tiktok-mobile": frozenset({"tiktok", "tiktok-mobile"}),
+    "fussballde": frozenset({"fussball.de", "fussballde"}),
+    "lolesports": frozenset({"lol esports", "lolesports"}),
     "duckduckgo": frozenset({"duckduckgo", "duckduckgo search"}),
     "spotify": frozenset({"spotify", "spotifypodcasts"}),
 }
@@ -39,9 +60,11 @@ PLATFORM_EXCLUDED_TAGS = {
     "google": frozenset({"google jobs"}),
 }
 # Spotify Podcasts is served from a sibling path family and belongs in the
-# Spotify package. Other platforms own exactly "/<platform>/".
+# Spotify package. TikTok Mobile uses the nested "/tiktok/mobile/" family.
+# Other platforms own exactly "/<platform>/".
 PLATFORM_PATH_PREFIXES = {
     "spotify": ("/spotify/", "/spotify-podcasts/"),
+    "tiktok-mobile": ("/tiktok/mobile/",),
 }
 # Operations kept out of a package even if the public contract lists them
 # again later. Google web search has no dependable upstream path, so the
@@ -122,6 +145,78 @@ JAVA_DESCRIPTIONS = {
         "Java client for Crawlora's hosted Spotify API, with search, tracks, albums, artists, playlists, profiles, "
         "audiobooks, charts, and podcast shows and episodes. Requires a Crawlora API key."
     ),
+    "tiktok-mobile": (
+        "Java client for Crawlora's hosted TikTok Mobile API, with mobile feed, search, video, creator, music, "
+        "LIVE, and place endpoints. Requires a Crawlora API key."
+    ),
+    "xiaohongshu": (
+        "Java client for Crawlora's hosted Xiaohongshu API, with public explore feeds, note details, comments, "
+        "and search suggestions. Requires a Crawlora API key."
+    ),
+    "rednote": (
+        "Java client for Crawlora's hosted RedNote API, with public explore feeds, note details, comments, "
+        "and search suggestions. Requires a Crawlora API key."
+    ),
+    "kick": (
+        "Java client for Crawlora's hosted Kick API, with channels, livestreams, clips, categories, search, "
+        "and public mobile-app catalogues. Requires a Crawlora API key."
+    ),
+    "wattpad": (
+        "Java client for Crawlora's hosted Wattpad API, with story, author, search, category, language, "
+        "and public comment data. Requires a Crawlora API key."
+    ),
+    "reelshort": (
+        "Java client for Crawlora's hosted ReelShort API, with title discovery, search, movie details, "
+        "new releases, and public Fandom articles. Requires a Crawlora API key."
+    ),
+    "dramabox": (
+        "Java client for Crawlora's hosted DramaBox API, with title discovery, categories, search, rankings, "
+        "recommendations, and public title details. Requires a Crawlora API key."
+    ),
+    "wallapop": (
+        "Java client for Crawlora's hosted Wallapop API, with public listing search, categories, filters, "
+        "and item details. Requires a Crawlora API key."
+    ),
+    "jumia": (
+        "Java client for Crawlora's hosted Jumia API, with country and category discovery, product search, "
+        "and product details. Requires a Crawlora API key."
+    ),
+    "cardmarket": (
+        "Java client for Crawlora's hosted Cardmarket API, with game and catalogue discovery, product lookup, "
+        "and price guides. Requires a Crawlora API key."
+    ),
+    "fanduel": (
+        "Java client for Crawlora's hosted FanDuel API, with public racing, casino catalogue, and research data. "
+        "Requires a Crawlora API key."
+    ),
+    "fussballde": (
+        "Java client for Crawlora's hosted Fussball.de API, with amateur football clubs, players, matches, "
+        "statistics, news, and federation data. Requires a Crawlora API key."
+    ),
+    "opendota": (
+        "Java client for Crawlora's hosted OpenDota API, with Dota 2 matches, heroes, players, teams, leagues, "
+        "statistics, and game constants. Requires a Crawlora API key."
+    ),
+    "cricbuzz": (
+        "Java client for Crawlora's hosted Cricbuzz API, with cricket matches, schedules, news, rankings, "
+        "series, and records. Requires a Crawlora API key."
+    ),
+    "gosugamers": (
+        "Java client for Crawlora's hosted GosuGamers API, with esports matches, results, tournaments, games, "
+        "news, and articles. Requires a Crawlora API key."
+    ),
+    "lolesports": (
+        "Java client for Crawlora's hosted LoL Esports API, with leagues, schedules, live and completed events, "
+        "teams, players, and game details. Requires a Crawlora API key."
+    ),
+    "vlr": (
+        "Java client for Crawlora's hosted VLR.gg API, with Valorant matches, events, results, rankings, "
+        "statistics, news, and forum data. Requires a Crawlora API key."
+    ),
+    "bo3": (
+        "Java client for Crawlora's hosted BO3.gg API, with Counter-Strike and Valorant matches, teams, players, "
+        "tournaments, rankings, news, and statistics. Requires a Crawlora API key."
+    ),
 }
 HTTP_METHODS = frozenset({"get", "put", "post", "delete", "options", "head", "patch"})
 
@@ -133,12 +228,13 @@ def config_for(platform: str, *, version: str = "0.1.0", revision: str = "") -> 
     return {
         "platform": platform,
         "display_name": display,
-        "group_name": platform,
+        "group_name": {"tiktok-mobile": "tiktokMobile"}.get(platform, platform),
+        "api_path_prefix": PLATFORM_PATH_PREFIXES.get(platform, ("/" + platform + "/",))[0],
         "class_name": cls,
         "async_class_name": "Async" + cls,
         "npm_name": "@crawlora-org/" + platform,
         "python_name": "crawlora-" + platform,
-        "module_name": "crawlora_" + platform,
+        "module_name": "crawlora_" + platform.replace("-", "_"),
         "golang_module_name": "github.com/Crawlora-org/crawlora-" + platform,
         "golang_version": version,
         "ruby_gem_name": "crawlora-" + platform,
@@ -152,7 +248,7 @@ def config_for(platform: str, *, version: str = "0.1.0", revision: str = "") -> 
             f"Java client for Crawlora's hosted {display} API, with direct methods for supported operations. "
             "Requires a Crawlora API key.",
         ),
-        "general_sdk_version": "1.46.0-sdk.1",
+        "general_sdk_version": "1.50.0-sdk.1",
         "repository": "https://github.com/Crawlora-org/crawlora-" + platform,
         # Composer publishes from the multi-language platform repository.
         "php_repository": "https://github.com/Crawlora-org/crawlora-" + platform,
@@ -205,7 +301,10 @@ def select(spec: dict, platform: str) -> dict:
             path_matches = path.startswith(prefixes)
             tag_matches = bool(tags.intersection(allowed_tags))
             if not isinstance(identifier, str) or not identifier.startswith(platform + "-"):
-                if path_matches or tag_matches:
+                # A nested client may share its upstream tag with a parent
+                # platform. Its explicit path prefix scopes the package; the
+                # shared tag alone must not claim the parent operations.
+                if path_matches or (tag_matches and platform not in PLATFORM_PATH_PREFIXES):
                     raise ValueError(
                         f"unexpected operation ID for {platform} operation at {path}: {identifier!r}"
                     )

@@ -9,13 +9,14 @@ import {
 
 export class YouTubeClient extends CrawloraClient {
   constructor(options = {}) {
-    super({ ...options, userAgent: options.userAgent ?? "crawlora-youtube-js/0.2.0" });
+    super({ ...options, userAgent: options.userAgent ?? "crawlora-youtube-js/0.3.0" });
     this["captions"] = (...args) => this.request("youtube-captions", ...args);
     this["channelPlaylists"] = (...args) => this.request("youtube-channel-playlists", ...args);
     this["channelSearch"] = (...args) => this.request("youtube-channel-search", ...args);
     this["channelShorts"] = (...args) => this.request("youtube-channel-shorts", ...args);
     this["channelVideos"] = (...args) => this.request("youtube-channel-videos", ...args);
     this["comments"] = (...args) => this.request("youtube-comments", ...args);
+    this["commentReplies"] = (...args) => this.request("youtube-comment-replies", ...args);
     this["playlist"] = (...args) => this.request("youtube-playlist", ...args);
     this["profile"] = (...args) => this.request("youtube-profile", ...args);
     this["search"] = (...args) => this.request("youtube-search", ...args);
@@ -36,5 +37,5 @@ export {
   CrawloraServerError
 };
 export { groups, operations, operationCount, OperationIds } from "./operations.js";
-export const VERSION = "0.2.0";
+export const VERSION = "0.3.0";
 export default YouTubeClient;

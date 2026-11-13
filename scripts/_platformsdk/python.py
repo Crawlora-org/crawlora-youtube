@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import keyword
 import pprint
 import shutil
 import sys
@@ -136,6 +137,29 @@ def _platform_stub(config: dict[str, Any], model: Any, assets: Path) -> str:
     """Add explicit autocomplete signatures to the generic runtime stubs."""
     core, generator = _load_helpers(assets)
     declarations = generator.stub_declarations(model)
+    mode_specs = [
+        ("DefaultParams", None, 'Literal["auto", "json"]'),
+        ("TextResponseParams", "text", 'Literal["text"]'),
+        ("StreamParams", "stream", 'Literal["stream"]'),
+    ]
+    response_mode_param_names: dict[tuple[str, str], str] = {}
+    used_param_names = {meta["type_base"] + "Params" for meta in model.meta.values()}
+    for operation_id, meta in model.meta.items():
+        base = meta["type_base"]
+        for mode, _literal, _response_type in mode_specs:
+            alias = base + mode
+            if alias in used_param_names:
+                # A method whose name ends in "Stream" can otherwise collide
+                # with another operation's parameter TypedDict of the same
+                # name (for example search -> SearchStreamParams vs
+                # search-stream -> SearchStreamParams).
+                alias = base + "Response" + mode
+                suffix = 2
+                while alias in used_param_names:
+                    alias = base + f"Response{suffix}" + mode
+                    suffix += 1
+            response_mode_param_names[(operation_id, mode)] = alias
+            used_param_names.add(alias)
     text_responses: dict[str, tuple[str, list[str]]] = {}
     for operation_id, operation in model.operations.items():
         if "text/plain" not in operation.get("produces", []):
@@ -144,37 +168,45 @@ def _platform_stub(config: dict[str, Any], model: Any, assets: Path) -> str:
         text_formats = [str(value) for value in (format_param or {}).get("enum", []) if str(value).lower() not in {"json", "application/json"}]
         if text_formats:
             text_responses[operation_id] = (model.meta[operation_id]["type_base"], text_formats)
+    for operation_id in text_responses:
+        base = model.meta[operation_id]["type_base"]
+        mode = "TextParams"
+        alias = base + mode
+        if alias in used_param_names:
+            alias = base + "Response" + mode
+            suffix = 2
+            while alias in used_param_names:
+                alias = base + f"Response{suffix}" + mode
+                suffix += 1
+        response_mode_param_names[(operation_id, mode)] = alias
+        used_param_names.add(alias)
 
     def append_facade_signatures(target: list[str], method: str, operation_id: str, *, asynchronous: bool = False) -> None:
         base = model.meta[operation_id]["type_base"]
         prefix = "async " if asynchronous else ""
         target += [
             "    @overload",
-            f"    {prefix}def {method}(self, **params: Unpack[{base}StreamParams]) -> BinaryIO: ...",
+            f"    {prefix}def {method}(self, **params: Unpack[{response_mode_param_names[(operation_id, 'StreamParams')]}]) -> BinaryIO: ...",
             "    @overload",
-            f"    {prefix}def {method}(self, **params: Unpack[{base}TextResponseParams]) -> str: ...",
+            f"    {prefix}def {method}(self, **params: Unpack[{response_mode_param_names[(operation_id, 'TextResponseParams')]}]) -> str: ...",
         ]
         if operation_id in text_responses:
             target += [
                 "    @overload",
-                f"    {prefix}def {method}(self, **params: Unpack[{base}TextParams]) -> str: ...",
+                f"    {prefix}def {method}(self, **params: Unpack[{response_mode_param_names[(operation_id, 'TextParams')]}]) -> str: ...",
             ]
         target += [
             "    @overload",
-            f"    {prefix}def {method}(self, **params: Unpack[{base}DefaultParams]) -> {base}Response: ...",
+            f"    {prefix}def {method}(self, **params: Unpack[{response_mode_param_names[(operation_id, 'DefaultParams')]}]) -> {base}Response: ...",
         ]
 
     def append_response_options(target: list[str], operation_id: str) -> None:
         base = model.meta[operation_id]["type_base"]
         params = model.meta[operation_id]["params"]
-        mode_specs = [
-            ("DefaultParams", None, 'Literal["auto", "json"]'),
-            ("TextResponseParams", "text", 'Literal["text"]'),
-            ("StreamParams", "stream", 'Literal["stream"]'),
-        ]
+        operation_mode_specs = list(mode_specs)
         if operation_id in text_responses:
-            mode_specs.append(("TextParams", "format-text", 'Literal["auto", "text"]'))
-        for mode, literal, response_type in mode_specs:
+            operation_mode_specs.append(("TextParams", "format-text", 'Literal["auto", "text"]'))
+        for mode, literal, response_type in operation_mode_specs:
             fields = {"_timeout": "NotRequired[float]", "_headers": "NotRequired[Mapping[str, str]]"}
             if literal is None:
                 fields["_response_type"] = f"NotRequired[{response_type}]"
@@ -195,7 +227,8 @@ def _platform_stub(config: dict[str, Any], model: Any, assets: Path) -> str:
                         typ = generator.py_enum_type(formats)
                         wrapper = "Required"
                 fields[param["name"]] = f"{wrapper}[{typ}]"
-            target += ["", f"{base}{mode} = TypedDict({(base + mode)!r}, {{"]
+            alias = response_mode_param_names[(operation_id, mode)]
+            target += ["", f"{alias} = TypedDict({alias!r}, {{"]
             target.extend(f"    {key!r}: {typ}," for key, typ in fields.items())
             target.append("}, total=False)")
 
@@ -247,19 +280,36 @@ def _platform_stub(config: dict[str, Any], model: Any, assets: Path) -> str:
 def _test_fixture(model: Any, generator: Any) -> dict[str, Any]:
     """Choose a mocked GET operation that exercises routing and query encoding."""
     candidates = []
+    typed_candidates = []
+    keyword_safe_candidates = []
+    typed_keyword_safe_candidates = []
     for operation_id, operation in model.operations.items():
         if operation["method"] != "GET" or not operation.get("queryParams"):
             continue
-        if generator.py_schema_type(model.meta[operation_id]["response_schema"]) == "Any":
-            continue
         security = operation.get("security", [])
         params = model.meta[operation_id]["params"]
+        keyword_safe = not any(
+            param.get("in") in {"path", "query"} and keyword.iskeyword(str(param.get("name", "")))
+            for param in params
+        )
         scalar_query = any(param.get("in") == "query" and param.get("type") == "string" and not param.get("enum") for param in params)
         score = 4 + 2 * bool(operation.get("pathParams")) + 3 * ("ApiKeyAuth" in security) + 2 * scalar_query
-        candidates.append((score, operation_id, operation, params))
+        candidate = (score, operation_id, operation, params)
+        candidates.append(candidate)
+        typed = generator.py_schema_type(model.meta[operation_id]["response_schema"]) != "Any"
+        if typed:
+            typed_candidates.append(candidate)
+        if keyword_safe:
+            keyword_safe_candidates.append(candidate)
+            if typed:
+                typed_keyword_safe_candidates.append(candidate)
     if not candidates:
         raise ValueError("platform spec must include a GET operation with query parameters for generated tests")
-    _score, operation_id, operation, params = max(candidates, key=lambda item: (item[0], item[1]))
+    # Prefer a concrete response model, but APIs that legitimately return
+    # untyped JSON still need an installable package. Any is a supported
+    # response type; it should not prevent generating the client.
+    preferred = typed_keyword_safe_candidates or keyword_safe_candidates or typed_candidates or candidates
+    _score, operation_id, operation, params = max(preferred, key=lambda item: (item[0], item[1]))
 
     def sample(param: dict[str, Any]) -> Any:
         enum = param.get("enum") or []
@@ -301,7 +351,16 @@ def _test_fixture(model: Any, generator: Any) -> dict[str, Any]:
     if query:
         expected_url += "?" + urlencode(query)
     def kwargs(values: dict[str, Any]) -> str:
-        return ", ".join(f"{key}={value!r}" for key, value in sorted(values.items()))
+        named = []
+        expanded = {}
+        for key, value in sorted(values.items()):
+            if key.isidentifier() and not keyword.iskeyword(key):
+                named.append(f"{key}={value!r}")
+            else:
+                expanded[key] = value
+        if expanded:
+            named.append(f"**{expanded!r}")
+        return ", ".join(named)
 
     response_formats = next((param.get("enum", []) for param in params if param["name"] == "format"), [])
     text_formats = [str(value) for value in response_formats if str(value).lower() not in {"json", "application/json"}]

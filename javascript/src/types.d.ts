@@ -230,6 +230,7 @@ export interface ModelYoutubeChannelShortsResponse {
   "channel_id"?: string;
   "channel_title"?: string;
   "channel_url"?: string;
+  "continuation_token"?: string;
   "handle"?: string;
   "shorts"?: Array<ModelYoutubeChannelShort>;
   "thumbnail"?: string;
@@ -295,6 +296,7 @@ export interface YoutubeChannelSearchParams {
 export type YoutubeChannelShortsResponse = CrawloraResponse<ModelYoutubeChannelShortsResponseDoc>;
 export interface YoutubeChannelShortsParams {
   "id": string;
+  "continuation_token"?: string;
 }
 
 export type YoutubeChannelVideosResponse = CrawloraResponse<ModelYoutubeChannelFeedResponseDoc>;
@@ -307,6 +309,12 @@ export type YoutubeCommentsResponse = CrawloraResponse<ModelYoutubeCommentsRespo
 export interface YoutubeCommentsParams {
   "id": string;
   "continuation_token"?: string;
+}
+
+export type YoutubeCommentRepliesResponse = CrawloraResponse<ModelYoutubeCommentsResponseDoc>;
+export interface YoutubeCommentRepliesParams {
+  "id": string;
+  "continuation_token": string;
 }
 
 export type YoutubePlaylistResponse = CrawloraResponse<ModelYoutubePlaylistResponseDoc>;
@@ -376,6 +384,7 @@ export interface YoutubeService {
   channelShorts<T = YoutubeChannelShortsResponse>(params: YoutubeChannelShortsParams, options?: import('./index.js').CrawloraRequestOptions): Promise<T>;
   channelVideos<T = YoutubeChannelVideosResponse>(params: YoutubeChannelVideosParams, options?: import('./index.js').CrawloraRequestOptions): Promise<T>;
   comments<T = YoutubeCommentsResponse>(params: YoutubeCommentsParams, options?: import('./index.js').CrawloraRequestOptions): Promise<T>;
+  commentReplies<T = YoutubeCommentRepliesResponse>(params: YoutubeCommentRepliesParams, options?: import('./index.js').CrawloraRequestOptions): Promise<T>;
   playlist<T = YoutubePlaylistResponse>(params: YoutubePlaylistParams, options?: import('./index.js').CrawloraRequestOptions): Promise<T>;
   profile<T = YoutubeProfileResponse>(params: YoutubeProfileParams, options?: import('./index.js').CrawloraRequestOptions): Promise<T>;
   search<T = YoutubeSearchResponse>(params?: YoutubeSearchParams, options?: import('./index.js').CrawloraRequestOptions): Promise<T>;
@@ -397,6 +406,7 @@ export interface OperationParamsMap {
   "youtube-channel-shorts": YoutubeChannelShortsParams;
   "youtube-channel-videos": YoutubeChannelVideosParams;
   "youtube-comments": YoutubeCommentsParams;
+  "youtube-comment-replies": YoutubeCommentRepliesParams;
   "youtube-playlist": YoutubePlaylistParams;
   "youtube-profile": YoutubeProfileParams;
   "youtube-search": YoutubeSearchParams;
@@ -414,6 +424,7 @@ export interface OperationResponseMap {
   "youtube-channel-shorts": YoutubeChannelShortsResponse;
   "youtube-channel-videos": YoutubeChannelVideosResponse;
   "youtube-comments": YoutubeCommentsResponse;
+  "youtube-comment-replies": YoutubeCommentRepliesResponse;
   "youtube-playlist": YoutubePlaylistResponse;
   "youtube-profile": YoutubeProfileResponse;
   "youtube-search": YoutubeSearchResponse;
@@ -431,6 +442,7 @@ export interface OperationRequiredParamsMap {
   "youtube-channel-shorts": true;
   "youtube-channel-videos": true;
   "youtube-comments": true;
+  "youtube-comment-replies": true;
   "youtube-playlist": true;
   "youtube-profile": true;
   "youtube-search": false;
@@ -455,6 +467,7 @@ export type OperationIdLiteral =
   | "youtube-channel-shorts"
   | "youtube-channel-videos"
   | "youtube-comments"
+  | "youtube-comment-replies"
   | "youtube-playlist"
   | "youtube-profile"
   | "youtube-search"
@@ -470,6 +483,7 @@ export declare const OperationIds: Readonly<{
   YoutubeChannelSearch: "youtube-channel-search";
   YoutubeChannelShorts: "youtube-channel-shorts";
   YoutubeChannelVideos: "youtube-channel-videos";
+  YoutubeCommentReplies: "youtube-comment-replies";
   YoutubeComments: "youtube-comments";
   YoutubePlaylist: "youtube-playlist";
   YoutubeProfile: "youtube-profile";

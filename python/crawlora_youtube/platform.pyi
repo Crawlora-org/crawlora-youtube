@@ -255,6 +255,7 @@ ModelYoutubeChannelShortsResponse = TypedDict('ModelYoutubeChannelShortsResponse
     'channel_id': NotRequired[str],
     'channel_title': NotRequired[str],
     'channel_url': NotRequired[str],
+    'continuation_token': NotRequired[str],
     'handle': NotRequired[str],
     'shorts': NotRequired[list[ModelYoutubeChannelShort]],
     'thumbnail': NotRequired[str],
@@ -332,6 +333,7 @@ YoutubeChannelShortsParams = TypedDict('YoutubeChannelShortsParams', {
     '_timeout': NotRequired[float],
     '_headers': NotRequired[Mapping[str, str]],
     'id': Required[str],
+    'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeChannelVideosResponse = ModelYoutubeChannelFeedResponseDoc
@@ -350,6 +352,15 @@ YoutubeCommentsParams = TypedDict('YoutubeCommentsParams', {
     '_headers': NotRequired[Mapping[str, str]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
+}, total=False)
+
+YoutubeCommentRepliesResponse = ModelYoutubeCommentsResponseDoc
+YoutubeCommentRepliesParams = TypedDict('YoutubeCommentRepliesParams', {
+    '_response_type': NotRequired[ResponseType],
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    'id': Required[str],
+    'continuation_token': Required[str],
 }, total=False)
 
 YoutubePlaylistResponse = ModelYoutubePlaylistResponseDoc
@@ -474,6 +485,12 @@ class YoutubeGroup:
     @overload
     def comments(self, **params: Unpack[YoutubeCommentsDefaultParams]) -> YoutubeCommentsResponse: ...
     @overload
+    def comment_replies(self, **params: Unpack[YoutubeCommentRepliesStreamParams]) -> BinaryIO: ...
+    @overload
+    def comment_replies(self, **params: Unpack[YoutubeCommentRepliesTextResponseParams]) -> str: ...
+    @overload
+    def comment_replies(self, **params: Unpack[YoutubeCommentRepliesDefaultParams]) -> YoutubeCommentRepliesResponse: ...
+    @overload
     def playlist(self, **params: Unpack[YoutubePlaylistStreamParams]) -> BinaryIO: ...
     @overload
     def playlist(self, **params: Unpack[YoutubePlaylistTextResponseParams]) -> str: ...
@@ -531,6 +548,7 @@ OperationId = Literal[
     'youtube-channel-shorts',
     'youtube-channel-videos',
     'youtube-comments',
+    'youtube-comment-replies',
     'youtube-playlist',
     'youtube-profile',
     'youtube-search',
@@ -695,6 +713,18 @@ class CrawloraClient:
         retries: int | None = ...,
         retry_predicate: Callable[[int, BaseException | None], bool] | None = ...,
     ) -> YoutubeCommentsResponse: ...
+    @overload
+    def operation(
+        self,
+        operation_id: Literal['youtube-comment-replies'],
+        params: YoutubeCommentRepliesParams,
+        *,
+        response_type: ResponseType = ...,
+        timeout: float | None = ...,
+        headers: Mapping[str, str] | None = ...,
+        retries: int | None = ...,
+        retry_predicate: Callable[[int, BaseException | None], bool] | None = ...,
+    ) -> YoutubeCommentRepliesResponse: ...
     @overload
     def operation(
         self,
@@ -875,6 +905,18 @@ class CrawloraClient:
         retries: int | None = ...,
         retry_predicate: Callable[[int, BaseException | None], bool] | None = ...,
     ) -> YoutubeCommentsResponse: ...
+    @overload
+    def request(
+        self,
+        operation_id: Literal['youtube-comment-replies'],
+        params: YoutubeCommentRepliesParams,
+        *,
+        response_type: ResponseType = ...,
+        timeout: float | None = ...,
+        headers: Mapping[str, str] | None = ...,
+        retries: int | None = ...,
+        retry_predicate: Callable[[int, BaseException | None], bool] | None = ...,
+    ) -> YoutubeCommentRepliesResponse: ...
     @overload
     def request(
         self,
@@ -1047,6 +1089,12 @@ class YouTubeClient(CrawloraClient):
     @overload
     def comments(self, **params: Unpack[YoutubeCommentsDefaultParams]) -> YoutubeCommentsResponse: ...
     @overload
+    def comment_replies(self, **params: Unpack[YoutubeCommentRepliesStreamParams]) -> BinaryIO: ...
+    @overload
+    def comment_replies(self, **params: Unpack[YoutubeCommentRepliesTextResponseParams]) -> str: ...
+    @overload
+    def comment_replies(self, **params: Unpack[YoutubeCommentRepliesDefaultParams]) -> YoutubeCommentRepliesResponse: ...
+    @overload
     def playlist(self, **params: Unpack[YoutubePlaylistStreamParams]) -> BinaryIO: ...
     @overload
     def playlist(self, **params: Unpack[YoutubePlaylistTextResponseParams]) -> str: ...
@@ -1137,6 +1185,12 @@ class AsyncYouTubeClient(AsyncCrawloraClient):
     @overload
     async def comments(self, **params: Unpack[YoutubeCommentsDefaultParams]) -> YoutubeCommentsResponse: ...
     @overload
+    async def comment_replies(self, **params: Unpack[YoutubeCommentRepliesStreamParams]) -> BinaryIO: ...
+    @overload
+    async def comment_replies(self, **params: Unpack[YoutubeCommentRepliesTextResponseParams]) -> str: ...
+    @overload
+    async def comment_replies(self, **params: Unpack[YoutubeCommentRepliesDefaultParams]) -> YoutubeCommentRepliesResponse: ...
+    @overload
     async def playlist(self, **params: Unpack[YoutubePlaylistStreamParams]) -> BinaryIO: ...
     @overload
     async def playlist(self, **params: Unpack[YoutubePlaylistTextResponseParams]) -> str: ...
@@ -1224,6 +1278,12 @@ class _AsyncYoutubeGroup:
     async def comments(self, **params: Unpack[YoutubeCommentsTextResponseParams]) -> str: ...
     @overload
     async def comments(self, **params: Unpack[YoutubeCommentsDefaultParams]) -> YoutubeCommentsResponse: ...
+    @overload
+    async def comment_replies(self, **params: Unpack[YoutubeCommentRepliesStreamParams]) -> BinaryIO: ...
+    @overload
+    async def comment_replies(self, **params: Unpack[YoutubeCommentRepliesTextResponseParams]) -> str: ...
+    @overload
+    async def comment_replies(self, **params: Unpack[YoutubeCommentRepliesDefaultParams]) -> YoutubeCommentRepliesResponse: ...
     @overload
     async def playlist(self, **params: Unpack[YoutubePlaylistStreamParams]) -> BinaryIO: ...
     @overload
@@ -1355,6 +1415,7 @@ YoutubeChannelShortsDefaultParams = TypedDict('YoutubeChannelShortsDefaultParams
     '_headers': NotRequired[Mapping[str, str]],
     '_response_type': NotRequired[Literal["auto", "json"]],
     'id': Required[str],
+    'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeChannelShortsTextResponseParams = TypedDict('YoutubeChannelShortsTextResponseParams', {
@@ -1362,6 +1423,7 @@ YoutubeChannelShortsTextResponseParams = TypedDict('YoutubeChannelShortsTextResp
     '_headers': NotRequired[Mapping[str, str]],
     '_response_type': Required[Literal["text"]],
     'id': Required[str],
+    'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeChannelShortsStreamParams = TypedDict('YoutubeChannelShortsStreamParams', {
@@ -1369,6 +1431,7 @@ YoutubeChannelShortsStreamParams = TypedDict('YoutubeChannelShortsStreamParams',
     '_headers': NotRequired[Mapping[str, str]],
     '_response_type': Required[Literal["stream"]],
     'id': Required[str],
+    'continuation_token': NotRequired[str],
 }, total=False)
 
 YoutubeChannelVideosDefaultParams = TypedDict('YoutubeChannelVideosDefaultParams', {
@@ -1417,6 +1480,30 @@ YoutubeCommentsStreamParams = TypedDict('YoutubeCommentsStreamParams', {
     '_response_type': Required[Literal["stream"]],
     'id': Required[str],
     'continuation_token': NotRequired[str],
+}, total=False)
+
+YoutubeCommentRepliesDefaultParams = TypedDict('YoutubeCommentRepliesDefaultParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': NotRequired[Literal["auto", "json"]],
+    'id': Required[str],
+    'continuation_token': Required[str],
+}, total=False)
+
+YoutubeCommentRepliesTextResponseParams = TypedDict('YoutubeCommentRepliesTextResponseParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["text"]],
+    'id': Required[str],
+    'continuation_token': Required[str],
+}, total=False)
+
+YoutubeCommentRepliesStreamParams = TypedDict('YoutubeCommentRepliesStreamParams', {
+    '_timeout': NotRequired[float],
+    '_headers': NotRequired[Mapping[str, str]],
+    '_response_type': Required[Literal["stream"]],
+    'id': Required[str],
+    'continuation_token': Required[str],
 }, total=False)
 
 YoutubePlaylistDefaultParams = TypedDict('YoutubePlaylistDefaultParams', {

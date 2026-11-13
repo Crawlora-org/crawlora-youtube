@@ -133,6 +133,16 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     )
     first_meta = model.meta[first_operation_id]
     first_method = next(method for method, op_id in operation_aliases if op_id == first_operation_id)
+    if first_meta["has_required_params"]:
+        invalid_params_test = (
+            "// @ts-expect-error The selected operation requires its documented params.\n"
+            f"void client.{first_method}();"
+        )
+    else:
+        invalid_params_test = (
+            "// @ts-expect-error Only operation IDs in this platform are accepted.\n"
+            'void client.request("__unknown_platform_operation__", {});'
+        )
     text_operation_id = "youtube-transcript" if "youtube-transcript" in model.meta else first_operation_id
     text_meta = model.meta[text_operation_id]
     test_values = {
@@ -141,6 +151,7 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         "first_operation_json": json.dumps(first_operation_id),
         "first_params_json": json.dumps(_sample_params(first_meta)),
         "first_params_ts": json.dumps(_sample_params(first_meta)),
+        "invalid_params_test": invalid_params_test,
         "first_path_match": _path_pattern(first_meta["path"]),
         "text_operation_json": json.dumps(text_operation_id),
         "text_params_json": json.dumps(_sample_params(text_meta)),

@@ -57,6 +57,7 @@ def emit(root: Path, config: dict[str, Any], spec: dict[str, Any], assets: Path)
     templates = Path(__file__).resolve().parent / "templates" / "php"
     values = {
         "PLATFORM": platform,
+        "API_PATH_PREFIX": str(config.get("api_path_prefix", "/" + platform + "/")),
         "DISPLAY_NAME": config.get("display_name", platform.title()),
         "CLASS_NAME": class_name,
         "PACKAGE_NAME": package_name,

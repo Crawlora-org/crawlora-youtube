@@ -53,6 +53,21 @@ def schema_ref_type(schema):
     return schema_type_name(ref_name) if ref_name else ""
 
 
+def _ts_enum_literal(value, schema_type):
+    if schema_type in {"integer", "number"}:
+        if isinstance(value, bool):
+            return json.dumps(value)
+        if isinstance(value, (int, float)):
+            return json.dumps(value)
+        try:
+            return str(int(value)) if schema_type == "integer" else json.dumps(float(value))
+        except (TypeError, ValueError):
+            pass
+    if schema_type == "boolean" and isinstance(value, bool):
+        return json.dumps(value)
+    return json.dumps(str(value))
+
+
 def _ts_schema_type(schema):
     if not schema:
         return "unknown"
@@ -64,7 +79,7 @@ def _ts_schema_type(schema):
         return " & ".join(concrete) if concrete else "unknown"
     enum_schema_values = schema.get("enum") or []
     if enum_schema_values:
-        return " | ".join(json.dumps(str(value)) for value in enum_schema_values)
+        return " | ".join(_ts_enum_literal(value, schema.get("type")) for value in enum_schema_values)
     typ = schema.get("type")
     if typ in {"integer", "number"}:
         return "number"
@@ -100,7 +115,7 @@ def ts_schema_type(schema):
 def ts_type(param):
     enum_values = param.get("enum") or []
     if enum_values:
-        return " | ".join(json.dumps(str(value)) for value in enum_values)
+        return " | ".join(_ts_enum_literal(value, param.get("type")) for value in enum_values)
     typ = param.get("type")
     if typ in {"integer", "number"}:
         return "number"

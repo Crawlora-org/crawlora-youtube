@@ -1,8 +1,8 @@
 # YouTube API endpoint reference and client usage
 
-This reference lists all 14 public YouTube API endpoints exposed by the JavaScript/TypeScript, Python, Go, Ruby, Java, PHP, and Rust clients, including the `@crawlora-org/youtube`, `crawlora-youtube`, and `crawlora-youtube` packages. The clients call Crawlora's hosted API. Set `CRAWLORA_API_KEY` to a key for your Crawlora account before making requests. Service usage is billed under that account. These clients do not run a browser or scrape YouTube locally; Crawlora is independent from and not endorsed by YouTube or its owners.
+This reference lists all 15 public YouTube API endpoints exposed by the JavaScript/TypeScript, Python, Go, Ruby, Java, PHP, and Rust clients, including the `@crawlora-org/youtube`, `crawlora-youtube`, and `crawlora-youtube` packages. The clients call Crawlora's hosted API. Set `CRAWLORA_API_KEY` to a key for your Crawlora account before making requests. Service usage is billed under that account. These clients do not run a browser or scrape YouTube locally; Crawlora is independent from and not endorsed by YouTube or its owners.
 
-The package tracks the public API contract revision `sha256:894a214e317ae02c6f1135c7b5834d15a22799212b199e8de55b1acf3b315f71` bundled with release `0.2.0`. Maintainers can preview daily contract updates with the repository's `Sync live API contract` workflow; unchanged contracts do not produce package releases.
+The package tracks the public API contract revision `sha256:8e809efec74ebe90dd87d86c6eb8b963305d7f27fce19aa82a5620934883bed2` bundled with release `0.3.0`. Maintainers can preview daily contract updates with the repository's `Sync live API contract` workflow; unchanged contracts do not produce package releases.
 
 All language packages expose the selected public API operations in the bundled contract. JavaScript uses camelCase methods, Python and Rust use snake_case methods. JavaScript, Python, and Rust methods are grouped under `youtube`; Rust uses typed parameter structs and returns the complete HTTP response.
 
@@ -14,7 +14,7 @@ The checked-in examples discover current entities or feeds before making the rel
 - [Python](../examples/python.py)
 - [Rust](../rust/examples/quick_start.rs)
 
-YouTube clients include all 14 operations from the contract; transcript calls can request plain text with `format="text"` (Python) or `format: "text"` (JavaScript). The contract lists these transcript formats: `json`, `text`, `srt`, `vtt`.
+YouTube clients include all 15 operations from the contract; transcript calls can request plain text with `format="text"` (Python) or `format: "text"` (JavaScript). The contract lists these transcript formats: `json`, `text`, `srt`, `vtt`.
 
 ## Complete operation reference
 
@@ -25,9 +25,10 @@ Required and optional parameter names below come from this package's generated O
 | `captions` | `captions` | `youtube.captions` | `GET /youtube/captions/{id}` | `id` (path, required), `lang` (query, optional) | Retrieve auto-generated or human captions |
 | `channelPlaylists` | `channel_playlists` | `youtube.channel_playlists` | `GET /youtube/channel/{id}/playlists` | `id` (path, required), `continuation_token` (query, optional) | Retrieve the playlists tab for a YouTube channel |
 | `channelSearch` | `channel_search` | `youtube.channel_search` | `GET /youtube/channel/{id}/search` | `id` (path, required), `q` (query, required), `continuation_token` (query, optional) | Search within a YouTube channel |
-| `channelShorts` | `channel_shorts` | `youtube.channel_shorts` | `GET /youtube/channel/{id}/shorts` | `id` (path, required) | Retrieve the shorts tab for a YouTube channel |
+| `channelShorts` | `channel_shorts` | `youtube.channel_shorts` | `GET /youtube/channel/{id}/shorts` | `id` (path, required), `continuation_token` (query, optional) | Retrieve the shorts tab for a YouTube channel |
 | `channelVideos` | `channel_videos` | `youtube.channel_videos` | `GET /youtube/channel/{id}/videos` | `id` (path, required), `continuation_token` (query, optional) | Retrieve the videos tab for a YouTube channel |
-| `comments` | `comments` | `youtube.comments` | `GET /youtube/comments/{id}` | `id` (path, required), `continuation_token` (query, optional) | Retrieve video comments (top-level & replies) |
+| `commentReplies` | `comment_replies` | `youtube.comment_replies` | `GET /youtube/comments/{id}/replies` | `id` (path, required), `continuation_token` (query, required) | Retrieve replies to one YouTube comment |
+| `comments` | `comments` | `youtube.comments` | `GET /youtube/comments/{id}` | `id` (path, required), `continuation_token` (query, optional) | Retrieve top-level video comments |
 | `playlist` | `playlist` | `youtube.playlist` | `GET /youtube/playlist/{id}` | `id` (path, required), `continuation_token` (query, optional) | Retrieve playlist metadata and items |
 | `profile` | `profile` | `youtube.profile` | `GET /youtube/profile/{id}` | `id` (path, required) | Retrieve channel profile |
 | `search` | `search` | `youtube.search` | `GET /youtube/search` | `q` (query, optional), `search_query` (query, optional), `continuation_token` (query, optional), `type` (query, optional; values: `video`, `shorts`, `channel`, `playlist`, `movie`), `sort_by` (query, optional; values: `relevance`, `upload_date`, `view_count`, `popularity`, `rating`), `upload_date` (query, optional; values: `last_hour`, `today`, `this_week`, `this_month`, `this_year`), `duration` (query, optional; values: `under_3_minutes`, `three_to_20_minutes`, `over_20_minutes`, `under_3`, `three_to_20`, `over_20`, `short`, `medium`, `long`), `features` (query, optional), `hl` (query, optional), `gl` (query, optional), `params` (query, optional) | Search YouTube |

@@ -1,11 +1,12 @@
 {
+  "api_path_prefix": "/youtube/",
   "async_class_name": "AsyncYouTubeClient",
   "class_name": "YouTubeClient",
-  "contract_revision": "sha256:894a214e317ae02c6f1135c7b5834d15a22799212b199e8de55b1acf3b315f71",
+  "contract_revision": "sha256:8e809efec74ebe90dd87d86c6eb8b963305d7f27fce19aa82a5620934883bed2",
   "display_name": "YouTube",
   "general_sdk_version": "1.46.0-sdk.1",
   "golang_module_name": "github.com/Crawlora-org/crawlora-youtube",
-  "golang_version": "0.2.0",
+  "golang_version": "0.3.0",
   "group_name": "youtube",
   "java_description": "Java client for Crawlora's hosted YouTube API, with methods for search, channels, videos, playlists, comments, captions, and transcripts. Requires a Crawlora API key.",
   "maven_artifact_id": "crawlora-youtube",
@@ -17,6 +18,14 @@
   "platform": "youtube",
   "python_name": "crawlora-youtube",
   "releases": [
+    {
+      "changes": [
+        "Added operations: youtube-comment-replies.",
+        "Updated operation contracts: youtube-channel-shorts, youtube-comments."
+      ],
+      "date": "2026-11-13",
+      "version": "0.3.0"
+    },
     {
       "changes": [
         "Updated operation contracts: youtube-captions, youtube-channel-playlists, youtube-channel-search, youtube-channel-shorts, youtube-channel-videos, youtube-comments, youtube-playlist, youtube-profile, youtube-search, youtube-tag, youtube-transcript, youtube-transcript-languages, youtube-video."
@@ -105,6 +114,6 @@
   "ruby_gem_name": "crawlora-youtube",
   "rust_crate_name": "crawlora-youtube",
   "rust_module_name": "crawlora_youtube",
-  "source_contract_sha256": "58a42b604ca03b9d6cf27355e0e56f34719985b905a61df2f9f2a8c55f651f74",
-  "version": "0.2.0"
+  "source_contract_sha256": "123c5406ee3b92b07d2ef3dbe21a6ded54b79b25d26c13cbb905a34e3ecc7118",
+  "version": "0.3.0"
 }

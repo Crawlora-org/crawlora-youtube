@@ -221,7 +221,7 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo test --locked
       - run: cargo check --examples --locked
-      - run: cargo package --list --locked
+      - run: cargo package --list --locked --allow-dirty
       - run: cargo publish --locked --dry-run
 
   generated-contract-and-artifacts:

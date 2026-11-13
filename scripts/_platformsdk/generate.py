@@ -39,9 +39,11 @@ def regenerate(root: Path) -> None:
     config = json.loads((root / "platform.json").read_text())
     spec = json.loads((root / "openapi/public.json").read_text())
     metadata_changed = False
+    derived = config_for(str(config["platform"]))
     for field, value in (
-        ("rust_crate_name", "crawlora-" + str(config["platform"])),
-        ("rust_module_name", "crawlora_" + str(config["platform"]).replace("-", "_")),
+        ("rust_crate_name", derived["rust_crate_name"]),
+        ("rust_module_name", derived["rust_module_name"]),
+        ("api_path_prefix", derived["api_path_prefix"]),
     ):
         if config.get(field) != value:
             config[field] = value

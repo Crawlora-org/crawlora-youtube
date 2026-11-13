@@ -2,16 +2,17 @@
 
 Generated from `openapi/public.json`. Deprecated, admin, and internal operations are excluded from this SDK contract.
 
-Total operations: `14`
+Total operations: `15`
 
 | Group | SDK method | Operation ID | HTTP | Params | Auth | Response | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | youtube | `youtube.captions` | `youtube-captions` | `GET /youtube/captions/{id}` | `id` (path String required)<br>`lang` (query String) | `ApiKeyAuth` | `YoutubeCaptionsResponse` |  |
 | youtube | `youtube.channel_playlists` | `youtube-channel-playlists` | `GET /youtube/channel/{id}/playlists` | `id` (path String required)<br>`continuation_token` (query String) | `ApiKeyAuth` | `YoutubeChannelPlaylistsResponse` |  |
 | youtube | `youtube.channel_search` | `youtube-channel-search` | `GET /youtube/channel/{id}/search` | `id` (path String required)<br>`q` (query String required)<br>`continuation_token` (query String) | `ApiKeyAuth` | `YoutubeChannelSearchResponse` |  |
-| youtube | `youtube.channel_shorts` | `youtube-channel-shorts` | `GET /youtube/channel/{id}/shorts` | `id` (path String required) | `ApiKeyAuth` | `YoutubeChannelShortsResponse` |  |
+| youtube | `youtube.channel_shorts` | `youtube-channel-shorts` | `GET /youtube/channel/{id}/shorts` | `id` (path String required)<br>`continuation_token` (query String) | `ApiKeyAuth` | `YoutubeChannelShortsResponse` |  |
 | youtube | `youtube.channel_videos` | `youtube-channel-videos` | `GET /youtube/channel/{id}/videos` | `id` (path String required)<br>`continuation_token` (query String) | `ApiKeyAuth` | `YoutubeChannelVideosResponse` |  |
 | youtube | `youtube.comments` | `youtube-comments` | `GET /youtube/comments/{id}` | `id` (path String required)<br>`continuation_token` (query String) | `ApiKeyAuth` | `YoutubeCommentsResponse` |  |
+| youtube | `youtube.comment_replies` | `youtube-comment-replies` | `GET /youtube/comments/{id}/replies` | `id` (path String required)<br>`continuation_token` (query String required) | `ApiKeyAuth` | `YoutubeCommentRepliesResponse` |  |
 | youtube | `youtube.playlist` | `youtube-playlist` | `GET /youtube/playlist/{id}` | `id` (path String required)<br>`continuation_token` (query String) | `ApiKeyAuth` | `YoutubePlaylistResponse` |  |
 | youtube | `youtube.profile` | `youtube-profile` | `GET /youtube/profile/{id}` | `id` (path String required) | `ApiKeyAuth` | `YoutubeProfileResponse` |  |
 | youtube | `youtube.search` | `youtube-search` | `GET /youtube/search` | `q` (query String)<br>`search_query` (query String)<br>`continuation_token` (query String)<br>`type` (query String enum{video, shorts, channel, playlist, movie})<br>`sort_by` (query String enum{relevance, upload_date, view_count, popularity, rating})<br>`upload_date` (query String enum{last_hour, today, this_week, this_month, this_year})<br>`duration` (query String enum{under_3_minutes, three_to_20_minutes, over_20_minutes, under_3, three_to_20, over_20, short, medium, long})<br>`features` (query String)<br>`hl` (query String)<br>`gl` (query String)<br>`params` (query String) | `ApiKeyAuth` | `YoutubeSearchResponse` |  |

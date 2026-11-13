@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Official async Rust client for Crawlora's hosted YouTube API. It exposes
-typed request parameters and response handling for 14 public
+typed request parameters and response handling for 15 public
 operations. It calls Crawlora's hosted service; it does not scrape YouTube
 locally. Requests use your Crawlora account and follow its billing plan. Crawlora
 is independent from and not affiliated with or endorsed by YouTube or
@@ -30,7 +30,7 @@ To pin a release directly in `Cargo.toml`:
 
 ```toml
 [dependencies]
-crawlora-youtube = "0.2.0"
+crawlora-youtube = "0.3.0"
 ```
 
 Create an account at [crawlora.net](https://crawlora.net/signup?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-rust-signup), then [create an API key](https://crawlora.net/app/api-keys?utm_source=crates.io&utm_medium=referral&utm_campaign=platform-clients&utm_content=youtube-rust-api-keys). Keep the key out of source control and load it from the environment:

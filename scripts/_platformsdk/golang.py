@@ -215,6 +215,8 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     query_check_name = ""
     query_check_value = ""
     query_array = False
+    query_array_expected = ""
+    query_array_multi = False
     invalid_enum_name = ""
     for param in test_meta["params"]:
         location = param.get("in")
@@ -228,7 +230,17 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
         elif param.get("type") == "array":
             value = ["one", "two"]
             if not query_array:
-                query_name, query_value, query_array = param["name"], "one", True
+                query_name, query_array = param["name"], True
+                collection_format = param.get("collectionFormat", "csv")
+                separator = {"csv": ",", "ssv": " ", "tsv": "\t", "pipes": "|"}.get(collection_format)
+                if collection_format == "multi":
+                    query_array_expected = "one"
+                    query_array_multi = True
+                elif separator is not None:
+                    query_array_expected = separator.join(value)
+                else:
+                    query_array_expected = "one"
+                query_value = query_array_expected
         elif param.get("type") == "integer":
             value = 1
         elif param.get("type") == "number":
@@ -258,13 +270,18 @@ def emit(root: Path, config: dict, spec: dict, assets: Path) -> None:
     values["query_name"] = _go_string(query_name)
     values["query_value"] = _go_string(query_value)
     values["query_array"] = "true" if query_array else "false"
+    values["query_array_expected"] = _go_string(query_array_expected)
+    values["query_array_multi"] = "true" if query_array_multi else "false"
     values["query_check_name"] = _go_string(query_check_name)
     values["query_check_encoded"] = _go_string(
         urllib.parse.quote(query_check_name, safe="") + "=" + urllib.parse.quote_plus(query_check_value, safe="")
         if query_check_name else ""
     )
     values["text_operation"] = _go_string(test_operation_id)
-    values["text_params"] = values["request_params"][:-1] + ', "responseType": "text"}'
+    if values["request_params"] == "Params{}":
+        values["text_params"] = 'Params{"responseType": "text"}'
+    else:
+        values["text_params"] = values["request_params"][:-1] + ', "responseType": "text"}'
     values["search_operation"] = _go_string(test_operation_id)
     for source, target in (("go.mod.tmpl", "go.mod"), ("client.go.tmpl", "client.go"), ("operations.go.tmpl", "operations.go"), ("README.md.tmpl", "README.md"), ("client_test.go.tmpl", "client_test.go")):
         (root / target).write_text(_replace((templates / source).read_text(), values), encoding="utf-8")
